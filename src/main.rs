@@ -1,5 +1,6 @@
 mod inventory;
 mod inventory_controller;
+mod master_controller;
 mod math;
 mod voxel_renderer;
 
@@ -10,6 +11,7 @@ use bevy::prelude::*;
 use bevy::render::settings::{WgpuFeatures, WgpuSettings};
 use bevy::render::RenderPlugin;
 
+use crate::master_controller::MasterControllerPlugin;
 use inventory_controller::InventoryControllerPlugin;
 use voxel_renderer::VoxelRendererPlugin;
 
@@ -24,6 +26,7 @@ fn main() {
                 },
             }),
             WireframePlugin,
+            MasterControllerPlugin,
             InventoryControllerPlugin,
             VoxelRendererPlugin,
         ))
