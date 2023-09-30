@@ -1,6 +1,75 @@
+use crate::debug_camera_controller::DebugCameraControllerPlugin;
+use crate::inventory_controller::InventoryControllerPlugin;
+use crate::USE_DEBUG_CAM;
+use bevy::math::vec3;
+use bevy::pbr::wireframe::WireframePlugin;
 use bevy::prelude::*;
 
-use crate::voxel_renderer::{VoxelCoordinateFrame, GRID_DIMS};
+use crate::voxel_renderer::{VoxelCoordinateFrame, VoxelRendererPlugin, GRID_DIMS};
+
+pub struct InventoryPlugin;
+
+impl Plugin for InventoryPlugin {
+    fn build(&self, app: &mut App) {
+        app.add_systems(Startup, setup);
+        app.add_plugins((WireframePlugin, VoxelRendererPlugin));
+        app.add_systems(Update, (move_inventory_items, update_inventory_data));
+
+        if USE_DEBUG_CAM {
+            app.add_plugins(DebugCameraControllerPlugin);
+        } else {
+            app.add_plugins(InventoryControllerPlugin);
+        }
+    }
+}
+
+/// set up a simple 3D scene
+fn setup(
+    mut commands: Commands,
+    asset_server: ResMut<AssetServer>,
+    mut meshes: ResMut<Assets<Mesh>>,
+    mut materials: ResMut<Assets<StandardMaterial>>,
+) {
+    commands.spawn(Camera3dBundle {
+        transform: Transform::from_xyz(0.0, 15.0, -15.0).looking_at(vec3(0.0, 0.0, 0.0), Vec3::Y),
+        ..default()
+    });
+
+    let boomerang = InventoryItem::from((
+        (1, 3, 3),
+        vec![(0, 0, 0), (0, 0, 1), (0, 0, 2), (-1, 0, 0), (-2, 0, 0)],
+        Color::rgba(1.0, 1.0, 1.0, 1.0),
+    ));
+    let sword = InventoryItem::from((
+        (5, 3, 2),
+        vec![
+            (0, 0, 0),
+            (0, 0, 1),
+            (0, 0, 2),
+            (0, 1, 0),
+            (0, -1, 0),
+            (0, 0, -1),
+        ],
+        Color::rgba(0.0, 1.0, 0.0, 1.0),
+    ));
+    let heart = InventoryItem::from((
+        (2, 5, 2),
+        vec![
+            (0, 0, 0),
+            (0, 0, -1),
+            (1, 0, 0),
+            (-1, 0, 0),
+            (-1, 0, 1),
+            (1, 0, 1),
+        ],
+        Color::rgba(1.0, 0.0, 0.0, 1.0),
+    ));
+
+    commands.spawn(boomerang);
+    commands.spawn(sword);
+    commands.spawn(heart);
+    commands.insert_resource(InventoryData { grid: Vec::new() });
+}
 
 #[derive(Component, Clone, Debug)]
 pub struct InventoryItem {
