@@ -1,11 +1,15 @@
-use bevy::input::mouse::{MouseButtonInput, MouseMotion};
+use crate::voxel_renderer::VoxelCoordinateFrame;
+use bevy::input::mouse::MouseMotion;
 use bevy::prelude::*;
 
 pub struct InventoryControllerPlugin;
 
 impl Plugin for InventoryControllerPlugin {
     fn build(&self, app: &mut App) {
-        app.add_systems(Update, (process_inputs, update_state));
+        app.add_systems(
+            Update,
+            (process_inputs, update_state, set_world_orientation),
+        );
         app.insert_resource(InventoryControllerState::new());
     }
 }
@@ -81,7 +85,7 @@ fn update_state(mut state: ResMut<InventoryControllerState>) {
 }
 
 fn set_world_orientation(
-    mut model_transform_query: Query<&mut Transform, With<Handle<Mesh>>>,
+    mut model_transform_query: Query<&mut Transform, With<VoxelCoordinateFrame>>,
     state: Res<InventoryControllerState>,
 ) {
     let mut world_transform = model_transform_query.single_mut();

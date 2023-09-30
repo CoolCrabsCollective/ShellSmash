@@ -5,7 +5,7 @@ const GRID_DIMS: [i32; 3] = [5, 5, 5];
 pub struct VoxelRendererPlugin;
 
 #[derive(Component)]
-struct VoxelCoordinateFrame;
+pub struct VoxelCoordinateFrame;
 
 #[derive(Bundle)]
 struct VoxelBundle {

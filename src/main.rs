@@ -8,6 +8,7 @@ use bevy::prelude::*;
 use bevy::render::settings::{WgpuFeatures, WgpuSettings};
 use bevy::render::RenderPlugin;
 use bevy::window::close_on_esc;
+use inventory_controller::InventoryControllerPlugin;
 use voxel_renderer::VoxelRendererPlugin;
 
 fn main() {
@@ -21,11 +22,11 @@ fn main() {
                 .into(),
             }),
             WireframePlugin,
-            inventory_controller::InventoryControllerPlugin,
+            InventoryControllerPlugin,
             VoxelRendererPlugin,
         ))
         .add_systems(Startup, setup)
-        .add_systems(Update, bevy::window::close_on_esc)
+        .add_systems(Update, close_on_esc)
         .run();
 }
 
@@ -60,7 +61,7 @@ fn setup(
     });
     // camera
     commands.spawn(Camera3dBundle {
-        transform: Transform::from_xyz(-2.0, 2.5, 5.0).looking_at(Vec3::ZERO, Vec3::Y),
+        transform: Transform::from_xyz(-15.0, 15.0, 5.0).looking_at(Vec3::ZERO, Vec3::Y),
         ..default()
     });
     let boomerang = InventoryItem::from((
