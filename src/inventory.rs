@@ -1,8 +1,9 @@
 use bevy::prelude::*;
 
+#[derive(Component)]
 pub struct InventoryItem {
     pub location: IVec3,    // world location
-    pub points: Vec<IVec3>, // relative coordinate
+    pub points: Vec<IVec3>, // relative coordinate, center is the first point
 }
 
 impl InventoryItem {
@@ -27,7 +28,7 @@ impl InventoryItem {
         }
     }
 
-    fn intersects(&self, other_location: IVec3) -> bool {
+    pub fn intersects(&self, other_location: IVec3) -> bool {
         let relative_location: IVec3 = self.location - other_location;
         for point in &self.points {
             if *point == relative_location {
@@ -35,6 +36,29 @@ impl InventoryItem {
             }
         }
         false
+    }
+
+    pub fn translate(&mut self, translation: IVec3) {
+        self.location = translation;
+    }
+
+    pub fn rotate_x(&mut self, ccw: bool) {
+        let rot_angle = ((if ccw { 90 } else { -90 }) as f32).to_radians();
+
+        let rot_mat = Mat3::from_rotation_x(rot_angle);
+        for mut p in self.points.iter_mut() {
+            let vec3 = Vec3::new(p.x as f32, p.y as f32, p.z as f32);
+            let new_p: Vec3 = rot_mat.mul_vec3(vec3);
+            p.x = new_p.x as i32;
+            p.y = new_p.y as i32;
+            p.z = new_p.z as i32;
+        }
+    }
+    pub fn rotate_y(&mut self) {}
+    pub fn rotate_z(&mut self) {}
+
+    fn get_center(&self) -> &IVec3 {
+        self.points.first().unwrap()
     }
 }
 
