@@ -1,15 +1,23 @@
+use crate::inventory::{InventoryData, InventoryItem};
 use crate::math::deg_to_rad;
-use crate::voxel_renderer::VoxelCoordinateFrame;
-use bevy::input::mouse::MouseMotion;
+use crate::voxel_renderer::{VoxelCoordinateFrame, GRID_DIMS};
+use crate::GameState;
 use bevy::prelude::*;
 
 pub struct InventoryControllerPlugin;
 
 impl Plugin for InventoryControllerPlugin {
     fn build(&self, app: &mut App) {
+        app.add_systems(Startup, enter_inventory);
         app.add_systems(
             Update,
-            (process_inputs, update_state, set_world_orientation),
+            (
+                process_inputs,
+                update_state,
+                set_world_orientation,
+                update_inventory_data,
+                move_inventory_items,
+            ),
         );
         app.insert_resource(InventoryControllerState::new());
     }
@@ -48,8 +56,8 @@ impl InventoryControllerState {
             zoom: false,
 
             orientation: ControlledOrientation {
-                horizontal: deg_to_rad(180.0),
-                vertical: deg_to_rad(-45.0),
+                horizontal: deg_to_rad(0.0),
+                vertical: deg_to_rad(0.0),
                 zoom_pos: 0.0,
             },
         }
@@ -57,29 +65,40 @@ impl InventoryControllerState {
 }
 
 fn process_inputs(
-    mut mouse_motion_events: EventReader<MouseMotion>,
+    // mut mouse_motion_events: EventReader<MouseMotion>,
+    key_codes: Res<Input<KeyCode>>,
     mouse_buttons: Res<Input<MouseButton>>,
     mut state: ResMut<InventoryControllerState>,
 ) {
-    for motion_event in mouse_motion_events.iter() {
-        state.unprocessed_delta = match state.unprocessed_delta {
-            Some((x, y)) => Some((x + motion_event.delta.x, y + motion_event.delta.y)),
-            None => Some((motion_event.delta.x, motion_event.delta.y)),
-        };
+    if key_codes.just_pressed(KeyCode::W) {
+        state.orientation.vertical += deg_to_rad(90.0);
+    } else if key_codes.just_pressed(KeyCode::S) {
+        state.orientation.vertical += deg_to_rad(-90.0);
+    } else if key_codes.just_pressed(KeyCode::A) {
+        state.orientation.horizontal += deg_to_rad(-90.0);
+    } else if key_codes.just_pressed(KeyCode::D) {
+        state.orientation.horizontal += deg_to_rad(90.0);
     }
 
-    state.rotate = mouse_buttons.pressed(MouseButton::Right);
+    // for motion_event in mouse_motion_events.iter() {
+    //     state.unprocessed_delta = match state.unprocessed_delta {
+    //         Some((x, y)) => Some((x + motion_event.delta.x, y + motion_event.delta.y)),
+    //         None => Some((motion_event.delta.x, motion_event.delta.y)),
+    //     };
+    // }
+    //
+    // state.rotate = mouse_buttons.pressed(MouseButton::Right);
     state.zoom = mouse_buttons.pressed(MouseButton::Left);
 }
 
 fn update_state(mut state: ResMut<InventoryControllerState>) {
     if let Some(unprocessed_delta) = state.unprocessed_delta {
-        if state.rotate {
-            let mouse_sensitivity = 0.002;
-
-            state.orientation.horizontal += -unprocessed_delta.0 * mouse_sensitivity;
-            state.orientation.vertical += -unprocessed_delta.1 * mouse_sensitivity;
-        }
+        // if state.rotate {
+        //     let mouse_sensitivity = 0.002;
+        //
+        //     state.orientation.horizontal += -unprocessed_delta.0 * mouse_sensitivity;
+        //     state.orientation.vertical += -unprocessed_delta.1 * mouse_sensitivity;
+        // }
 
         if state.zoom {
             let mouse_sensitivity = 0.02;
@@ -112,4 +131,57 @@ fn set_world_orientation(
 
     world_transform.translation.x = state.orientation.zoom_pos;
     world_transform.rotation = state.orientation.to_quat();
+}
+
+pub fn move_inventory_items(
+    mut query: Query<&mut InventoryItem>,
+    inv_coord_query: Query<&Transform, With<VoxelCoordinateFrame>>,
+    camera_pos_query: Query<&Transform, With<Camera>>,
+    k_input: Res<Input<KeyCode>>,
+) {
+    let inv_coord = inv_coord_query.single();
+    let camera_coord = camera_pos_query.single();
+    let _direction = (inv_coord.translation - camera_coord.translation).normalize();
+
+    // println!("Test");
+    // dbg!(direction);
+    // dbg!(x_axis);
+    // dbg!(y_axis);
+    // dbg!(z_axis);
+    for mut item in &mut query {
+        if k_input.just_pressed(KeyCode::H) {
+            item.translate(IVec3 { x: 1, y: 0, z: 0 })
+        } else if k_input.just_pressed(KeyCode::L) {
+            item.translate(IVec3 { x: -1, y: 0, z: 0 })
+        } else if k_input.just_pressed(KeyCode::J) {
+            item.translate(IVec3 { x: 0, y: 1, z: 0 })
+        } else if k_input.just_pressed(KeyCode::K) {
+            item.translate(IVec3 { x: 0, y: -1, z: 0 })
+        }
+    }
+}
+
+pub fn update_inventory_data(query: Query<&InventoryItem>, mut inv: ResMut<InventoryData>) {
+    let mut items: Vec<InventoryItem> = Vec::new();
+    for p in query.iter() {
+        items.push(p.clone())
+    }
+    inv.grid = InventoryData::grid_from_items(items, IVec3::from_array(GRID_DIMS))
+}
+
+fn enter_inventory(
+    mut cam_transform_query: Query<&mut Transform, With<Camera>>,
+    game_state: ResMut<State<GameState>>,
+) {
+    if *game_state.get() != GameState::Inventory {
+        return;
+    }
+
+    let mut cam_transform = cam_transform_query.single_mut();
+
+    cam_transform.translation = Vec3 {
+        x: -15.0,
+        y: 5.0,
+        z: 0.0,
+    };
 }

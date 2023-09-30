@@ -8,9 +8,8 @@ use bevy::render::settings::{WgpuFeatures, WgpuSettings};
 use bevy::render::RenderPlugin;
 use debug_camera_controller::DebugCameraControllerPlugin;
 
-use crate::inventory::{move_inventory_items, update_inventory_data, InventoryData, InventoryItem};
+use crate::inventory::{InventoryData, InventoryItem};
 use crate::inventory_controller::InventoryControllerPlugin;
-use crate::master_controller::MasterControllerPlugin;
 use crate::voxel_renderer::VoxelRendererPlugin;
 
 use bevy_rapier3d::prelude::NoUserData;
@@ -24,7 +23,6 @@ mod inventory;
 mod inventory_controller;
 mod item_mesh_generator;
 mod level_loader;
-mod master_controller;
 mod math;
 mod voxel_renderer;
 mod wall;
@@ -36,6 +34,15 @@ enum GameState {
     #[default]
     Game,
     Inventory,
+}
+
+impl GameState {
+    fn turn(&self) -> Self {
+        match self {
+            GameState::Game => GameState::Inventory,
+            GameState::Inventory => GameState::Game,
+        }
+    }
 }
 
 // add physics
@@ -60,19 +67,11 @@ fn main() {
         RapierDebugRenderPlugin::default(),
     ))
     .add_state::<GameState>()
-    .add_systems(OnEnter(GameState::Game), setup)
-    .add_systems(
-        Update,
-        (
-            bevy::window::close_on_esc,
-            move_inventory_items,
-            update_inventory_data,
-            swap_controls,
-        ),
-    );
+    .add_systems(Startup, setup)
+    .add_systems(Update, (bevy::window::close_on_esc, swap_controls));
 
     if !USE_DEBUG_CAM {
-        app.add_plugins((MasterControllerPlugin, InventoryControllerPlugin));
+        app.add_plugins(InventoryControllerPlugin);
     } else {
         app.add_plugins(DebugCameraControllerPlugin);
     }
@@ -123,7 +122,7 @@ fn setup(
     });
     // camera
     commands.spawn(Camera3dBundle {
-        transform: Transform::from_xyz(0.0, 35.0, -15.0).looking_at(vec3(0.0, 0.0, 0.0), Vec3::Y),
+        transform: Transform::from_xyz(0.0, 10.0, -15.0).looking_at(vec3(0.0, 0.0, 0.0), Vec3::Y),
         ..default()
     });
 
@@ -217,25 +216,14 @@ fn setup(
     commands.insert_resource(InventoryData { grid: Vec::new() });
 }
 
-fn enter_inventory(
-    mut cam_transform_query: Query<&mut Transform, With<Camera>>,
-    mut game_state: ResMut<State<GameState>>,
+fn swap_controls(
+    k_input: Res<Input<KeyCode>>,
+    current_game_state: ResMut<State<GameState>>,
+    mut next_game_state: ResMut<NextState<GameState>>,
 ) {
-    if *game_state.get() != GameState::Inventory {
-        return;
-    }
-
-    let mut cam_transform = cam_transform_query.single_mut();
-
-    cam_transform.translation = Vec3 {
-        x: -15.0,
-        y: 5.0,
-        z: 0.0,
-    };
-}
-
-fn swap_controls(k_input: Res<Input<KeyCode>>, mut game_state: ResMut<NextState<GameState>>) {
     if k_input.just_pressed(KeyCode::Space) {
-        game_state.set(GameState::Inventory);
+        let new_status = current_game_state.get().turn();
+
+        next_game_state.set(new_status);
     }
 }
