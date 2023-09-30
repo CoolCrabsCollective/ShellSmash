@@ -5,9 +5,9 @@ use bevy::prelude::*;
 
 use crate::math::deg_to_rad;
 
-pub struct CameraControllerPlugin;
+pub struct DebugCameraControllerPlugin;
 
-impl Plugin for CameraControllerPlugin {
+impl Plugin for DebugCameraControllerPlugin {
     fn build(&self, app: &mut App) {
         app.add_systems(Update, (process_inputs, update_state, set_camera));
         app.insert_resource(CameraControllerState::new());
@@ -21,12 +21,12 @@ struct ControlledViewDirection {
 }
 
 impl ControlledViewDirection {
-    pub fn to_quat(self) -> Quat {
+    fn to_quat(self) -> Quat {
         Quat::from_euler(EulerRot::XYZ, 0.0, self.horizontal, 0.0)
             * Quat::from_euler(EulerRot::XYZ, self.vertical, 0.0, 0.0)
     }
 
-    pub fn to_vector(self) -> Vec3 {
+    fn to_vector(self) -> Vec3 {
         let horizontal_scale = self.vertical.cos();
         Vec3::new(
             (self.horizontal + std::f32::consts::PI).sin() * horizontal_scale,
@@ -54,7 +54,7 @@ struct CameraControllerState {
 }
 
 impl CameraControllerState {
-    pub fn new() -> Self {
+    fn new() -> Self {
         Self {
             unprocessed_delta: None,
 
