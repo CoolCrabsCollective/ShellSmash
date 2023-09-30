@@ -136,11 +136,11 @@ pub fn move_inventory_items(
     let camera_coord = camera_pos_query.single();
     let direction = (inv_coord.translation - camera_coord.translation).normalize();
 
-    println!("Test");
-    dbg!(direction);
-    dbg!(x_axis);
-    dbg!(y_axis);
-    dbg!(z_axis);
+    // println!("Test");
+    // dbg!(direction);
+    // dbg!(x_axis);
+    // dbg!(y_axis);
+    // dbg!(z_axis);
     for mut item in &mut query {
         if k_input.just_pressed(KeyCode::H) {
             item.translate(IVec3 { x: 1, y: 0, z: 0 })
