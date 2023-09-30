@@ -4,32 +4,10 @@ use bevy::{
     log,
     prelude::*,
     render::mesh::{Indices, VertexAttributeValues},
-    utils::HashSet,
 };
 use bevy_rapier3d::prelude::Collider;
 
 pub struct LevelLoaderPlugin;
-
-#[derive(Resource)]
-struct LevelLoaderState {
-    pending_scenes: HashSet<String>,
-    loaded_scenes: HashSet<String>,
-}
-
-#[derive(Debug, Clone, PartialEq, Eq, Hash)]
-pub enum ColliderFromMeshError {
-    MissingPositions,
-    MissingIndices,
-    InvalidIndicesCount(usize),
-    InvalidPositionsType(&'static str),
-}
-
-#[derive(Debug, Clone, PartialEq, Eq, Hash)]
-pub enum ColliderMeshParsingError {
-    MissingMeshNode,
-    MissingMesh,
-    MeshColliderError(ColliderFromMeshError),
-}
 
 impl Plugin for LevelLoaderPlugin {
     fn build(&self, app: &mut App) {
@@ -57,7 +35,7 @@ fn handle_scene_load_event(
                         for entity in scene.world.iter_entities() {
                             // dbg!(entity.archetype());
                             if let Ok(mesh_handle) = mesh_handle_query.get(entity.id()) {
-                                if let Some(mesh) = meshes.get(mesh_handle) {
+                                if let Some(_mesh) = meshes.get(mesh_handle) {
                                     log::info!("fuck yeah I got the fucking mesh");
                                     // println!();
                                 }
@@ -76,10 +54,11 @@ fn handle_scene_load_event(
     }
 }
 
+#[allow(clippy::too_many_arguments)]
 fn handle_gltf_load_event(
     mut commands: Commands,
     mut load_events: EventReader<AssetEvent<Gltf>>,
-    mesh_handle_query: Query<&Handle<Mesh>>,
+    _mesh_handle_query: Query<&Handle<Mesh>>,
     meshes: Res<Assets<Mesh>>,
     gltf_meshes: Res<Assets<GltfMesh>>,
     nodes: Res<Assets<GltfNode>>,
@@ -146,6 +125,14 @@ fn get_mesh_from_gltf_node<'a>(
 }
 
 // taken from https://github.com/Defernus/bevy_gltf_collider/blob/9f27253e6d2e645c3570bebead34a493e4da1deb/src/mesh_collider.rs
+#[derive(Debug, Clone, PartialEq, Eq, Hash)]
+pub enum ColliderFromMeshError {
+    MissingPositions,
+    MissingIndices,
+    InvalidIndicesCount(usize),
+    InvalidPositionsType(&'static str),
+}
+
 fn get_collider_from_mesh(
     mesh: &Mesh,
     transform: &Transform,

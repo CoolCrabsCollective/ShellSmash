@@ -12,7 +12,7 @@ pub struct WallBundle {
 pub struct Wall;
 
 impl WallBundle {
-    pub fn from_lengths(
+    pub fn _from_lengths(
         hx: f32,
         hy: f32,
         hz: f32,
@@ -32,7 +32,7 @@ impl WallBundle {
         }
     }
 
-    pub fn from_corners(
+    pub fn _from_corners(
         corner_a: Vec3,
         corner_b: Vec3,
         meshes: &mut ResMut<Assets<Mesh>>,
@@ -40,7 +40,7 @@ impl WallBundle {
     ) -> Self {
         let half_size = (corner_a - corner_b).abs() / 2.0;
         let position = (corner_a + corner_b) / 2.0;
-        Self::from_lengths(
+        Self::_from_lengths(
             half_size.x,
             half_size.y,
             half_size.z,
