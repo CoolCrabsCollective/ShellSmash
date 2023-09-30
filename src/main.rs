@@ -1,8 +1,3 @@
-mod inventory;
-mod inventory_controller;
-mod master_controller;
-mod math;
-mod voxel_renderer;
 use std::f32::consts::PI;
 
 use bevy::math::vec3;
@@ -16,6 +11,12 @@ use crate::inventory::{move_inventory_items, update_inventory_data, InventoryDat
 use crate::inventory_controller::InventoryControllerPlugin;
 use crate::master_controller::MasterControllerPlugin;
 use crate::voxel_renderer::VoxelRendererPlugin;
+
+mod inventory;
+mod inventory_controller;
+mod master_controller;
+mod math;
+mod voxel_renderer;
 
 // add physics
 fn main() {
@@ -91,20 +92,38 @@ fn setup(
     });
     // camera
     commands.spawn(Camera3dBundle {
-        transform: Transform::from_xyz(-30.0, 20.0, 0.0).looking_at(vec3(-5.0, 0.0, 0.0), Vec3::Y),
+        transform: Transform::from_xyz(0.0, 35.0, -15.0).looking_at(vec3(0.0, 0.0, 0.0), Vec3::Y),
         ..default()
     });
 
     commands.spawn(SceneBundle {
         scene: asset_server.load("map.glb#Scene0"),
-        transform: Transform::from_xyz(-15.0, 0.0, 0.0).looking_at(Vec3::ZERO, Vec3::Y),
+        transform: Transform::from_xyz(0.0, 0.0, 0.0)
+            .looking_at(Vec3::ZERO, Vec3::Y)
+            .with_rotation(Quat::from_rotation_y(0.5 * PI)),
+        ..default()
+    });
+
+    commands.spawn(SceneBundle {
+        scene: asset_server.load("player.glb#Scene0"),
+        transform: Transform::from_xyz(5.0, 0.0, 5.0)
+            .looking_at(Vec3::ZERO, Vec3::Y)
+            .with_scale(vec3(0.5, 0.5, 0.5)),
+        ..default()
+    });
+
+    commands.spawn(SceneBundle {
+        scene: asset_server.load("enemy.glb#Scene0"),
+        transform: Transform::from_xyz(5.0, 0.0, -5.0)
+            .looking_at(Vec3::ZERO, Vec3::Y)
+            .with_scale(vec3(0.5, 0.5, 0.5)),
         ..default()
     });
 
     let boomerang = InventoryItem::from((
         (1, 3, 3),
         vec![(0, 0, 0), (0, 0, 1), (0, 0, 2), (-1, 0, 0), (-2, 0, 0)],
-        bevy::render::color::Color::rgba(1.0, 1.0, 1.0, 1.0),
+        Color::rgba(1.0, 1.0, 1.0, 1.0),
     ));
     let sword = InventoryItem::from((
         (5, 3, 2),
@@ -116,7 +135,7 @@ fn setup(
             (0, -1, 0),
             (0, 0, -1),
         ],
-        bevy::render::color::Color::rgba(0.0, 1.0, 0.0, 1.0),
+        Color::rgba(0.0, 1.0, 0.0, 1.0),
     ));
     let heart = InventoryItem::from((
         (2, 5, 2),
@@ -128,7 +147,7 @@ fn setup(
             (-1, 0, 1),
             (1, 0, 1),
         ],
-        bevy::render::color::Color::rgba(1.0, 0.0, 0.0, 1.0),
+        Color::rgba(1.0, 0.0, 0.0, 1.0),
     ));
 
     commands.spawn(boomerang);
