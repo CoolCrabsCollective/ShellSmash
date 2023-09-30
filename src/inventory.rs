@@ -5,11 +5,11 @@ use crate::voxel_renderer::GRID_DIMS;
 pub struct InventoryItem {
     pub location: IVec3,          // world location
     pub local_points: Vec<IVec3>, // relative coordinate, center is the first point
-    pub color: bevy::render::color::Color,
+    pub color: Color,
 }
 
 pub struct InventoryItemInfo {
-    pub color: bevy::render::color::Color,
+    pub color: Color,
 }
 
 impl InventoryItem {
@@ -45,20 +45,8 @@ impl InventoryItem {
     }
 }
 
-impl
-    From<(
-        (i32, i32, i32),
-        Vec<(i32, i32, i32)>,
-        bevy::render::color::Color,
-    )> for InventoryItem
-{
-    fn from(
-        value: (
-            (i32, i32, i32),
-            Vec<(i32, i32, i32)>,
-            bevy::render::color::Color,
-        ),
-    ) -> Self {
+impl From<((i32, i32, i32), Vec<(i32, i32, i32)>, Color)> for InventoryItem {
+    fn from(value: ((i32, i32, i32), Vec<(i32, i32, i32)>, Color)) -> Self {
         InventoryItem {
             location: value.0.into(),
             local_points: value.1.iter().map(|tup| (*tup).into()).collect(),
