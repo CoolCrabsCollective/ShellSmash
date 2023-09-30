@@ -19,6 +19,13 @@ use crate::master_controller::MasterControllerPlugin;
 use crate::voxel_renderer::VoxelRendererPlugin;
 use voxel_renderer::GRID_DIMS;
 
+#[derive(Debug, Clone, Default, Eq, PartialEq, Hash, States)]
+enum GameState {
+    #[default]
+    Game,
+    Inventory,
+}
+
 // add physics
 fn main() {
     App::new()
@@ -39,13 +46,16 @@ fn main() {
             InventoryControllerPlugin,
             VoxelRendererPlugin,
         ))
-        .add_systems(Startup, setup)
+        .add_state::<GameState>()
+        .add_systems(OnEnter(GameState::Game), setup)
+        .add_systems(OnEnter(GameState::Inventory), enter_inventory)
         .add_systems(
             Update,
             (
                 bevy::window::close_on_esc,
                 move_inventory_items,
                 update_inventory_data,
+                swap_controls,
             ),
         )
         .run();
@@ -147,7 +157,15 @@ fn update_inventory_data(query: Query<&InventoryItem>, mut inv: ResMut<Inventory
     inv.grid = InventoryData::grid_from_items(items, IVec3::from_array(GRID_DIMS))
 }
 
-fn move_inventory_items(mut query: Query<&mut InventoryItem>, k_input: Res<Input<KeyCode>>) {
+fn move_inventory_items(
+    mut query: Query<&mut InventoryItem>,
+    k_input: Res<Input<KeyCode>>,
+    mut game_state: ResMut<State<GameState>>,
+) {
+    if *game_state.get() != GameState::Inventory {
+        return;
+    }
+
     for mut item in &mut query {
         if k_input.just_pressed(KeyCode::H) {
             item.translate(IVec3 { x: 1, y: 0, z: 0 })
@@ -158,5 +176,28 @@ fn move_inventory_items(mut query: Query<&mut InventoryItem>, k_input: Res<Input
         } else if k_input.just_pressed(KeyCode::K) {
             item.translate(IVec3 { x: 0, y: -1, z: 0 })
         }
+    }
+}
+
+fn enter_inventory(
+    mut cam_transform_query: Query<&mut Transform, With<Camera>>,
+    mut game_state: ResMut<State<GameState>>,
+) {
+    if *game_state.get() != GameState::Inventory {
+        return;
+    }
+
+    let mut cam_transform = cam_transform_query.single_mut();
+
+    cam_transform.translation = Vec3 {
+        x: -15.0,
+        y: 5.0,
+        z: 0.0,
+    };
+}
+
+fn swap_controls(k_input: Res<Input<KeyCode>>, mut game_state: ResMut<NextState<GameState>>) {
+    if k_input.just_pressed(KeyCode::Space) {
+        game_state.set(GameState::Inventory);
     }
 }
