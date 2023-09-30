@@ -22,6 +22,7 @@ use level_loader::LevelLoaderPlugin;
 mod debug_camera_controller;
 mod inventory;
 mod inventory_controller;
+mod item_mesh_generator;
 mod level_loader;
 mod master_controller;
 mod math;
@@ -83,8 +84,8 @@ fn main() {
 fn setup(
     mut commands: Commands,
     asset_server: ResMut<AssetServer>,
-    _meshes: ResMut<Assets<Mesh>>,
-    _materials: ResMut<Assets<StandardMaterial>>,
+    mut meshes: ResMut<Assets<Mesh>>,
+    mut materials: ResMut<Assets<StandardMaterial>>,
 ) {
     load_level("map.glb#Scene0", &asset_server);
     // plane
@@ -179,6 +180,36 @@ fn setup(
         ],
         Color::rgba(1.0, 0.0, 0.0, 1.0),
     ));
+
+    commands.spawn(PbrBundle {
+        mesh: meshes.add(boomerang.generate_mesh()),
+        material: materials.add(StandardMaterial {
+            base_color: boomerang.color.clone(),
+            ..default()
+        }),
+        transform: Transform::from_xyz(10.0, 1.0, 3.0),
+        ..default()
+    });
+
+    commands.spawn(PbrBundle {
+        mesh: meshes.add(sword.generate_mesh()),
+        material: materials.add(StandardMaterial {
+            base_color: sword.color.clone(),
+            ..default()
+        }),
+        transform: Transform::from_xyz(10.0, 11.0, 3.0),
+        ..default()
+    });
+
+    commands.spawn(PbrBundle {
+        mesh: meshes.add(heart.generate_mesh()),
+        material: materials.add(StandardMaterial {
+            base_color: heart.color.clone(),
+            ..default()
+        }),
+        transform: Transform::from_xyz(10.0, 21.0, 3.0),
+        ..default()
+    });
 
     commands.spawn(boomerang);
     commands.spawn(sword);
