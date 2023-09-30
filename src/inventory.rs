@@ -6,7 +6,7 @@ pub struct InventoryItem {
 }
 
 impl InventoryItem {
-    fn spawn_cubes(
+    pub(crate) fn spawn_cubes(
         &self,
         mut commands: Commands,
         mut meshes: ResMut<Assets<Mesh>>,
@@ -17,7 +17,11 @@ impl InventoryItem {
             commands.spawn(PbrBundle {
                 mesh: meshes.add(Mesh::from(shape::Cube { size: 1.0 })),
                 material: materials.add(Color::rgb(0.8, 0.7, 0.6).into()),
-                transform: Transform::from_xyz(point.x as f32, point.y as f32, point.y as f32),
+                transform: Transform::from_xyz(
+                    (self.location.x + point.x) as f32,
+                    (self.location.y + point.y) as f32,
+                    (self.location.z + point.z) as f32,
+                ),
                 ..default()
             });
         }

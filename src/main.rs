@@ -1,11 +1,14 @@
+mod camera_controller;
 mod inventory;
 
+use crate::camera_controller::CameraControllerPlugin;
 use crate::inventory::InventoryItem;
+use bevy::math::ivec3;
 use bevy::prelude::*;
 
 fn main() {
     App::new()
-        .add_plugins(DefaultPlugins)
+        .add_plugins((DefaultPlugins, CameraControllerPlugin))
         .add_systems(Startup, setup)
         .run();
 }
@@ -23,12 +26,12 @@ fn setup(
         ..default()
     });
     // cube
-    commands.spawn(PbrBundle {
-        mesh: meshes.add(Mesh::from(shape::Cube { size: 1.0 })),
-        material: materials.add(Color::rgb(0.8, 0.7, 0.6).into()),
-        transform: Transform::from_xyz(0.0, 0.5, 0.0),
-        ..default()
-    });
+    //commands.spawn(PbrBundle {
+    //    mesh: meshes.add(Mesh::from(shape::Cube { size: 1.0 })),
+    //    material: materials.add(Color::rgb(0.8, 0.7, 0.6).into()),
+    //    transform: Transform::from_xyz(0.0, 0.5, 0.0),
+    //    ..default()
+    //});
     // light
     commands.spawn(PointLightBundle {
         point_light: PointLight {
@@ -45,7 +48,16 @@ fn setup(
         ..default()
     });
 
-    //let item = InventoryItem {
-    //    points: vec![(0, 10, 0), (0, 10, 0)],
-    //};
+    let item = InventoryItem {
+        location: ivec3(0, 4, 0),
+        points: vec![
+            ivec3(0, 0, 0),
+            ivec3(1, 0, 0),
+            ivec3(2, 0, 0),
+            ivec3(2, 1, 0),
+            ivec3(2, 2, 0),
+        ],
+    };
+
+    item.spawn_cubes(commands, meshes, materials);
 }
