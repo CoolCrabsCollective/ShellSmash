@@ -37,15 +37,8 @@ impl Plugin for LevelLoaderPlugin {
     }
 }
 
-pub fn load_level(
-    asset_path: &str,
-    asset_server: &ResMut<AssetServer>,
-    // commands: &mut Commands,
-    // meshes: &mut ResMut<Assets<Mesh>>,
-    // materials: &mut ResMut<Assets<StandardMaterial>>,
-) {
-    let yo: Handle<Scene> = asset_server.load(asset_path);
-    // let yo: Handle<Scene> = asset_server.load(asset_path);
+pub fn load_level(asset_path: &str, asset_server: &ResMut<AssetServer>) {
+    let _ignored_handle: Handle<Scene> = asset_server.load(asset_path);
 }
 
 fn handle_scene_load_event(
