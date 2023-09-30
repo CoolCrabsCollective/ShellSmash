@@ -81,7 +81,7 @@ fn setup(
         bevy::render::color::Color::rgba(1.0, 1.0, 1.0, 1.0),
     ));
     let sword = InventoryItem::from((
-        (5, 0, 0),
+        (1, 0, 0),
         vec![
             (0, 0, 0),
             (0, 0, 1),
@@ -93,7 +93,7 @@ fn setup(
         bevy::render::color::Color::rgba(0.0, 1.0, 0.0, 1.0),
     ));
     let heart = InventoryItem::from((
-        (0, 5, 0),
+        (0, -1, 0),
         vec![
             (0, 0, 0),
             (0, 0, -1),

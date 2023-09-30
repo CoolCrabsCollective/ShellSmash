@@ -10,6 +10,10 @@ pub struct InventoryItem {
 impl InventoryItem {
     pub fn intersects(&self, other_location: IVec3) -> bool {
         let relative_location: IVec3 = self.location - other_location;
+        println!(
+            "Checking item at {:?} against {:?}",
+            self.location, other_location
+        );
         for point in &self.local_points {
             if *point == relative_location {
                 return true;
@@ -75,7 +79,7 @@ impl InventoryData {
         grid_size: IVec3,
     ) -> Vec<Vec<Vec<Option<InventoryItem>>>> {
         let mut item_grid: Vec<Vec<Vec<Option<InventoryItem>>>> = Vec::new();
-        let mut items_c: Vec<InventoryItem> = items.clone();
+        let items_c: Vec<InventoryItem> = items.clone();
         for x in 0..grid_size.x {
             let mut rows: Vec<Vec<Option<InventoryItem>>> = Vec::new();
             for y in 0..grid_size.y {
