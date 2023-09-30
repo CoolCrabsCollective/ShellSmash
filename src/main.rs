@@ -1,6 +1,5 @@
 use std::f32::consts::PI;
 
-use crate::camera_controller::CameraControllerPlugin;
 use bevy::math::vec3;
 use bevy::pbr::wireframe::WireframePlugin;
 use bevy::pbr::{CascadeShadowConfigBuilder, DirectionalLightShadowMap};
@@ -13,7 +12,6 @@ use crate::inventory_controller::InventoryControllerPlugin;
 use crate::master_controller::MasterControllerPlugin;
 use crate::voxel_renderer::VoxelRendererPlugin;
 
-mod camera_controller;
 mod inventory;
 mod inventory_controller;
 mod item_mesh_generator;
@@ -40,7 +38,6 @@ fn main() {
             MasterControllerPlugin,
             InventoryControllerPlugin,
             VoxelRendererPlugin,
-            CameraControllerPlugin,
         ))
         .add_systems(Startup, setup)
         .add_systems(
