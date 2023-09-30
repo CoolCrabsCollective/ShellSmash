@@ -27,7 +27,7 @@ mod math;
 mod voxel_renderer;
 mod wall;
 
-const USE_DEBUG_CAM: bool = true;
+const USE_DEBUG_CAM: bool = false;
 const SPAWN_PACKING_SHIT: bool = false;
 
 #[derive(Debug, Clone, Default, Eq, PartialEq, Hash, States)]
@@ -74,10 +74,10 @@ fn main() {
         app.add_systems(Update, (move_inventory_items, update_inventory_data));
     }
 
-    if !USE_DEBUG_CAM {
-        app.add_plugins(InventoryControllerPlugin);
-    } else {
+    if USE_DEBUG_CAM {
         app.add_plugins(DebugCameraControllerPlugin);
+    } else if SPAWN_PACKING_SHIT {
+        app.add_plugins(InventoryControllerPlugin);
     }
 
     app.run();
@@ -126,7 +126,8 @@ fn setup(
     });
     // camera
     commands.spawn(Camera3dBundle {
-        transform: Transform::from_xyz(0.0, 10.0, -15.0).looking_at(vec3(0.0, 0.0, 0.0), Vec3::Y),
+        // IF YOU CHANGE THIS YOU DIE DIPSHIT
+        transform: Transform::from_xyz(0.0, 35.0, -15.0).looking_at(vec3(0.0, 0.0, 0.0), Vec3::Y),
         ..default()
     });
 
