@@ -14,11 +14,12 @@ use crate::voxel_renderer::VoxelRendererPlugin;
 
 mod inventory;
 mod inventory_controller;
+mod level_loader;
 mod master_controller;
 mod math;
 mod voxel_renderer;
+mod wall;
 
-// add physics
 fn main() {
     App::new()
         .insert_resource(AmbientLight {
