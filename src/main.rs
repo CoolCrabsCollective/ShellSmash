@@ -1,14 +1,29 @@
 mod camera_controller;
 mod inventory;
+mod voxel_renderer;
 
 use crate::camera_controller::CameraControllerPlugin;
 use crate::inventory::InventoryItem;
-use bevy::math::ivec3;
+use bevy::pbr::wireframe::WireframePlugin;
 use bevy::prelude::*;
+use bevy::render::settings::{WgpuFeatures, WgpuSettings};
+use bevy::render::RenderPlugin;
+use voxel_renderer::VoxelRendererPlugin;
 
 fn main() {
     App::new()
-        .add_plugins((DefaultPlugins, CameraControllerPlugin))
+        .add_plugins((
+            DefaultPlugins.set(RenderPlugin {
+                wgpu_settings: WgpuSettings {
+                    features: WgpuFeatures::POLYGON_MODE_LINE,
+                    ..default()
+                }
+                .into(),
+            }),
+            WireframePlugin,
+            CameraControllerPlugin,
+            VoxelRendererPlugin,
+        ))
         .add_systems(Startup, setup)
         .run();
 }
