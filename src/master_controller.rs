@@ -11,30 +11,30 @@ impl Plugin for MasterControllerPlugin {
 }
 
 enum Controller {
-    INVENTORY,
+    Inventory,
 }
 
 #[derive(Resource)]
 struct ControlState {
-    controller: Controller,
+    _controller: Controller,
 }
 
 impl ControlState {
     pub fn new() -> Self {
         Self {
-            controller: Controller::INVENTORY,
+            _controller: Controller::Inventory,
         }
     }
 }
 
-fn process_inputs(
-    mut keyboard_events: EventReader<KeyboardInput>,
-    mut state: ResMut<ControlState>,
-) {
+fn process_inputs(mut keyboard_events: EventReader<KeyboardInput>, _state: ResMut<ControlState>) {
     for event in keyboard_events.iter() {
         match event.key_code {
             Some(KeyCode::Q) => {
                 println!("test: Q");
+            }
+            Some(KeyCode::P) => {
+                println!("test: P");
             }
             _ => {}
         }

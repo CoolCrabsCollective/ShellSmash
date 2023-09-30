@@ -6,58 +6,78 @@ use bevy::pbr::{CascadeShadowConfigBuilder, DirectionalLightShadowMap};
 use bevy::prelude::*;
 use bevy::render::settings::{WgpuFeatures, WgpuSettings};
 use bevy::render::RenderPlugin;
+use debug_camera_controller::DebugCameraControllerPlugin;
 
 use crate::inventory::{move_inventory_items, update_inventory_data, InventoryData, InventoryItem};
 use crate::inventory_controller::InventoryControllerPlugin;
 use crate::master_controller::MasterControllerPlugin;
 use crate::voxel_renderer::VoxelRendererPlugin;
 
+use bevy_rapier3d::prelude::NoUserData;
+use bevy_rapier3d::prelude::RapierPhysicsPlugin;
+use bevy_rapier3d::render::RapierDebugRenderPlugin;
+use level_loader::load_level;
+use level_loader::LevelLoaderPlugin;
+
+mod debug_camera_controller;
 mod inventory;
 mod inventory_controller;
 mod item_mesh_generator;
+mod level_loader;
 mod master_controller;
 mod math;
 mod voxel_renderer;
+mod wall;
 
-// add physics
+const USE_DEBUG_CAM: bool = false;
+
 fn main() {
-    App::new()
-        .insert_resource(AmbientLight {
-            color: Color::WHITE,
-            brightness: 1.0 / 5.0f32,
-        })
-        .insert_resource(DirectionalLightShadowMap { size: 4096 })
-        .add_plugins((
-            DefaultPlugins.set(RenderPlugin {
-                wgpu_settings: WgpuSettings {
-                    features: WgpuFeatures::POLYGON_MODE_LINE,
-                    ..default()
-                },
-            }),
-            WireframePlugin,
-            MasterControllerPlugin,
-            InventoryControllerPlugin,
-            VoxelRendererPlugin,
-        ))
-        .add_systems(Startup, setup)
-        .add_systems(
-            Update,
-            (
-                bevy::window::close_on_esc,
-                move_inventory_items,
-                update_inventory_data,
-            ),
-        )
-        .run();
+    let mut app = App::new();
+    app.insert_resource(AmbientLight {
+        color: Color::WHITE,
+        brightness: 1.0 / 5.0f32,
+    })
+    .insert_resource(DirectionalLightShadowMap { size: 4096 })
+    .add_plugins((
+        DefaultPlugins.set(RenderPlugin {
+            wgpu_settings: WgpuSettings {
+                features: WgpuFeatures::POLYGON_MODE_LINE,
+                ..default()
+            },
+        }),
+        WireframePlugin,
+        VoxelRendererPlugin,
+        LevelLoaderPlugin,
+        RapierPhysicsPlugin::<NoUserData>::default(),
+        RapierDebugRenderPlugin::default(),
+    ))
+    .add_systems(Startup, setup)
+    .add_systems(
+        Update,
+        (
+            bevy::window::close_on_esc,
+            move_inventory_items,
+            update_inventory_data,
+        ),
+    );
+
+    if !USE_DEBUG_CAM {
+        app.add_plugins((MasterControllerPlugin, InventoryControllerPlugin));
+    } else {
+        app.add_plugins(DebugCameraControllerPlugin);
+    }
+
+    app.run();
 }
 
 /// set up a simple 3D scene
 fn setup(
     mut commands: Commands,
     asset_server: ResMut<AssetServer>,
-    mut meshes: ResMut<Assets<Mesh>>,
-    mut materials: ResMut<Assets<StandardMaterial>>,
+    _meshes: ResMut<Assets<Mesh>>,
+    _materials: ResMut<Assets<StandardMaterial>>,
 ) {
+    load_level("map.glb#Scene0", &asset_server);
     // plane
     // commands.spawn(PbrBundle {
     //     mesh: meshes.add(shape::Plane::from_size(5.0).into()),
