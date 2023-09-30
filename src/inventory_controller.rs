@@ -69,17 +69,17 @@ fn update_state(mut state: ResMut<InventoryControllerState>) {
         state.orientation.horizontal += -unprocessed_delta.0 * mouse_sensitivity;
         state.orientation.vertical += -unprocessed_delta.1 * mouse_sensitivity;
 
-        println!(
-            "Horizontal: {:?} ({:?} rad)",
-            rad_to_deg(state.orientation.horizontal),
-            state.orientation.horizontal
-        );
+        // println!(
+        //     "Horizontal: {:?} ({:?} rad)",
+        //     rad_to_deg(state.orientation.horizontal),
+        //     state.orientation.horizontal
+        // );
 
-        println!(
-            "Vertical: {:?} ({:?} rad)",
-            rad_to_deg(state.orientation.vertical),
-            state.orientation.vertical
-        );
+        // println!(
+        //     "Vertical: {:?} ({:?} rad)",
+        //     rad_to_deg(state.orientation.vertical),
+        //     state.orientation.vertical
+        // );
     }
     state.unprocessed_delta = None;
 }
