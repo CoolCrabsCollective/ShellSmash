@@ -22,9 +22,9 @@ impl Plugin for InventoryPlugin {
 /// set up a simple 3D scene
 fn setup(
     mut commands: Commands,
-    asset_server: ResMut<AssetServer>,
-    mut meshes: ResMut<Assets<Mesh>>,
-    mut materials: ResMut<Assets<StandardMaterial>>,
+    _asset_server: ResMut<AssetServer>,
+    _meshes: ResMut<Assets<Mesh>>,
+    _materials: ResMut<Assets<StandardMaterial>>,
 ) {
     commands.spawn(Camera3dBundle {
         transform: Transform::from_xyz(0.0, 15.0, -15.0).looking_at(vec3(0.0, 0.0, 0.0), Vec3::Y),
