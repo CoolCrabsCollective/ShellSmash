@@ -7,8 +7,6 @@ use bevy::prelude::*;
 use bevy::render::settings::{WgpuFeatures, WgpuSettings};
 use bevy::render::RenderPlugin;
 
-use voxel_renderer::GRID_DIMS;
-
 use crate::inventory::{move_inventory_items, update_inventory_data, InventoryData, InventoryItem};
 use crate::inventory_controller::InventoryControllerPlugin;
 use crate::master_controller::MasterControllerPlugin;
