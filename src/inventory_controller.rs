@@ -1,3 +1,4 @@
+use crate::math::deg_to_rad;
 use crate::voxel_renderer::VoxelCoordinateFrame;
 use bevy::input::mouse::MouseMotion;
 use bevy::prelude::*;
@@ -91,12 +92,4 @@ fn set_world_orientation(
     let mut world_transform = model_transform_query.single_mut();
 
     world_transform.rotation = state.orientation.to_quat();
-}
-
-fn deg_to_rad(deg: f32) -> f32 {
-    deg * std::f32::consts::PI / 180.0
-}
-
-pub fn rad_to_deg(rad: f32) -> f32 {
-    rad * 180.0 / std::f32::consts::PI
 }
