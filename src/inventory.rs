@@ -1,10 +1,9 @@
-use crate::debug_camera_controller::DebugCameraControllerPlugin;
-use crate::inventory_controller::InventoryControllerPlugin;
-use crate::USE_DEBUG_CAM;
 use bevy::math::vec3;
 use bevy::pbr::wireframe::WireframePlugin;
 use bevy::prelude::*;
 
+use crate::debug_camera_controller::DebugCameraControllerPlugin;
+use crate::inventory_controller::InventoryControllerPlugin;
 use crate::voxel_renderer::{VoxelCoordinateFrame, VoxelRendererPlugin, GRID_DIMS};
 
 pub struct InventoryPlugin;
@@ -15,11 +14,8 @@ impl Plugin for InventoryPlugin {
         app.add_plugins((WireframePlugin, VoxelRendererPlugin));
         app.add_systems(Update, (move_inventory_items, update_inventory_data));
 
-        if USE_DEBUG_CAM {
-            app.add_plugins(DebugCameraControllerPlugin);
-        } else {
-            app.add_plugins(InventoryControllerPlugin);
-        }
+        app.add_plugins(DebugCameraControllerPlugin);
+        app.add_plugins(InventoryControllerPlugin);
     }
 }
 

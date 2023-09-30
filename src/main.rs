@@ -15,7 +15,6 @@ mod math;
 mod voxel_renderer;
 mod wall;
 
-const USE_DEBUG_CAM: bool = false;
 const INVENTORY_MODE: bool = false;
 
 #[derive(Debug, Clone, Default, Eq, PartialEq, Hash, States)]

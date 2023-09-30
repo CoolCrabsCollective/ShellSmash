@@ -51,6 +51,8 @@ struct CameraControllerState {
     view_direction: ControlledViewDirection,
     position: Vec3,
     speed: f32,
+
+    enabled: bool,
 }
 
 impl CameraControllerState {
@@ -71,6 +73,7 @@ impl CameraControllerState {
             },
             position: Vec3::new(0.0, 3.0, 3.0),
             speed: 5.0,
+            enabled: false,
         }
     }
 }
@@ -89,6 +92,9 @@ fn process_inputs(
 
     for event in keyboard_input_events.iter() {
         match event.key_code {
+            Some(KeyCode::F5) => {
+                state.enabled = true;
+            }
             Some(KeyCode::W) => {
                 state.is_forward_pressed = event.state.is_pressed();
             }
@@ -113,6 +119,10 @@ fn process_inputs(
 }
 
 fn update_state(mut state: ResMut<CameraControllerState>, time: Res<Time>) {
+    if !state.enabled {
+        return;
+    }
+
     if let Some(unprocessed_delta) = state.unprocessed_delta {
         let mouse_sensitivity = 0.002;
 
@@ -120,18 +130,6 @@ fn update_state(mut state: ResMut<CameraControllerState>, time: Res<Time>) {
         state.view_direction.vertical = (state.view_direction.vertical
             + (-unprocessed_delta.1 * mouse_sensitivity))
             .clamp(deg_to_rad(-90.0), deg_to_rad(90.0));
-
-        // println!(
-        //     "Horizontal: {:?} ({:?} rad)",
-        //     rad_to_deg(state.view_direction.horizontal),
-        //     state.view_direction.horizontal
-        // );
-
-        // println!(
-        //     "Vertical: {:?} ({:?} rad)",
-        //     rad_to_deg(state.view_direction.vertical),
-        //     state.view_direction.vertical
-        // );
     }
     state.unprocessed_delta = None;
 
@@ -178,9 +176,17 @@ fn update_state(mut state: ResMut<CameraControllerState>, time: Res<Time>) {
 
 fn set_camera(
     mut camera_transform_query: Query<&mut Transform, With<Camera>>,
-    state: Res<CameraControllerState>,
+    mut state: ResMut<CameraControllerState>,
 ) {
     let mut camera_transform = camera_transform_query.single_mut();
+
+    if !state.enabled {
+        state.position = camera_transform.translation;
+        let res = camera_transform.rotation.to_euler(EulerRot::XYZ);
+        state.view_direction.vertical = res.0;
+        state.view_direction.horizontal = res.1;
+        return;
+    }
 
     camera_transform.translation = state.position;
     camera_transform.rotation = state.view_direction.to_quat();
