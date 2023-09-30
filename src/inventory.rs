@@ -110,21 +110,21 @@ pub fn move_inventory_items(
     orientation: Res<InventoryControllerState>,
 ) {
     let quat: Quat = orientation.orientation.to_quat();
-    let x_axis = quat
+    let _x_axis = quat
         .mul_vec3(Vec3 {
             x: 1.0,
             y: 0.0,
             z: 0.0,
         })
         .normalize();
-    let y_axis = quat
+    let _y_axis = quat
         .mul_vec3(Vec3 {
             x: 0.0,
             y: 1.0,
             z: 0.0,
         })
         .normalize();
-    let z_axis = quat
+    let _z_axis = quat
         .mul_vec3(Vec3 {
             x: 0.0,
             y: 0.0,
@@ -134,7 +134,7 @@ pub fn move_inventory_items(
 
     let inv_coord = inv_coord_query.single();
     let camera_coord = camera_pos_query.single();
-    let direction = (inv_coord.translation - camera_coord.translation).normalize();
+    let _direction = (inv_coord.translation - camera_coord.translation).normalize();
 
     // println!("Test");
     // dbg!(direction);

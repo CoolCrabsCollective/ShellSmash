@@ -57,7 +57,7 @@ fn handle_scene_load_event(
                         for entity in scene.world.iter_entities() {
                             // dbg!(entity.archetype());
                             if let Ok(mesh_handle) = mesh_handle_query.get(entity.id()) {
-                                if let Some(mesh) = meshes.get(mesh_handle) {
+                                if let Some(_mesh) = meshes.get(mesh_handle) {
                                     log::info!("fuck yeah I got the fucking mesh");
                                     // println!();
                                 }
@@ -79,7 +79,7 @@ fn handle_scene_load_event(
 fn handle_gltf_load_event(
     mut commands: Commands,
     mut load_events: EventReader<AssetEvent<Gltf>>,
-    mesh_handle_query: Query<&Handle<Mesh>>,
+    _mesh_handle_query: Query<&Handle<Mesh>>,
     meshes: Res<Assets<Mesh>>,
     gltf_meshes: Res<Assets<GltfMesh>>,
     nodes: Res<Assets<GltfNode>>,

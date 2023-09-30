@@ -77,14 +77,14 @@ fn update_state(mut state: ResMut<InventoryControllerState>) {
         if state.rotate {
             let mouse_sensitivity = 0.002;
 
-            state.orientation.horizontal += -unprocessed_delta.0 as f32 * mouse_sensitivity;
-            state.orientation.vertical += -unprocessed_delta.1 as f32 * mouse_sensitivity;
+            state.orientation.horizontal += -unprocessed_delta.0 * mouse_sensitivity;
+            state.orientation.vertical += -unprocessed_delta.1 * mouse_sensitivity;
         }
 
         if state.zoom {
             let mouse_sensitivity = 0.02;
 
-            state.orientation.zoom_pos += unprocessed_delta.1 as f32 * mouse_sensitivity;
+            state.orientation.zoom_pos += unprocessed_delta.1 * mouse_sensitivity;
         }
 
         // println!(
@@ -106,7 +106,7 @@ fn update_state(mut state: ResMut<InventoryControllerState>) {
 
 fn set_world_orientation(
     mut model_transform_query: Query<&mut Transform, With<VoxelCoordinateFrame>>,
-    mut state: ResMut<InventoryControllerState>,
+    state: ResMut<InventoryControllerState>,
 ) {
     let mut world_transform = model_transform_query.single_mut();
 
