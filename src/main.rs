@@ -8,6 +8,7 @@ use bevy::pbr::wireframe::WireframePlugin;
 use bevy::prelude::*;
 use bevy::render::settings::{WgpuFeatures, WgpuSettings};
 use bevy::render::RenderPlugin;
+use bevy::window::close_on_esc;
 use voxel_renderer::VoxelRendererPlugin;
 
 fn main() {
@@ -25,6 +26,7 @@ fn main() {
             VoxelRendererPlugin,
         ))
         .add_systems(Startup, setup)
+        .add_systems(Update, bevy::window::close_on_esc)
         .run();
 }
 
