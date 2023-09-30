@@ -5,6 +5,7 @@ use crate::{inventory::InventoryData, math::deg_to_rad};
 
 const LEFT_RIGHT: bool = false;
 const GRID_DIMS: [i32; 3] = [5, 5, 5];
+const GRID_HALF_SIZE: [i32; 3] = [GRID_DIMS[0] / 2, GRID_DIMS[1] / 2, GRID_DIMS[2] / 2];
 
 pub struct VoxelRendererPlugin;
 
@@ -177,8 +178,12 @@ fn update_voxels_2(
                 for (y, y_list) in x_list.iter().enumerate() {
                     for (z, item_opt) in y_list.iter().enumerate() {
                         if let Some(inventory_item) = item_opt {
-                            let location =
-                                IVec3::new(x as i32, y as i32, z as i32) - IVec3::new(2, 2, 2);
+                            let location = IVec3::new(x as i32, y as i32, z as i32)
+                                - IVec3::new(
+                                    GRID_HALF_SIZE[0],
+                                    GRID_HALF_SIZE[1],
+                                    GRID_HALF_SIZE[2],
+                                );
                             locations.insert(location);
                             // dbg!(location);
                             if *voxel_position == location {
