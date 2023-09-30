@@ -33,6 +33,9 @@ fn process_inputs(mut keyboard_events: EventReader<KeyboardInput>, _state: ResMu
             Some(KeyCode::Q) => {
                 println!("test: Q");
             }
+            Some(KeyCode::P) => {
+                println!("test: P");
+            }
             _ => {}
         }
     }
