@@ -2,8 +2,9 @@ use bevy::prelude::*;
 
 #[derive(Component)]
 pub struct InventoryItem {
-    pub location: IVec3,    // world location
-    pub points: Vec<IVec3>, // relative coordinate, center is the first point
+    pub location: IVec3,          // world location
+    pub local_points: Vec<IVec3>, // relative coordinate, center is the first point
+    pub color: bevy::render::color::Color,
 }
 
 impl InventoryItem {
@@ -13,7 +14,7 @@ impl InventoryItem {
         meshes: &mut ResMut<Assets<Mesh>>,
         materials: &mut ResMut<Assets<StandardMaterial>>,
     ) {
-        for point in &self.points {
+        for point in &self.local_points {
             // cube
             commands.spawn(PbrBundle {
                 mesh: meshes.add(Mesh::from(shape::Cube { size: 1.0 })),
@@ -28,9 +29,9 @@ impl InventoryItem {
         }
     }
 
-    pub fn intersects(&self, other_location: IVec3) -> bool {
+    pub fn _intersects(&self, other_location: IVec3) -> bool {
         let relative_location: IVec3 = self.location - other_location;
-        for point in &self.points {
+        for point in &self.local_points {
             if *point == relative_location {
                 return true;
             }
@@ -42,11 +43,11 @@ impl InventoryItem {
         self.location = translation;
     }
 
-    pub fn rotate_x(&mut self, ccw: bool) {
+    pub fn _rotate_x(&mut self, ccw: bool) {
         let rot_angle = ((if ccw { 90 } else { -90 }) as f32).to_radians();
 
         let rot_mat = Mat3::from_rotation_x(rot_angle);
-        for mut p in self.points.iter_mut() {
+        for mut p in self.local_points.iter_mut() {
             let vec3 = Vec3::new(p.x as f32, p.y as f32, p.z as f32);
             let new_p: Vec3 = rot_mat.mul_vec3(vec3);
             p.x = new_p.x as i32;
@@ -54,19 +55,36 @@ impl InventoryItem {
             p.z = new_p.z as i32;
         }
     }
-    pub fn rotate_y(&mut self) {}
-    pub fn rotate_z(&mut self) {}
+    pub fn _rotate_y(&mut self) {}
+    pub fn _rotate_z(&mut self) {}
 
-    fn get_center(&self) -> &IVec3 {
-        self.points.first().unwrap()
+    fn _get_center(&self) -> &IVec3 {
+        self.local_points.first().unwrap()
     }
 }
 
-impl From<((i32, i32, i32), Vec<(i32, i32, i32)>)> for InventoryItem {
-    fn from(value: ((i32, i32, i32), Vec<(i32, i32, i32)>)) -> Self {
+impl
+    From<(
+        (i32, i32, i32),
+        Vec<(i32, i32, i32)>,
+        bevy::render::color::Color,
+    )> for InventoryItem
+{
+    fn from(
+        value: (
+            (i32, i32, i32),
+            Vec<(i32, i32, i32)>,
+            bevy::render::color::Color,
+        ),
+    ) -> Self {
         InventoryItem {
             location: value.0.into(),
-            points: value.1.iter().map(|tup| (*tup).into()).collect(),
+            local_points: value.1.iter().map(|tup| (*tup).into()).collect(),
+            color: value.2,
         }
     }
+}
+
+pub struct InventoryData<'a> {
+    pub grid: Vec<Vec<&'a InventoryItem>>,
 }

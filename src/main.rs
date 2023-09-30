@@ -9,10 +9,11 @@ use bevy::pbr::wireframe::WireframePlugin;
 use bevy::prelude::*;
 use bevy::render::settings::{WgpuFeatures, WgpuSettings};
 use bevy::render::RenderPlugin;
-use bevy::window::close_on_esc;
+
 use inventory_controller::InventoryControllerPlugin;
 use voxel_renderer::VoxelRendererPlugin;
 
+// add physics
 fn main() {
     App::new()
         .add_plugins((
@@ -20,8 +21,7 @@ fn main() {
                 wgpu_settings: WgpuSettings {
                     features: WgpuFeatures::POLYGON_MODE_LINE,
                     ..default()
-                }
-                .into(),
+                },
             }),
             WireframePlugin,
             InventoryControllerPlugin,
@@ -70,6 +70,7 @@ fn setup(
     let boomerang = InventoryItem::from((
         (0, 0, 0),
         vec![(0, 0, 0), (0, 0, 1), (0, 0, 2), (-1, 0, 0), (-2, 0, 0)],
+        bevy::render::color::Color::rgba(1.0, 1.0, 1.0, 1.0),
     ));
     let sword = InventoryItem::from((
         (5, 0, 0),
@@ -81,6 +82,7 @@ fn setup(
             (0, -1, 0),
             (0, 0, -1),
         ],
+        bevy::render::color::Color::rgba(0.0, 1.0, 0.0, 1.0),
     ));
     let heart = InventoryItem::from((
         (0, 5, 0),
@@ -92,6 +94,7 @@ fn setup(
             (-1, 0, 1),
             (1, 0, 1),
         ],
+        bevy::render::color::Color::rgba(1.0, 0.0, 0.0, 1.0),
     ));
 
     boomerang.spawn_cubes(&mut commands, &mut meshes, &mut materials);
@@ -102,7 +105,7 @@ fn setup(
     commands.spawn(heart);
 }
 
-fn move_inventory_items(mut query: Query<(&mut InventoryItem)>, k_input: Res<Input<KeyCode>>) {
+fn move_inventory_items(mut query: Query<&mut InventoryItem>, k_input: Res<Input<KeyCode>>) {
     for mut item in &mut query {
         if k_input.pressed(KeyCode::Left) {
             item.translate(IVec3 { x: 1, y: 1, z: 1 })
