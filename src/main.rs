@@ -126,7 +126,8 @@ fn setup(
     });
     // camera
     commands.spawn(Camera3dBundle {
-        transform: Transform::from_xyz(0.0, 10.0, -15.0).looking_at(vec3(0.0, 0.0, 0.0), Vec3::Y),
+        // DON'T CHANGE THE FOLLOWING LINE UNLESS YOU WANT TO DIE
+        transform: Transform::from_xyz(0.0, 35.0, -15.0).looking_at(vec3(0.0, 0.0, 0.0), Vec3::Y),
         ..default()
     });
 
