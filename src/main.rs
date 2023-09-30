@@ -1,5 +1,6 @@
 use std::f32::consts::PI;
 
+use crate::camera_controller::CameraControllerPlugin;
 use bevy::math::vec3;
 use bevy::pbr::wireframe::WireframePlugin;
 use bevy::pbr::{CascadeShadowConfigBuilder, DirectionalLightShadowMap};
@@ -12,8 +13,10 @@ use crate::inventory_controller::InventoryControllerPlugin;
 use crate::master_controller::MasterControllerPlugin;
 use crate::voxel_renderer::VoxelRendererPlugin;
 
+mod camera_controller;
 mod inventory;
 mod inventory_controller;
+mod item_mesh_generator;
 mod master_controller;
 mod math;
 mod voxel_renderer;
@@ -37,6 +40,7 @@ fn main() {
             MasterControllerPlugin,
             InventoryControllerPlugin,
             VoxelRendererPlugin,
+            CameraControllerPlugin,
         ))
         .add_systems(Startup, setup)
         .add_systems(
@@ -149,6 +153,36 @@ fn setup(
         ],
         Color::rgba(1.0, 0.0, 0.0, 1.0),
     ));
+
+    commands.spawn(PbrBundle {
+        mesh: meshes.add(boomerang.generate_mesh()),
+        material: materials.add(StandardMaterial {
+            base_color: boomerang.color.clone(),
+            ..default()
+        }),
+        transform: Transform::from_xyz(10.0, 1.0, 3.0),
+        ..default()
+    });
+
+    commands.spawn(PbrBundle {
+        mesh: meshes.add(sword.generate_mesh()),
+        material: materials.add(StandardMaterial {
+            base_color: sword.color.clone(),
+            ..default()
+        }),
+        transform: Transform::from_xyz(10.0, 11.0, 3.0),
+        ..default()
+    });
+
+    commands.spawn(PbrBundle {
+        mesh: meshes.add(heart.generate_mesh()),
+        material: materials.add(StandardMaterial {
+            base_color: heart.color.clone(),
+            ..default()
+        }),
+        transform: Transform::from_xyz(10.0, 21.0, 3.0),
+        ..default()
+    });
 
     commands.spawn(boomerang);
     commands.spawn(sword);
