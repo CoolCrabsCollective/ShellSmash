@@ -1,6 +1,5 @@
 use bevy::prelude::*;
 
-use crate::inventory_controller::InventoryControllerState;
 use crate::voxel_renderer::{VoxelCoordinateFrame, GRID_DIMS};
 
 #[derive(Component, Clone, Debug)]
@@ -29,7 +28,7 @@ impl InventoryItem {
         self.location += translation;
     }
 
-    pub fn rotate_x(&mut self, ccw: bool) {
+    pub fn _rotate_x(&mut self, ccw: bool) {
         let rot_angle = ((if ccw { 90 } else { -90 }) as f32).to_radians();
 
         let rot_mat = Mat3::from_rotation_x(rot_angle);
@@ -42,7 +41,7 @@ impl InventoryItem {
         }
     }
 
-    fn get_center(&self) -> &IVec3 {
+    fn _get_center(&self) -> &IVec3 {
         self.local_points.first().unwrap()
     }
 }
@@ -114,9 +113,11 @@ pub fn move_inventory_items(
     inv_coord_query: Query<&Transform, With<VoxelCoordinateFrame>>,
     camera_pos_query: Query<&Transform, With<Camera>>,
     k_input: Res<Input<KeyCode>>,
-    orientation: Res<InventoryControllerState>,
 ) {
-    let quat: Quat = orientation.orientation.to_quat();
+    let inv_coord = inv_coord_query.single();
+    let camera_coord = camera_pos_query.single();
+    let direction = (inv_coord.translation - camera_coord.translation).normalize();
+    let quat: Quat = inv_coord.rotation;
     let x_axis = quat
         .mul_vec3(Vec3 {
             x: 1.0,
@@ -138,10 +139,6 @@ pub fn move_inventory_items(
             z: 1.0,
         })
         .normalize();
-
-    let inv_coord = inv_coord_query.single();
-    let camera_coord = camera_pos_query.single();
-    let direction = (inv_coord.translation - camera_coord.translation).normalize();
 
     let mut principal_axis = x_axis;
     let mut axis_selected = AxisSelect::X;
