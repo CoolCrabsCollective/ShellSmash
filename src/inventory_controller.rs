@@ -98,17 +98,17 @@ fn update_state(mut state: ResMut<InventoryControllerState>) {
             state.camera_pos.y += mouse_delta_1;
         }
 
-        println!(
-            "Horizontal: {:?} ({:?} rad)",
-            rad_to_deg(state.orientation.horizontal),
-            state.orientation.horizontal
-        );
+        // println!(
+        //     "Horizontal: {:?} ({:?} rad)",
+        //     rad_to_deg(state.orientation.horizontal),
+        //     state.orientation.horizontal
+        // );
 
-        println!(
-            "Vertical: {:?} ({:?} rad)",
-            rad_to_deg(state.orientation.vertical),
-            state.orientation.vertical
-        );
+        // println!(
+        //     "Vertical: {:?} ({:?} rad)",
+        //     rad_to_deg(state.orientation.vertical),
+        //     state.orientation.vertical
+        // );
     }
     state.unprocessed_delta = None;
     state.rotate = false;

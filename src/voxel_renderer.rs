@@ -1,7 +1,7 @@
-use bevy::{input::keyboard::KeyboardInput, pbr::wireframe::Wireframe, prelude::*};
+use bevy::{input::keyboard::KeyboardInput, pbr::wireframe::Wireframe, prelude::*, utils::HashSet};
 use rand::random;
 
-use crate::math::deg_to_rad;
+use crate::{inventory::InventoryData, math::deg_to_rad};
 
 const LEFT_RIGHT: bool = false;
 const GRID_DIMS: [i32; 3] = [5, 5, 5];
@@ -29,7 +29,7 @@ struct Voxel(IVec3);
 impl Plugin for VoxelRendererPlugin {
     fn build(&self, app: &mut App) {
         app.add_systems(Startup, init_voxel_grid);
-        app.add_systems(Update, (process_inputs, update_voxels));
+        app.add_systems(Update, (process_inputs, update_voxels_2));
         // app.add_systems(Startup, init_voxel_grid);
         // app.add_systems(Update, (process_inputs, update_state, set_camera));
         // app.insert_resource(VoxelGridBundle::new());
@@ -159,4 +159,42 @@ fn update_voxels(
             }
         }
     }
+}
+
+fn update_voxels_2(
+    mut materials: ResMut<Assets<StandardMaterial>>,
+    voxel_query: Query<(&Voxel, &Handle<StandardMaterial>)>,
+    inventory_data_res: Res<InventoryData>,
+) {
+    // let mut count = 0;
+    let mut locations: HashSet<IVec3> = HashSet::new();
+    for (Voxel(voxel_position), voxel_material_handle) in &voxel_query {
+        if let Some(material) = materials.get_mut(voxel_material_handle) {
+            material.base_color = Color::rgba(0.0, 0.0, 0.0, 0.0);
+            material.alpha_mode = AlphaMode::Blend;
+
+            for (x, x_list) in inventory_data_res.grid.iter().enumerate() {
+                for (y, y_list) in x_list.iter().enumerate() {
+                    for (z, item_opt) in y_list.iter().enumerate() {
+                        if let Some(inventory_item) = item_opt {
+                            let location =
+                                IVec3::new(x as i32, y as i32, z as i32) - IVec3::new(2, 2, 2);
+                            locations.insert(location);
+                            // dbg!(location);
+                            if *voxel_position == location {
+                                material.base_color = inventory_item.color;
+                                material.alpha_mode = if inventory_item.color.a() < 1.0 {
+                                    AlphaMode::Blend
+                                } else {
+                                    AlphaMode::Opaque
+                                };
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    // dbg!(locations);
 }
