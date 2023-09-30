@@ -1,5 +1,7 @@
+use crate::inventory::{InventoryData, InventoryItem};
 use crate::math::deg_to_rad;
-use crate::voxel_renderer::VoxelCoordinateFrame;
+use crate::voxel_renderer::{VoxelCoordinateFrame, GRID_DIMS};
+use crate::GameState;
 use bevy::input::mouse::MouseMotion;
 use bevy::prelude::*;
 
@@ -7,9 +9,16 @@ pub struct InventoryControllerPlugin;
 
 impl Plugin for InventoryControllerPlugin {
     fn build(&self, app: &mut App) {
+        app.add_systems(Startup, enter_inventory);
         app.add_systems(
             Update,
-            (process_inputs, update_state, set_world_orientation),
+            (
+                process_inputs,
+                update_state,
+                set_world_orientation,
+                update_inventory_data,
+                move_inventory_items,
+            ),
         );
         app.insert_resource(InventoryControllerState::new());
     }
@@ -112,4 +121,57 @@ fn set_world_orientation(
 
     world_transform.translation.x = state.orientation.zoom_pos;
     world_transform.rotation = state.orientation.to_quat();
+}
+
+pub fn move_inventory_items(
+    mut query: Query<&mut InventoryItem>,
+    inv_coord_query: Query<&Transform, With<VoxelCoordinateFrame>>,
+    camera_pos_query: Query<&Transform, With<Camera>>,
+    k_input: Res<Input<KeyCode>>,
+) {
+    let inv_coord = inv_coord_query.single();
+    let camera_coord = camera_pos_query.single();
+    let _direction = (inv_coord.translation - camera_coord.translation).normalize();
+
+    // println!("Test");
+    // dbg!(direction);
+    // dbg!(x_axis);
+    // dbg!(y_axis);
+    // dbg!(z_axis);
+    for mut item in &mut query {
+        if k_input.just_pressed(KeyCode::H) {
+            item.translate(IVec3 { x: 1, y: 0, z: 0 })
+        } else if k_input.just_pressed(KeyCode::L) {
+            item.translate(IVec3 { x: -1, y: 0, z: 0 })
+        } else if k_input.just_pressed(KeyCode::J) {
+            item.translate(IVec3 { x: 0, y: 1, z: 0 })
+        } else if k_input.just_pressed(KeyCode::K) {
+            item.translate(IVec3 { x: 0, y: -1, z: 0 })
+        }
+    }
+}
+
+pub fn update_inventory_data(query: Query<&InventoryItem>, mut inv: ResMut<InventoryData>) {
+    let mut items: Vec<InventoryItem> = Vec::new();
+    for p in query.iter() {
+        items.push(p.clone())
+    }
+    inv.grid = InventoryData::grid_from_items(items, IVec3::from_array(GRID_DIMS))
+}
+
+fn enter_inventory(
+    mut cam_transform_query: Query<&mut Transform, With<Camera>>,
+    mut game_state: ResMut<State<GameState>>,
+) {
+    if *game_state.get() != GameState::Inventory {
+        return;
+    }
+
+    let mut cam_transform = cam_transform_query.single_mut();
+
+    cam_transform.translation = Vec3 {
+        x: -15.0,
+        y: 5.0,
+        z: 0.0,
+    };
 }
