@@ -66,8 +66,8 @@ fn update_state(mut state: ResMut<InventoryControllerState>) {
     if let Some(unprocessed_delta) = state.unprocessed_delta {
         let mouse_sensitivity = 0.002;
 
-        state.orientation.horizontal += -unprocessed_delta.0 as f32 * mouse_sensitivity;
-        state.orientation.vertical += -unprocessed_delta.1 as f32 * mouse_sensitivity;
+        state.orientation.horizontal += -unprocessed_delta.0 * mouse_sensitivity;
+        state.orientation.vertical += -unprocessed_delta.1 * mouse_sensitivity;
 
         println!(
             "Horizontal: {:?} ({:?} rad)",

@@ -9,7 +9,7 @@ use bevy::pbr::wireframe::WireframePlugin;
 use bevy::prelude::*;
 use bevy::render::settings::{WgpuFeatures, WgpuSettings};
 use bevy::render::RenderPlugin;
-use bevy::window::close_on_esc;
+
 use inventory_controller::InventoryControllerPlugin;
 use voxel_renderer::VoxelRendererPlugin;
 
@@ -20,8 +20,7 @@ fn main() {
                 wgpu_settings: WgpuSettings {
                     features: WgpuFeatures::POLYGON_MODE_LINE,
                     ..default()
-                }
-                .into(),
+                },
             }),
             WireframePlugin,
             InventoryControllerPlugin,
@@ -102,7 +101,7 @@ fn setup(
     commands.spawn(heart);
 }
 
-fn move_inventory_items(mut query: Query<(&mut InventoryItem)>, k_input: Res<Input<KeyCode>>) {
+fn move_inventory_items(mut query: Query<&mut InventoryItem>, k_input: Res<Input<KeyCode>>) {
     for mut item in &mut query {
         if k_input.pressed(KeyCode::Left) {
             item.translate(IVec3 { x: 1, y: 1, z: 1 })
