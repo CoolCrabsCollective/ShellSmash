@@ -202,7 +202,7 @@ pub fn move_inventory_items(
         },
     };
 
-    dbg!(axis_selected);
+    // dbg!(axis_selected);
     for mut item in &mut query {
         if k_input.just_pressed(KeyCode::H) {
             item.translate(translation_left)
