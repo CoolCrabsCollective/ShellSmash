@@ -5,10 +5,7 @@ pub struct InventoryControllerPlugin;
 
 impl Plugin for InventoryControllerPlugin {
     fn build(&self, app: &mut App) {
-        app.add_systems(
-            Update,
-            (process_inputs, update_state, set_world_orientation),
-        );
+        app.add_systems(Update, (process_inputs, update_state));
         app.insert_resource(InventoryControllerState::new());
     }
 }
@@ -51,7 +48,7 @@ fn process_inputs(
     mouse_buttons: Res<Input<MouseButton>>,
     mut state: ResMut<InventoryControllerState>,
 ) {
-    if (mouse_buttons.pressed(MouseButton::Right)) {
+    if mouse_buttons.pressed(MouseButton::Right) {
         for motion_event in mouse_motion_events.iter() {
             state.unprocessed_delta = match state.unprocessed_delta {
                 Some((x, y)) => Some((x + motion_event.delta.x, y + motion_event.delta.y)),

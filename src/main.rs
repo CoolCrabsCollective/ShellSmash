@@ -1,17 +1,31 @@
 mod inventory;
 mod inventory_controller;
+mod voxel_renderer;
 
 use crate::inventory::InventoryItem;
-use bevy::math::ivec3;
+use bevy::pbr::wireframe::WireframePlugin;
 use bevy::prelude::*;
+use bevy::render::settings::{WgpuFeatures, WgpuSettings};
+use bevy::render::RenderPlugin;
+use bevy::window::close_on_esc;
+use voxel_renderer::VoxelRendererPlugin;
 
 fn main() {
     App::new()
         .add_plugins((
-            DefaultPlugins,
+            DefaultPlugins.set(RenderPlugin {
+                wgpu_settings: WgpuSettings {
+                    features: WgpuFeatures::POLYGON_MODE_LINE,
+                    ..default()
+                }
+                .into(),
+            }),
+            WireframePlugin,
             inventory_controller::InventoryControllerPlugin,
+            VoxelRendererPlugin,
         ))
         .add_systems(Startup, setup)
+        .add_systems(Update, bevy::window::close_on_esc)
         .run();
 }
 
@@ -49,17 +63,34 @@ fn setup(
         transform: Transform::from_xyz(-2.0, 2.5, 5.0).looking_at(Vec3::ZERO, Vec3::Y),
         ..default()
     });
-
-    let item = InventoryItem {
-        location: ivec3(0, 4, 0),
-        points: vec![
-            ivec3(0, 0, 0),
-            ivec3(1, 0, 0),
-            ivec3(2, 0, 0),
-            ivec3(2, 1, 0),
-            ivec3(2, 2, 0),
+    let boomerang = InventoryItem::from((
+        (0, 0, 0),
+        vec![(0, 0, 0), (0, 0, 1), (0, 0, 2), (-1, 0, 0), (-2, 0, 0)],
+    ));
+    let sword = InventoryItem::from((
+        (5, 0, 0),
+        vec![
+            (0, 0, 0),
+            (0, 0, 1),
+            (0, 0, 2),
+            (0, 1, 0),
+            (0, -1, 0),
+            (0, 0, -1),
         ],
-    };
+    ));
+    let heart = InventoryItem::from((
+        (0, 5, 0),
+        vec![
+            (0, 0, 0),
+            (0, 0, -1),
+            (1, 0, 0),
+            (-1, 0, 0),
+            (-1, 0, 1),
+            (1, 0, 1),
+        ],
+    ));
 
-    // item.spawn_cubes(commands, meshes, materials);
+    boomerang.spawn_cubes(&mut commands, &mut meshes, &mut materials);
+    sword.spawn_cubes(&mut commands, &mut meshes, &mut materials);
+    heart.spawn_cubes(&mut commands, &mut meshes, &mut materials);
 }
