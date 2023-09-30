@@ -105,9 +105,6 @@ fn setup(
         bevy::render::color::Color::rgba(1.0, 0.0, 0.0, 1.0),
     ));
 
-    // boomerang.spawn_cubes(&mut commands, &mut meshes, &mut materials);
-    // sword.spawn_cubes(&mut commands, &mut meshes, &mut materials);
-    // heart.spawn_cubes(&mut commands, &mut meshes, &mut materials);
     commands.spawn(boomerang);
     commands.spawn(sword);
     commands.spawn(heart);

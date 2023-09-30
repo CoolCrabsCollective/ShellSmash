@@ -1,6 +1,6 @@
 use bevy::prelude::*;
 
-#[derive(Component, Clone)]
+#[derive(Component, Clone, Debug)]
 pub struct InventoryItem {
     pub location: IVec3,          // world location
     pub local_points: Vec<IVec3>, // relative coordinate, center is the first point
@@ -75,16 +75,17 @@ impl InventoryData {
         grid_size: IVec3,
     ) -> Vec<Vec<Vec<Option<InventoryItem>>>> {
         let mut item_grid: Vec<Vec<Vec<Option<InventoryItem>>>> = Vec::new();
-
+        let mut items_c: Vec<InventoryItem> = items.clone();
         for x in 0..grid_size.x {
             let mut rows: Vec<Vec<Option<InventoryItem>>> = Vec::new();
             for y in 0..grid_size.y {
                 let mut cols: Vec<Option<InventoryItem>> = Vec::new();
                 for z in 0..grid_size.z {
                     let mut item_found = false;
-                    for i in items.clone() {
+                    for i in items_c {
                         if i.intersects(IVec3 { x, y, z }) {
                             item_found = true;
+                            println!("{:?}", (x, y, z));
                             cols.push(Some(i));
                             break;
                         }
