@@ -1,3 +1,4 @@
+use crate::math::deg_to_rad;
 use crate::voxel_renderer::VoxelCoordinateFrame;
 use bevy::input::mouse::MouseMotion;
 use bevy::prelude::*;
@@ -131,12 +132,4 @@ fn set_camera_pos(
     let mut cam_transform = cam_transform_query.single_mut();
 
     cam_transform.translation = state.camera_pos;
-}
-
-fn deg_to_rad(deg: f32) -> f32 {
-    deg * std::f32::consts::PI / 180.0
-}
-
-pub fn rad_to_deg(rad: f32) -> f32 {
-    rad * 180.0 / std::f32::consts::PI
 }

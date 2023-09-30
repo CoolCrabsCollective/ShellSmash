@@ -19,8 +19,8 @@ struct VoxelBundle {
 
 #[derive(Debug, Component)]
 struct VoxelData {
-    position: IVec3,
-    color: Color,
+    _position: IVec3,
+    _color: Color,
 }
 
 #[derive(Component)]
@@ -89,12 +89,12 @@ fn process_inputs(
                 }
                 Some(KeyCode::R) => {
                     let new_voxel = VoxelData {
-                        position: IVec3::new(
+                        _position: IVec3::new(
                             ((random::<f32>() - 0.5) * GRID_DIMS[0] as f32) as i32,
                             ((random::<f32>() - 0.5) * GRID_DIMS[1] as f32) as i32,
                             ((random::<f32>() - 0.5) * GRID_DIMS[2] as f32) as i32,
                         ),
-                        color: Color::rgba(random(), random(), random(), random()),
+                        _color: Color::rgba(random(), random(), random(), random()),
                     };
                     println!("Spawning new voxel data: {new_voxel:?}");
                     commands.spawn(new_voxel);
@@ -137,7 +137,7 @@ fn init_voxel_grid(
     }
 }
 
-fn update_voxels(
+fn _update_voxels(
     mut materials: ResMut<Assets<StandardMaterial>>,
     voxel_query: Query<(&Voxel, &Handle<StandardMaterial>)>,
     voxel_data_query: Query<&VoxelData>,
@@ -148,9 +148,9 @@ fn update_voxels(
             material.alpha_mode = AlphaMode::Blend;
 
             for voxel_data in &voxel_data_query {
-                if *voxel_position == voxel_data.position {
-                    material.base_color = voxel_data.color;
-                    material.alpha_mode = if voxel_data.color.a() < 1.0 {
+                if *voxel_position == voxel_data._position {
+                    material.base_color = voxel_data._color;
+                    material.alpha_mode = if voxel_data._color.a() < 1.0 {
                         AlphaMode::Blend
                     } else {
                         AlphaMode::Opaque
