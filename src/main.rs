@@ -12,6 +12,12 @@ use crate::inventory_controller::InventoryControllerPlugin;
 use crate::master_controller::MasterControllerPlugin;
 use crate::voxel_renderer::VoxelRendererPlugin;
 
+use bevy_rapier3d::prelude::NoUserData;
+use bevy_rapier3d::prelude::RapierPhysicsPlugin;
+use bevy_rapier3d::render::RapierDebugRenderPlugin;
+use level_loader::load_level;
+use level_loader::LevelLoaderPlugin;
+
 mod inventory;
 mod inventory_controller;
 mod level_loader;
@@ -38,6 +44,9 @@ fn main() {
             MasterControllerPlugin,
             InventoryControllerPlugin,
             VoxelRendererPlugin,
+            LevelLoaderPlugin,
+            RapierPhysicsPlugin::<NoUserData>::default(),
+            RapierDebugRenderPlugin::default(),
         ))
         .add_systems(Startup, setup)
         .add_systems(
@@ -58,6 +67,7 @@ fn setup(
     mut meshes: ResMut<Assets<Mesh>>,
     mut materials: ResMut<Assets<StandardMaterial>>,
 ) {
+    load_level("map.glb#Scene0", &asset_server);
     // plane
     // commands.spawn(PbrBundle {
     //     mesh: meshes.add(shape::Plane::from_size(5.0).into()),
