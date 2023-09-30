@@ -74,8 +74,8 @@ fn main() {
 fn setup(
     mut commands: Commands,
     asset_server: ResMut<AssetServer>,
-    _meshes: ResMut<Assets<Mesh>>,
-    _materials: ResMut<Assets<StandardMaterial>>,
+    mut meshes: ResMut<Assets<Mesh>>,
+    mut materials: ResMut<Assets<StandardMaterial>>,
 ) {
     load_level("map.glb#Scene0", &asset_server);
     // plane
