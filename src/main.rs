@@ -195,7 +195,7 @@ fn setup(
     commands.spawn(PbrBundle {
         mesh: meshes.add(boomerang.generate_mesh()),
         material: materials.add(StandardMaterial {
-            base_color: boomerang.color.clone(),
+            base_color: boomerang.color,
             ..default()
         }),
         transform: Transform::from_xyz(10.0, 1.0, 3.0),
@@ -205,7 +205,7 @@ fn setup(
     commands.spawn(PbrBundle {
         mesh: meshes.add(sword.generate_mesh()),
         material: materials.add(StandardMaterial {
-            base_color: sword.color.clone(),
+            base_color: sword.color,
             ..default()
         }),
         transform: Transform::from_xyz(10.0, 11.0, 3.0),
@@ -215,7 +215,7 @@ fn setup(
     commands.spawn(PbrBundle {
         mesh: meshes.add(heart.generate_mesh()),
         material: materials.add(StandardMaterial {
-            base_color: heart.color.clone(),
+            base_color: heart.color,
             ..default()
         }),
         transform: Transform::from_xyz(10.0, 21.0, 3.0),

@@ -116,9 +116,9 @@ fn update_state(mut state: ResMut<CameraControllerState>, time: Res<Time>) {
     if let Some(unprocessed_delta) = state.unprocessed_delta {
         let mouse_sensitivity = 0.002;
 
-        state.view_direction.horizontal += -unprocessed_delta.0 as f32 * mouse_sensitivity;
+        state.view_direction.horizontal += -unprocessed_delta.0 * mouse_sensitivity;
         state.view_direction.vertical = (state.view_direction.vertical
-            + (-unprocessed_delta.1 as f32 * mouse_sensitivity))
+            + (-unprocessed_delta.1 * mouse_sensitivity))
             .clamp(deg_to_rad(-90.0), deg_to_rad(90.0));
 
         // println!(

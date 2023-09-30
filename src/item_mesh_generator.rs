@@ -39,7 +39,7 @@ impl InventoryItem {
 
                 faces.push(VoxelFace {
                     position: new_pos,
-                    normal: dir.clone(),
+                    normal: *dir,
                 });
             }
         }
@@ -63,7 +63,7 @@ impl InventoryItem {
             normals.push(face.normal);
 
             if face.normal.x + face.normal.y + face.normal.z < 0.0 {
-                indices.push(i + 0);
+                indices.push(i);
                 indices.push(i + 1);
                 indices.push(i + 2);
 
@@ -73,7 +73,7 @@ impl InventoryItem {
             } else {
                 indices.push(i + 2);
                 indices.push(i + 1);
-                indices.push(i + 0);
+                indices.push(i);
 
                 indices.push(i + 1);
                 indices.push(i + 2);
@@ -88,6 +88,6 @@ impl InventoryItem {
 
         mesh.set_indices(Some(Indices::U32(indices)));
 
-        return mesh;
+        mesh
     }
 }
