@@ -36,14 +36,12 @@ impl GameState {
 
 fn main() {
     let mut app = App::new();
-    app.add_plugins(
-        DefaultPlugins.set(RenderPlugin {
-            wgpu_settings: WgpuSettings {
-                features: WgpuFeatures::POLYGON_MODE_LINE,
-                ..default()
-            },
-        }),
-    );
+    app.add_plugins(DefaultPlugins.set(RenderPlugin {
+        wgpu_settings: WgpuSettings {
+            features: WgpuFeatures::POLYGON_MODE_LINE,
+            ..default()
+        },
+    }));
     if INVENTORY_MODE {
         app.add_plugins(InventoryPlugin);
     } else {
