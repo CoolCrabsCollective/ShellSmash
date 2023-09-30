@@ -1,9 +1,9 @@
-use bevy::math::vec3;
+use crate::debug_camera_controller::DebugCameraControllerPlugin;
+use crate::inventory_controller::InventoryControllerPlugin;
+use bevy::log;
 use bevy::pbr::wireframe::WireframePlugin;
 use bevy::prelude::*;
 
-use crate::debug_camera_controller::DebugCameraControllerPlugin;
-use crate::inventory_controller::InventoryControllerPlugin;
 use crate::voxel_renderer::{VoxelCoordinateFrame, VoxelRendererPlugin, GRID_DIMS};
 
 pub struct InventoryPlugin;
@@ -14,7 +14,6 @@ impl Plugin for InventoryPlugin {
         app.add_plugins((WireframePlugin, VoxelRendererPlugin));
         app.add_systems(Update, (move_inventory_items, update_inventory_data));
 
-        app.add_plugins(DebugCameraControllerPlugin);
         app.add_plugins(InventoryControllerPlugin);
     }
 }
@@ -26,11 +25,6 @@ fn setup(
     _meshes: ResMut<Assets<Mesh>>,
     _materials: ResMut<Assets<StandardMaterial>>,
 ) {
-    commands.spawn(Camera3dBundle {
-        transform: Transform::from_xyz(0.0, 15.0, -15.0).looking_at(vec3(0.0, 0.0, 0.0), Vec3::Y),
-        ..default()
-    });
-
     let boomerang = InventoryItem::from((
         (1, 3, 3),
         vec![(0, 0, 0), (0, 0, 1), (0, 0, 2), (-1, 0, 0), (-2, 0, 0)],
@@ -179,8 +173,15 @@ pub fn move_inventory_items(
     camera_pos_query: Query<&Transform, With<Camera>>,
     k_input: Res<Input<KeyCode>>,
 ) {
+    let camera_coord = camera_pos_query.get_single();
+    if let Err(ref err) = camera_coord {
+        log::error!(
+            "Cancelling move_inventory_items since camera could not be initialized: {err:?}"
+        );
+    }
+    let camera_coord = camera_coord.unwrap();
+
     let inv_coord = inv_coord_query.single();
-    let camera_coord = camera_pos_query.single();
     let direction = (inv_coord.translation - camera_coord.translation).normalize();
     let quat: Quat = inv_coord.rotation;
     let x_axis = quat
