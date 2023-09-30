@@ -27,10 +27,7 @@ impl ControlState {
     }
 }
 
-fn process_inputs(
-    mut keyboard_events: EventReader<KeyboardInput>,
-    _state: ResMut<ControlState>,
-) {
+fn process_inputs(mut keyboard_events: EventReader<KeyboardInput>, _state: ResMut<ControlState>) {
     for event in keyboard_events.iter() {
         match event.key_code {
             Some(KeyCode::Q) => {
