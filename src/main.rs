@@ -13,6 +13,7 @@ use bevy::render::RenderPlugin;
 use inventory_controller::InventoryControllerPlugin;
 use voxel_renderer::VoxelRendererPlugin;
 
+// add physics
 fn main() {
     App::new()
         .add_plugins((
