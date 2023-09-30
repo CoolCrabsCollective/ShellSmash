@@ -8,9 +8,8 @@ use bevy::render::settings::{WgpuFeatures, WgpuSettings};
 use bevy::render::RenderPlugin;
 use debug_camera_controller::DebugCameraControllerPlugin;
 
-use crate::inventory::{move_inventory_items, update_inventory_data, InventoryData, InventoryItem};
+use crate::inventory::{InventoryData, InventoryItem};
 use crate::inventory_controller::InventoryControllerPlugin;
-use crate::master_controller::MasterControllerPlugin;
 use crate::voxel_renderer::VoxelRendererPlugin;
 
 use bevy_rapier3d::prelude::{Collider, NoUserData, RigidBody};
@@ -24,7 +23,6 @@ mod inventory;
 mod inventory_controller;
 mod item_mesh_generator;
 mod level_loader;
-mod master_controller;
 mod math;
 mod voxel_renderer;
 mod wall;
@@ -32,6 +30,23 @@ mod wall;
 const USE_DEBUG_CAM: bool = true;
 const SPAWN_PACKING_SHIT: bool = false;
 
+#[derive(Debug, Clone, Default, Eq, PartialEq, Hash, States)]
+enum GameState {
+    #[default]
+    Game,
+    Inventory,
+}
+
+impl GameState {
+    fn turn(&self) -> Self {
+        match self {
+            GameState::Game => GameState::Inventory,
+            GameState::Inventory => GameState::Game,
+        }
+    }
+}
+
+// add physics
 fn main() {
     let mut app = App::new();
     app.insert_resource(AmbientLight {
@@ -50,16 +65,12 @@ fn main() {
         RapierPhysicsPlugin::<NoUserData>::default(),
         RapierDebugRenderPlugin::default(),
     ))
+    .add_state::<GameState>()
     .add_systems(Startup, setup)
-    .add_systems(Update, (bevy::window::close_on_esc));
-
-    if SPAWN_PACKING_SHIT {
-        app.add_plugins((WireframePlugin, VoxelRendererPlugin));
-        app.add_systems(Update, (move_inventory_items, update_inventory_data));
-    }
+    .add_systems(Update, (bevy::window::close_on_esc, swap_controls));
 
     if !USE_DEBUG_CAM {
-        app.add_plugins((MasterControllerPlugin, InventoryControllerPlugin));
+        app.add_plugins(InventoryControllerPlugin);
     } else {
         app.add_plugins(DebugCameraControllerPlugin);
     }
@@ -110,7 +121,7 @@ fn setup(
     });
     // camera
     commands.spawn(Camera3dBundle {
-        transform: Transform::from_xyz(0.0, 35.0, -15.0).looking_at(vec3(0.0, 0.0, 0.0), Vec3::Y),
+        transform: Transform::from_xyz(0.0, 10.0, -15.0).looking_at(vec3(0.0, 0.0, 0.0), Vec3::Y),
         ..default()
     });
 
@@ -212,4 +223,16 @@ fn setup(
         commands.spawn(heart);
     }
     commands.insert_resource(InventoryData { grid: Vec::new() });
+}
+
+fn swap_controls(
+    k_input: Res<Input<KeyCode>>,
+    current_game_state: ResMut<State<GameState>>,
+    mut next_game_state: ResMut<NextState<GameState>>,
+) {
+    if k_input.just_pressed(KeyCode::Space) {
+        let new_status = current_game_state.get().turn();
+
+        next_game_state.set(new_status);
+    }
 }

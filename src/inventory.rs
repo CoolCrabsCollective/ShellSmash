@@ -101,6 +101,13 @@ pub fn update_inventory_data(query: Query<&InventoryItem>, mut inv: ResMut<Inven
     inv.grid = InventoryData::grid_from_items(items, IVec3::from_array(GRID_DIMS))
 }
 
+#[derive(Debug)]
+enum AxisSelect {
+    X,
+    Y,
+    Z,
+}
+
 pub fn move_inventory_items(
     mut query: Query<&mut InventoryItem>,
     inv_coord_query: Query<&Transform, With<VoxelCoordinateFrame>>,
@@ -109,22 +116,102 @@ pub fn move_inventory_items(
 ) {
     let inv_coord = inv_coord_query.single();
     let camera_coord = camera_pos_query.single();
-    let _direction = (inv_coord.translation - camera_coord.translation).normalize();
+    let direction = (inv_coord.translation - camera_coord.translation).normalize();
+    let quat: Quat = inv_coord.rotation;
+    let x_axis = quat
+        .mul_vec3(Vec3 {
+            x: 1.0,
+            y: 0.0,
+            z: 0.0,
+        })
+        .normalize();
+    let y_axis = quat
+        .mul_vec3(Vec3 {
+            x: 0.0,
+            y: 1.0,
+            z: 0.0,
+        })
+        .normalize();
+    let z_axis = quat
+        .mul_vec3(Vec3 {
+            x: 0.0,
+            y: 0.0,
+            z: 1.0,
+        })
+        .normalize();
 
-    // println!("Test");
-    // dbg!(direction);
-    // dbg!(x_axis);
-    // dbg!(y_axis);
-    // dbg!(z_axis);
+    let mut principal_axis = x_axis;
+    let mut axis_selected = AxisSelect::X;
+
+    if principal_axis.dot(direction).abs() < y_axis.dot(direction).abs() {
+        principal_axis = y_axis;
+        axis_selected = AxisSelect::Y;
+    }
+    if principal_axis.dot(direction).abs() < z_axis.dot(direction).abs() {
+        principal_axis = z_axis;
+        axis_selected = AxisSelect::Z;
+    }
+
+    let sign: i32 = if principal_axis.dot(direction) < 0.0 {
+        1
+    } else {
+        -1
+    };
+    let translation_up = IVec3 {
+        x: 0,
+        y: match axis_selected {
+            AxisSelect::X => sign,
+            AxisSelect::Z => sign,
+            _ => 0,
+        },
+        z: match axis_selected {
+            AxisSelect::Z => -sign,
+            _ => 0,
+        },
+    };
+    let translation_down = IVec3 {
+        x: 0,
+        y: match axis_selected {
+            AxisSelect::X => -sign,
+            AxisSelect::Z => -sign,
+            _ => 0,
+        },
+        z: 0,
+    };
+    let translation_right = IVec3 {
+        x: match axis_selected {
+            AxisSelect::Y => sign,
+            AxisSelect::Z => sign,
+            _ => 0,
+        },
+        y: 0,
+        z: match axis_selected {
+            AxisSelect::X => -sign,
+            _ => 0,
+        },
+    };
+    let translation_left = IVec3 {
+        x: match axis_selected {
+            AxisSelect::Z => -sign,
+            _ => 0,
+        },
+        y: 0,
+        z: match axis_selected {
+            AxisSelect::X => sign,
+            _ => 0,
+        },
+    };
+
+    dbg!(axis_selected);
     for mut item in &mut query {
         if k_input.just_pressed(KeyCode::H) {
-            item.translate(IVec3 { x: 1, y: 0, z: 0 })
+            item.translate(translation_left)
         } else if k_input.just_pressed(KeyCode::L) {
-            item.translate(IVec3 { x: -1, y: 0, z: 0 })
+            item.translate(translation_right)
         } else if k_input.just_pressed(KeyCode::J) {
-            item.translate(IVec3 { x: 0, y: 1, z: 0 })
+            item.translate(translation_down)
         } else if k_input.just_pressed(KeyCode::K) {
-            item.translate(IVec3 { x: 0, y: -1, z: 0 })
+            item.translate(translation_up)
         }
     }
 }
