@@ -3,6 +3,7 @@ mod inventory_controller;
 mod math;
 mod voxel_renderer;
 
+use crate::inventory::InventoryData;
 use crate::inventory::InventoryItem;
 use bevy::input::keyboard::KeyCode;
 use bevy::pbr::wireframe::WireframePlugin;
@@ -28,7 +29,14 @@ fn main() {
             VoxelRendererPlugin,
         ))
         .add_systems(Startup, setup)
-        .add_systems(Update, (bevy::window::close_on_esc, move_inventory_items))
+        .add_systems(
+            Update,
+            (
+                bevy::window::close_on_esc,
+                move_inventory_items,
+                update_inventory_data,
+            ),
+        )
         .run();
 }
 
@@ -97,12 +105,21 @@ fn setup(
         bevy::render::color::Color::rgba(1.0, 0.0, 0.0, 1.0),
     ));
 
-    boomerang.spawn_cubes(&mut commands, &mut meshes, &mut materials);
-    sword.spawn_cubes(&mut commands, &mut meshes, &mut materials);
-    heart.spawn_cubes(&mut commands, &mut meshes, &mut materials);
+    // boomerang.spawn_cubes(&mut commands, &mut meshes, &mut materials);
+    // sword.spawn_cubes(&mut commands, &mut meshes, &mut materials);
+    // heart.spawn_cubes(&mut commands, &mut meshes, &mut materials);
     commands.spawn(boomerang);
     commands.spawn(sword);
     commands.spawn(heart);
+    commands.insert_resource(InventoryData { grid: Vec::new() });
+}
+
+fn update_inventory_data(query: Query<&InventoryItem>, mut inv: ResMut<InventoryData>) {
+    let mut items: Vec<InventoryItem> = Vec::new();
+    for p in query.iter() {
+        items.push(p.clone())
+    }
+    inv.grid = InventoryData::grid_from_items(items, IVec3 { x: 5, y: 5, z: 5 })
 }
 
 fn move_inventory_items(mut query: Query<&mut InventoryItem>, k_input: Res<Input<KeyCode>>) {
