@@ -27,7 +27,7 @@ impl InventoryItem {
         self.location += translation;
     }
 
-    pub fn _rotate_x(&mut self, ccw: bool) {
+    pub fn rotate_x(&mut self, ccw: bool) {
         let rot_angle = ((if ccw { 90 } else { -90 }) as f32).to_radians();
 
         let rot_mat = Mat3::from_rotation_x(rot_angle);
@@ -39,10 +39,8 @@ impl InventoryItem {
             p.z = new_p.z as i32;
         }
     }
-    pub fn _rotate_y(&mut self) {}
-    pub fn _rotate_z(&mut self) {}
 
-    fn _get_center(&self) -> &IVec3 {
+    fn get_center(&self) -> &IVec3 {
         self.local_points.first().unwrap()
     }
 }
