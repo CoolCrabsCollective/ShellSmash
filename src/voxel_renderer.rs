@@ -177,7 +177,6 @@ fn update_voxels_2(
                 for (y, y_list) in x_list.iter().enumerate() {
                     for (z, item_opt) in y_list.iter().enumerate() {
                         if let Some(inventory_item) = item_opt {
-                            count += 1;
                             let location =
                                 IVec3::new(x as i32, y as i32, z as i32) - IVec3::new(2, 2, 2);
                             locations.insert(location);
