@@ -37,7 +37,6 @@ enum GameState {
 
 impl GameState {
     fn turn(&self) -> Self {
-        use Direction::*;
         match self {
             GameState::Game => GameState::Inventory,
             GameState::Inventory => GameState::Game,
@@ -122,7 +121,7 @@ fn setup(
     });
     // camera
     commands.spawn(Camera3dBundle {
-        transform: Transform::from_xyz(0.0, 35.0, -15.0).looking_at(vec3(0.0, 0.0, 0.0), Vec3::Y),
+        transform: Transform::from_xyz(0.0, 10.0, -15.0).looking_at(vec3(0.0, 0.0, 0.0), Vec3::Y),
         ..default()
     });
 
@@ -188,7 +187,7 @@ fn setup(
 
 fn swap_controls(
     k_input: Res<Input<KeyCode>>,
-    mut current_game_state: ResMut<State<GameState>>,
+    current_game_state: ResMut<State<GameState>>,
     mut next_game_state: ResMut<NextState<GameState>>,
 ) {
     if k_input.just_pressed(KeyCode::Space) {
