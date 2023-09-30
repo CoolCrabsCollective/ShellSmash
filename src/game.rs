@@ -1,6 +1,7 @@
 use crate::debug_camera_controller::DebugCameraControllerPlugin;
 use crate::inventory::InventoryItem;
 use crate::level_loader::{load_level, LevelLoaderPlugin};
+use crate::player::PlayerPlugin;
 use bevy::math::vec3;
 use bevy::pbr::{CascadeShadowConfigBuilder, DirectionalLightShadowMap};
 use bevy::prelude::{
@@ -23,6 +24,7 @@ impl Plugin for GamePlugin {
             LevelLoaderPlugin,
             RapierPhysicsPlugin::<NoUserData>::default(),
             RapierDebugRenderPlugin::default(),
+            PlayerPlugin,
         ));
         app.insert_resource(AmbientLight {
             color: Color::WHITE,
@@ -48,7 +50,7 @@ fn setup(
             shadows_enabled: true,
             ..default()
         },
-        transform: Transform::from_rotation(Quat::from_rotation_x(-0.25 * PI)),
+        transform: Transform::from_rotation(Quat::from_rotation_x(-0.75 * PI)),
         // This is a relatively small scene, so use tighter shadow
         // cascade bounds than the default for better quality.
         // We also adjusted the shadow map to be larger since we're
@@ -64,15 +66,7 @@ fn setup(
     // camera
     commands.spawn(Camera3dBundle {
         // DON'T CHANGE THE FOLLOWING LINE UNLESS YOU WANT TO DIE
-        transform: Transform::from_xyz(0.0, 30.0, -15.0).looking_at(vec3(0.0, 0.0, -2.0), Vec3::Y),
-        ..default()
-    });
-
-    commands.spawn(SceneBundle {
-        scene: asset_server.load("player.glb#Scene0"),
-        transform: Transform::from_xyz(5.0, 0.0, 5.0)
-            .looking_at(Vec3::ZERO, Vec3::Y)
-            .with_scale(vec3(0.25, 0.25, 0.25)),
+        transform: Transform::from_xyz(0.0, 30.0, 15.0).looking_at(vec3(0.0, 0.0, 2.0), Vec3::Y),
         ..default()
     });
 
@@ -83,14 +77,6 @@ fn setup(
             .with_scale(vec3(0.25, 0.25, 0.25)),
         ..default()
     });
-
-    commands
-        .spawn(RigidBody::KinematicVelocityBased)
-        .insert(Collider::capsule_y(0.5, 0.25))
-        .insert(TransformBundle::from(Transform::from_xyz(2.0, 5.0, 0.0)))
-        .insert(Friction::coefficient(0.7))
-        .insert(Restitution::coefficient(0.3))
-        .insert(ColliderMassProperties::Density(2.0));
 
     let boomerang = InventoryItem::from((
         (1, 3, 3),

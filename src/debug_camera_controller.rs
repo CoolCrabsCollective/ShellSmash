@@ -107,10 +107,10 @@ fn process_inputs(
             Some(KeyCode::D) => {
                 state.is_right_pressed = event.state.is_pressed();
             }
-            Some(KeyCode::E) => {
+            Some(KeyCode::E) | Some(KeyCode::Space) => {
                 state.is_up_pressed = event.state.is_pressed();
             }
-            Some(KeyCode::Q) => {
+            Some(KeyCode::Q) | Some(KeyCode::ShiftLeft) | Some(KeyCode::ShiftRight) => {
                 state.is_down_pressed = event.state.is_pressed();
             }
             _ => {}
