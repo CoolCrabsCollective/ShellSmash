@@ -1,4 +1,4 @@
-use bevy::input::mouse::MouseMotion;
+use bevy::input::mouse::{MouseButtonInput, MouseMotion};
 use bevy::prelude::*;
 
 pub struct InventoryControllerPlugin;
@@ -39,7 +39,7 @@ impl InventoryControllerState {
             unprocessed_delta: None,
 
             orientation: ControlledOrientation {
-                horizontal: 0.0,
+                horizontal: deg_to_rad(180.0),
                 vertical: deg_to_rad(-45.0),
             },
         }
@@ -48,13 +48,16 @@ impl InventoryControllerState {
 
 fn process_inputs(
     mut mouse_motion_events: EventReader<MouseMotion>,
+    mouse_buttons: Res<Input<MouseButton>>,
     mut state: ResMut<InventoryControllerState>,
 ) {
-    for event in mouse_motion_events.iter() {
-        state.unprocessed_delta = match state.unprocessed_delta {
-            Some((x, y)) => Some((x + event.delta.x, y + event.delta.y)),
-            None => Some((event.delta.x, event.delta.y)),
-        };
+    if (mouse_buttons.pressed(MouseButton::Right)) {
+        for motion_event in mouse_motion_events.iter() {
+            state.unprocessed_delta = match state.unprocessed_delta {
+                Some((x, y)) => Some((x + motion_event.delta.x, y + motion_event.delta.y)),
+                None => Some((motion_event.delta.x, motion_event.delta.y)),
+            };
+        }
     }
 }
 
