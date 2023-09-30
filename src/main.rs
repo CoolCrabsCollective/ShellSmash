@@ -27,8 +27,8 @@ mod math;
 mod voxel_renderer;
 mod wall;
 
-const USE_DEBUG_CAM: bool = true;
-const SPAWN_PACKING_SHIT: bool = false;
+const USE_DEBUG_CAM: bool = false;
+const SPAWN_PACKING_SHIT: bool = true;
 
 #[derive(Debug, Clone, Default, Eq, PartialEq, Hash, States)]
 enum GameState {

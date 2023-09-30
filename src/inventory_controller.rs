@@ -16,7 +16,6 @@ impl Plugin for InventoryControllerPlugin {
                 update_state,
                 set_world_orientation,
                 update_inventory_data,
-                move_inventory_items,
             ),
         );
         app.insert_resource(InventoryControllerState::new());
@@ -131,34 +130,6 @@ fn set_world_orientation(
 
     world_transform.translation.x = state.orientation.zoom_pos;
     world_transform.rotation = state.orientation.to_quat();
-}
-
-pub fn move_inventory_items(
-    mut query: Query<&mut InventoryItem>,
-    inv_coord_query: Query<&Transform, With<VoxelCoordinateFrame>>,
-    camera_pos_query: Query<&Transform, With<Camera>>,
-    k_input: Res<Input<KeyCode>>,
-) {
-    let inv_coord = inv_coord_query.single();
-    let camera_coord = camera_pos_query.single();
-    let _direction = (inv_coord.translation - camera_coord.translation).normalize();
-
-    // println!("Test");
-    // dbg!(direction);
-    // dbg!(x_axis);
-    // dbg!(y_axis);
-    // dbg!(z_axis);
-    for mut item in &mut query {
-        if k_input.just_pressed(KeyCode::H) {
-            item.translate(IVec3 { x: 1, y: 0, z: 0 })
-        } else if k_input.just_pressed(KeyCode::L) {
-            item.translate(IVec3 { x: -1, y: 0, z: 0 })
-        } else if k_input.just_pressed(KeyCode::J) {
-            item.translate(IVec3 { x: 0, y: 1, z: 0 })
-        } else if k_input.just_pressed(KeyCode::K) {
-            item.translate(IVec3 { x: 0, y: -1, z: 0 })
-        }
-    }
 }
 
 pub fn update_inventory_data(query: Query<&InventoryItem>, mut inv: ResMut<InventoryData>) {
