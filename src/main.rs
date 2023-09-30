@@ -70,6 +70,7 @@ fn setup(
     let boomerang = InventoryItem::from((
         (0, 0, 0),
         vec![(0, 0, 0), (0, 0, 1), (0, 0, 2), (-1, 0, 0), (-2, 0, 0)],
+        bevy::render::color::Color::rgba(1.0, 1.0, 1.0, 1.0),
     ));
     let sword = InventoryItem::from((
         (5, 0, 0),
@@ -81,6 +82,7 @@ fn setup(
             (0, -1, 0),
             (0, 0, -1),
         ],
+        bevy::render::color::Color::rgba(0.0, 1.0, 0.0, 1.0),
     ));
     let heart = InventoryItem::from((
         (0, 5, 0),
@@ -92,6 +94,7 @@ fn setup(
             (-1, 0, 1),
             (1, 0, 1),
         ],
+        bevy::render::color::Color::rgba(1.0, 0.0, 0.0, 1.0),
     ));
 
     boomerang.spawn_cubes(&mut commands, &mut meshes, &mut materials);
