@@ -70,6 +70,7 @@ fn main() {
     .add_systems(Update, (bevy::window::close_on_esc, swap_controls));
 
     if SPAWN_PACKING_SHIT {
+        app.add_plugins((WireframePlugin, VoxelRendererPlugin));
         app.add_systems(Update, (move_inventory_items, update_inventory_data));
     }
 
