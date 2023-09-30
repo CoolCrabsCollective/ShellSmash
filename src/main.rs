@@ -12,17 +12,12 @@ use voxel_renderer::GRID_DIMS;
 
 use crate::inventory::InventoryData;
 use crate::inventory::InventoryItem;
-use crate::inventory::InventoryItem;
 use crate::inventory_controller::InventoryControllerPlugin;
 use crate::voxel_renderer::VoxelRendererPlugin;
 
 mod inventory;
-mod inventory;
-mod inventory_controller;
 mod inventory_controller;
 mod math;
-mod math;
-mod voxel_renderer;
 mod voxel_renderer;
 
 // add physics
