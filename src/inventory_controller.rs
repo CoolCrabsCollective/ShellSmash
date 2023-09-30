@@ -16,7 +16,7 @@ impl Plugin for InventoryControllerPlugin {
 }
 
 #[derive(Copy, Clone, Debug)]
-struct ControlledOrientation {
+pub struct ControlledOrientation {
     horizontal: f32,
     vertical: f32,
     zoom_pos: f32,
@@ -30,13 +30,13 @@ impl ControlledOrientation {
 }
 
 #[derive(Resource)]
-struct InventoryControllerState {
+pub struct InventoryControllerState {
     unprocessed_delta: Option<(f32, f32)>,
 
     rotate: bool,
     zoom: bool,
 
-    orientation: ControlledOrientation,
+    pub orientation: ControlledOrientation,
 }
 
 impl InventoryControllerState {
