@@ -29,7 +29,7 @@ impl InventoryItem {
         }
     }
 
-    pub fn intersects(&self, other_location: IVec3) -> bool {
+    pub fn _intersects(&self, other_location: IVec3) -> bool {
         let relative_location: IVec3 = self.location - other_location;
         for point in &self.local_points {
             if *point == relative_location {
@@ -43,7 +43,7 @@ impl InventoryItem {
         self.location = translation;
     }
 
-    pub fn rotate_x(&mut self, ccw: bool) {
+    pub fn _rotate_x(&mut self, ccw: bool) {
         let rot_angle = ((if ccw { 90 } else { -90 }) as f32).to_radians();
 
         let rot_mat = Mat3::from_rotation_x(rot_angle);
@@ -55,10 +55,10 @@ impl InventoryItem {
             p.z = new_p.z as i32;
         }
     }
-    pub fn rotate_y(&mut self) {}
-    pub fn rotate_z(&mut self) {}
+    pub fn _rotate_y(&mut self) {}
+    pub fn _rotate_z(&mut self) {}
 
-    fn get_center(&self) -> &IVec3 {
+    fn _get_center(&self) -> &IVec3 {
         self.local_points.first().unwrap()
     }
 }
