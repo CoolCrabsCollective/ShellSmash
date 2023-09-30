@@ -9,12 +9,7 @@ impl Plugin for InventoryControllerPlugin {
     fn build(&self, app: &mut App) {
         app.add_systems(
             Update,
-            (
-                process_inputs,
-                update_state,
-                set_world_orientation,
-                set_camera_pos,
-            ),
+            (process_inputs, update_state, set_world_orientation),
         );
         app.insert_resource(InventoryControllerState::new());
     }
@@ -24,6 +19,7 @@ impl Plugin for InventoryControllerPlugin {
 struct ControlledOrientation {
     horizontal: f32,
     vertical: f32,
+    zoom_pos: f32,
 }
 
 impl ControlledOrientation {
@@ -41,7 +37,6 @@ struct InventoryControllerState {
     zoom: bool,
 
     orientation: ControlledOrientation,
-    camera_pos: Vec3,
 }
 
 impl InventoryControllerState {
@@ -55,12 +50,7 @@ impl InventoryControllerState {
             orientation: ControlledOrientation {
                 horizontal: deg_to_rad(180.0),
                 vertical: deg_to_rad(-45.0),
-            },
-
-            camera_pos: Vec3 {
-                x: 15.0,
-                y: 15.0,
-                z: 5.0,
+                zoom_pos: 0.0,
             },
         }
     }
@@ -84,19 +74,17 @@ fn process_inputs(
 
 fn update_state(mut state: ResMut<InventoryControllerState>) {
     if let Some(unprocessed_delta) = state.unprocessed_delta {
-        let mouse_sensitivity = 0.002;
-
-        let mouse_delta_0 = -unprocessed_delta.0 as f32 * mouse_sensitivity;
-        let mouse_delta_1 = -unprocessed_delta.1 as f32 * mouse_sensitivity;
-
         if state.rotate {
-            state.orientation.horizontal += mouse_delta_0;
-            state.orientation.vertical += mouse_delta_1;
+            let mouse_sensitivity = 0.002;
+
+            state.orientation.horizontal += -unprocessed_delta.0 as f32 * mouse_sensitivity;
+            state.orientation.vertical += -unprocessed_delta.1 as f32 * mouse_sensitivity;
         }
 
         if state.zoom {
-            state.camera_pos.x += mouse_delta_0;
-            state.camera_pos.y += mouse_delta_1;
+            let mouse_sensitivity = 0.02;
+
+            state.orientation.zoom_pos += unprocessed_delta.1 as f32 * mouse_sensitivity;
         }
 
         // println!(
@@ -122,14 +110,6 @@ fn set_world_orientation(
 ) {
     let mut world_transform = model_transform_query.single_mut();
 
+    world_transform.translation.x = state.orientation.zoom_pos;
     world_transform.rotation = state.orientation.to_quat();
-}
-
-fn set_camera_pos(
-    mut cam_transform_query: Query<&mut Transform, With<Camera>>,
-    state: Res<InventoryControllerState>,
-) {
-    let mut cam_transform = cam_transform_query.single_mut();
-
-    cam_transform.translation = state.camera_pos;
 }
