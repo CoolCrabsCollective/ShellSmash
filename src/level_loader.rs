@@ -11,47 +11,15 @@ pub struct LevelLoaderPlugin;
 
 impl Plugin for LevelLoaderPlugin {
     fn build(&self, app: &mut App) {
-        app.add_systems(Update, (handle_scene_load_event, handle_gltf_load_event));
+        app.add_systems(Update, handle_gltf_load_event);
     }
 }
 
-pub fn load_level(asset_path: &str, asset_server: &ResMut<AssetServer>) {
-    let _ignored_handle: Handle<Scene> = asset_server.load(asset_path);
-}
-
-fn handle_scene_load_event(
-    mut load_events: EventReader<AssetEvent<Scene>>,
-    mesh_handle_query: Query<&Handle<Mesh>>,
-    meshes: Res<Assets<Mesh>>,
-    assets: Res<Assets<Scene>>,
-    asset_server: Res<AssetServer>,
-) {
-    for event in load_events.iter() {
-        if let AssetEvent::Created { handle } = event {
-            // Failed
-            match asset_server.get_load_state(handle) {
-                LoadState::Loaded => {
-                    if let Some(scene) = assets.get(handle) {
-                        for entity in scene.world.iter_entities() {
-                            // dbg!(entity.archetype());
-                            if let Ok(mesh_handle) = mesh_handle_query.get(entity.id()) {
-                                if let Some(_mesh) = meshes.get(mesh_handle) {
-                                    log::info!("fuck yeah I got the fucking mesh");
-                                    // println!();
-                                }
-                            }
-                        }
-                    }
-                }
-                LoadState::Failed => {
-                    log::error!("scene failed to load dog");
-                }
-                _ => {}
-            }
-
-            // if handle.
-        }
-    }
+pub fn load_level(asset_path: &str, commands: &mut Commands, asset_server: &ResMut<AssetServer>) {
+    commands.spawn(SceneBundle {
+        scene: asset_server.load(asset_path),
+        ..default()
+    });
 }
 
 #[allow(clippy::too_many_arguments)]
@@ -71,7 +39,9 @@ fn handle_gltf_load_event(
                 LoadState::Loaded => {
                     if let Some(scene) = assets.get(handle) {
                         for (name, node_handle) in &scene.named_nodes {
-                            if name.to_lowercase().contains("plane") {
+                            if name.to_lowercase().contains("plane")
+                                || name.to_lowercase().contains("wall")
+                            {
                                 dbg!(name);
                                 if let (Some(mesh), Some(transform)) = (
                                     get_mesh_from_gltf_node(
@@ -84,7 +54,6 @@ fn handle_gltf_load_event(
                                 ) {
                                     match get_collider_from_mesh(mesh, &transform) {
                                         Ok(collider) => {
-                                            log::info!("spawned collider");
                                             commands.spawn(collider);
                                         }
                                         Err(err) => {
@@ -167,9 +136,13 @@ fn get_collider_from_mesh(
     let vertices = positions
         .iter()
         .map(|v| {
-            let p = Vec4::new(v[0], v[1], v[2], 0.0);
+            let p = Vec4::new(v[0], v[1], v[2], 1.0);
             let p_transformed = transform.compute_matrix() * p;
-            Vec3::new(p_transformed.x, p_transformed.y, p_transformed.z)
+            Vec3::new(
+                p_transformed.x / p_transformed.w,
+                p_transformed.y / p_transformed.w,
+                p_transformed.z / p_transformed.w,
+            )
         })
         .collect();
 
