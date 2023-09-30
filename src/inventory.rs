@@ -22,4 +22,14 @@ impl InventoryItem {
             });
         }
     }
+
+    fn intersects(&self, other_location: IVec3) -> bool {
+        let relative_location: IVec3 = self.location - other_location;
+        for point in &self.points {
+            if *point == relative_location {
+                return true;
+            }
+        }
+        false
+    }
 }
