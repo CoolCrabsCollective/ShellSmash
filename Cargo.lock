@@ -1877,6 +1877,12 @@ dependencies = [
 ]
 
 [[package]]
+name = "io"
+version = "0.0.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "85c839d30624bc6b3dced6a4652823d1967fb7939d4848ad002d509b1fc916b2"
+
+[[package]]
 name = "io-kit-sys"
 version = "0.3.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -2001,6 +2007,7 @@ name = "ld54"
 version = "0.1.0"
 dependencies = [
  "bevy",
+ "io",
  "rand",
 ]
 
