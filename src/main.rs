@@ -28,39 +28,45 @@ mod math;
 mod voxel_renderer;
 mod wall;
 
+const USE_DEBUG_CAM: bool = false;
+
 fn main() {
-    App::new()
-        .insert_resource(AmbientLight {
-            color: Color::WHITE,
-            brightness: 1.0 / 5.0f32,
-        })
-        .insert_resource(DirectionalLightShadowMap { size: 4096 })
-        .add_plugins((
-            DefaultPlugins.set(RenderPlugin {
-                wgpu_settings: WgpuSettings {
-                    features: WgpuFeatures::POLYGON_MODE_LINE,
-                    ..default()
-                },
-            }),
-            WireframePlugin,
-            MasterControllerPlugin,
-            InventoryControllerPlugin,
-            // CameraControllerPlugin,
-            VoxelRendererPlugin,
-            LevelLoaderPlugin,
-            RapierPhysicsPlugin::<NoUserData>::default(),
-            RapierDebugRenderPlugin::default(),
-        ))
-        .add_systems(Startup, setup)
-        .add_systems(
-            Update,
-            (
-                bevy::window::close_on_esc,
-                move_inventory_items,
-                update_inventory_data,
-            ),
-        )
-        .run();
+    let mut app = App::new();
+    app.insert_resource(AmbientLight {
+        color: Color::WHITE,
+        brightness: 1.0 / 5.0f32,
+    })
+    .insert_resource(DirectionalLightShadowMap { size: 4096 })
+    .add_plugins((
+        DefaultPlugins.set(RenderPlugin {
+            wgpu_settings: WgpuSettings {
+                features: WgpuFeatures::POLYGON_MODE_LINE,
+                ..default()
+            },
+        }),
+        WireframePlugin,
+        VoxelRendererPlugin,
+        LevelLoaderPlugin,
+        RapierPhysicsPlugin::<NoUserData>::default(),
+        RapierDebugRenderPlugin::default(),
+    ))
+    .add_systems(Startup, setup)
+    .add_systems(
+        Update,
+        (
+            bevy::window::close_on_esc,
+            move_inventory_items,
+            update_inventory_data,
+        ),
+    );
+
+    if !USE_DEBUG_CAM {
+        app.add_plugins((MasterControllerPlugin, InventoryControllerPlugin));
+    } else {
+        app.add_plugins(DebugCameraControllerPlugin);
+    }
+
+    app.run();
 }
 
 /// set up a simple 3D scene
