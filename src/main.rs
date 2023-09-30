@@ -8,7 +8,7 @@ use bevy::render::settings::{WgpuFeatures, WgpuSettings};
 use bevy::render::RenderPlugin;
 use debug_camera_controller::DebugCameraControllerPlugin;
 
-use crate::inventory::{InventoryData, InventoryItem};
+use crate::inventory::{move_inventory_items, update_inventory_data, InventoryData, InventoryItem};
 use crate::inventory_controller::InventoryControllerPlugin;
 use crate::voxel_renderer::VoxelRendererPlugin;
 
@@ -68,6 +68,10 @@ fn main() {
     .add_state::<GameState>()
     .add_systems(Startup, setup)
     .add_systems(Update, (bevy::window::close_on_esc, swap_controls));
+
+    if SPAWN_PACKING_SHIT {
+        app.add_systems(Update, (move_inventory_items, update_inventory_data));
+    }
 
     if !USE_DEBUG_CAM {
         app.add_plugins(InventoryControllerPlugin);
