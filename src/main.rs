@@ -1,6 +1,5 @@
 use std::f32::consts::PI;
 
-use bevy::input::keyboard::KeyCode;
 use bevy::math::vec3;
 use bevy::pbr::wireframe::WireframePlugin;
 use bevy::pbr::{CascadeShadowConfigBuilder, DirectionalLightShadowMap};
@@ -10,7 +9,7 @@ use bevy::render::RenderPlugin;
 
 use voxel_renderer::GRID_DIMS;
 
-use crate::inventory::{InventoryData, InventoryItem};
+use crate::inventory::{move_inventory_items, update_inventory_data, InventoryData, InventoryItem};
 use crate::inventory_controller::InventoryControllerPlugin;
 use crate::master_controller::MasterControllerPlugin;
 use crate::voxel_renderer::VoxelRendererPlugin;
@@ -157,20 +156,4 @@ fn setup(
     commands.spawn(sword);
     commands.spawn(heart);
     commands.insert_resource(InventoryData { grid: Vec::new() });
-}
-
-fn update_inventory_data(query: Query<&InventoryItem>, mut inv: ResMut<InventoryData>) {
-    let mut items: Vec<InventoryItem> = Vec::new();
-    for p in query.iter() {
-        items.push(p.clone())
-    }
-    inv.grid = InventoryData::grid_from_items(items, IVec3::from_array(GRID_DIMS))
-}
-
-fn move_inventory_items(mut query: Query<&mut InventoryItem>, k_input: Res<Input<KeyCode>>) {
-    for mut item in &mut query {
-        if k_input.pressed(KeyCode::Left) {
-            item.translate(IVec3 { x: 1, y: 1, z: 1 })
-        }
-    }
 }

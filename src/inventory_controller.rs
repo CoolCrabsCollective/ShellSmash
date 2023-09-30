@@ -106,7 +106,7 @@ fn update_state(mut state: ResMut<InventoryControllerState>) {
 
 fn set_world_orientation(
     mut model_transform_query: Query<&mut Transform, With<VoxelCoordinateFrame>>,
-    state: Res<InventoryControllerState>,
+    mut state: ResMut<InventoryControllerState>,
 ) {
     let mut world_transform = model_transform_query.single_mut();
 
