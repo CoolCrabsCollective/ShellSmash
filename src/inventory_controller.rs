@@ -8,7 +8,12 @@ impl Plugin for InventoryControllerPlugin {
     fn build(&self, app: &mut App) {
         app.add_systems(
             Update,
-            (process_inputs, update_state, set_world_orientation),
+            (
+                process_inputs,
+                update_state,
+                set_world_orientation,
+                set_camera_pos,
+            ),
         );
         app.insert_resource(InventoryControllerState::new());
     }
@@ -31,7 +36,11 @@ impl ControlledOrientation {
 struct InventoryControllerState {
     unprocessed_delta: Option<(f32, f32)>,
 
+    rotate: bool,
+    zoom: bool,
+
     orientation: ControlledOrientation,
+    camera_pos: Vec3,
 }
 
 impl InventoryControllerState {
@@ -39,9 +48,18 @@ impl InventoryControllerState {
         Self {
             unprocessed_delta: None,
 
+            rotate: false,
+            zoom: false,
+
             orientation: ControlledOrientation {
                 horizontal: deg_to_rad(180.0),
                 vertical: deg_to_rad(-45.0),
+            },
+
+            camera_pos: Vec3 {
+                x: 15.0,
+                y: 15.0,
+                z: 5.0,
             },
         }
     }
@@ -52,22 +70,33 @@ fn process_inputs(
     mouse_buttons: Res<Input<MouseButton>>,
     mut state: ResMut<InventoryControllerState>,
 ) {
-    if mouse_buttons.pressed(MouseButton::Right) {
-        for motion_event in mouse_motion_events.iter() {
-            state.unprocessed_delta = match state.unprocessed_delta {
-                Some((x, y)) => Some((x + motion_event.delta.x, y + motion_event.delta.y)),
-                None => Some((motion_event.delta.x, motion_event.delta.y)),
-            };
-        }
+    for motion_event in mouse_motion_events.iter() {
+        state.unprocessed_delta = match state.unprocessed_delta {
+            Some((x, y)) => Some((x + motion_event.delta.x, y + motion_event.delta.y)),
+            None => Some((motion_event.delta.x, motion_event.delta.y)),
+        };
     }
+
+    state.rotate = mouse_buttons.pressed(MouseButton::Right);
+    state.zoom = mouse_buttons.pressed(MouseButton::Left);
 }
 
 fn update_state(mut state: ResMut<InventoryControllerState>) {
     if let Some(unprocessed_delta) = state.unprocessed_delta {
         let mouse_sensitivity = 0.002;
 
-        state.orientation.horizontal += -unprocessed_delta.0 * mouse_sensitivity;
-        state.orientation.vertical += -unprocessed_delta.1 * mouse_sensitivity;
+        let mouse_delta_0 = -unprocessed_delta.0 as f32 * mouse_sensitivity;
+        let mouse_delta_1 = -unprocessed_delta.1 as f32 * mouse_sensitivity;
+
+        if state.rotate {
+            state.orientation.horizontal += mouse_delta_0;
+            state.orientation.vertical += mouse_delta_1;
+        }
+
+        if state.zoom {
+            state.camera_pos.x += mouse_delta_0;
+            state.camera_pos.y += mouse_delta_1;
+        }
 
         println!(
             "Horizontal: {:?} ({:?} rad)",
@@ -82,6 +111,8 @@ fn update_state(mut state: ResMut<InventoryControllerState>) {
         );
     }
     state.unprocessed_delta = None;
+    state.rotate = false;
+    state.zoom = false;
 }
 
 fn set_world_orientation(
@@ -91,6 +122,15 @@ fn set_world_orientation(
     let mut world_transform = model_transform_query.single_mut();
 
     world_transform.rotation = state.orientation.to_quat();
+}
+
+fn set_camera_pos(
+    mut cam_transform_query: Query<&mut Transform, With<Camera>>,
+    state: Res<InventoryControllerState>,
+) {
+    let mut cam_transform = cam_transform_query.single_mut();
+
+    cam_transform.translation = state.camera_pos;
 }
 
 fn deg_to_rad(deg: f32) -> f32 {
