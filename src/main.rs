@@ -148,8 +148,14 @@ fn update_inventory_data(query: Query<&InventoryItem>, mut inv: ResMut<Inventory
 
 fn move_inventory_items(mut query: Query<&mut InventoryItem>, k_input: Res<Input<KeyCode>>) {
     for mut item in &mut query {
-        if k_input.pressed(KeyCode::Left) {
-            item.translate(IVec3 { x: 1, y: 1, z: 1 })
+        if k_input.just_pressed(KeyCode::H) {
+            item.translate(IVec3 { x: 1, y: 0, z: 0 })
+        } else if k_input.just_pressed(KeyCode::L) {
+            item.translate(IVec3 { x: -1, y: 0, z: 0 })
+        } else if k_input.just_pressed(KeyCode::J) {
+            item.translate(IVec3 { x: 0, y: 1, z: 0 })
+        } else if k_input.just_pressed(KeyCode::K) {
+            item.translate(IVec3 { x: 0, y: -1, z: 0 })
         }
     }
 }

@@ -23,7 +23,7 @@ impl InventoryItem {
     }
 
     pub fn translate(&mut self, translation: IVec3) {
-        self.location = translation;
+        self.location += translation;
     }
 
     pub fn _rotate_x(&mut self, ccw: bool) {
