@@ -1,11 +1,18 @@
 use bevy::{
-    asset::LoadState,
+    asset::{AssetPath, LoadState},
     gltf::{Gltf, GltfMesh, GltfNode},
     log,
     prelude::*,
     render::mesh::{Indices, VertexAttributeValues},
+    utils::{hashbrown::hash_map, HashMap},
 };
 use bevy_rapier3d::prelude::Collider;
+
+#[derive(Resource)]
+pub struct LevelLoaderState {
+    pending_gltf_scene_handles:
+        HashMap<AssetPath<'static>, (Handle<Gltf>, Option<(Vec<Vec3>, Vec<[u32; 3]>)>)>,
+}
 
 pub struct LevelLoaderPlugin;
 
@@ -15,15 +22,22 @@ impl Plugin for LevelLoaderPlugin {
     }
 }
 
-pub fn load_level(asset_path: &str, asset_server: &ResMut<AssetServer>) {
-    let _ignored_handle: Handle<Scene> = asset_server.load(asset_path);
+pub fn load_level(asset_path: &str, commands: &mut Commands, asset_server: &ResMut<AssetServer>) {
+    commands.spawn(SceneBundle {
+        scene: asset_server.load(asset_path),
+        // transform: Transform::from_xyz(0.0, 0.0, 0.0)
+        //     .looking_at(Vec3::ZERO, Vec3::Y)
+        //     .with_rotation(Quat::from_rotation_y(0.5 * PI)),
+        ..default()
+    });
 }
 
 fn handle_scene_load_event(
+    mut commands: Commands,
+    mut state: ResMut<LevelLoaderState>,
     mut load_events: EventReader<AssetEvent<Scene>>,
-    mesh_handle_query: Query<&Handle<Mesh>>,
+    scenes: Res<Assets<Scene>>,
     meshes: Res<Assets<Mesh>>,
-    assets: Res<Assets<Scene>>,
     asset_server: Res<AssetServer>,
 ) {
     for event in load_events.iter() {
@@ -31,25 +45,27 @@ fn handle_scene_load_event(
             // Failed
             match asset_server.get_load_state(handle) {
                 LoadState::Loaded => {
-                    if let Some(scene) = assets.get(handle) {
-                        for entity in scene.world.iter_entities() {
-                            // dbg!(entity.archetype());
-                            if let Ok(mesh_handle) = mesh_handle_query.get(entity.id()) {
-                                if let Some(_mesh) = meshes.get(mesh_handle) {
-                                    log::info!("fuck yeah I got the fucking mesh");
-                                    // println!();
-                                }
-                            }
-                        }
+                    let asset_path = asset_server
+                        .get_handle_path(handle)
+                        .expect("couldnt get scene path from handle");
+                    state
+                        .pending_gltf_scene_handles
+                        .get(&asset_path)
+                        .expect("gltf load event fired before scene load event?");
+
+                    if state.pending_gltf_scene_handles.contains_key(&asset_path) {
+                        // get transform, make collider and call commands.spawn(collider)
                     }
+
+                    state
+                        .pending_gltf_scene_handles
+                        .remove(&asset_path.to_owned());
                 }
                 LoadState::Failed => {
                     log::error!("scene failed to load dog");
                 }
                 _ => {}
             }
-
-            // if handle.
         }
     }
 }
@@ -57,6 +73,7 @@ fn handle_scene_load_event(
 #[allow(clippy::too_many_arguments)]
 fn handle_gltf_load_event(
     mut commands: Commands,
+    mut state: ResMut<LevelLoaderState>,
     mut load_events: EventReader<AssetEvent<Gltf>>,
     _mesh_handle_query: Query<&Handle<Mesh>>,
     meshes: Res<Assets<Mesh>>,
@@ -69,23 +86,27 @@ fn handle_gltf_load_event(
         if let AssetEvent::Created { handle } = event {
             match asset_server.get_load_state(handle) {
                 LoadState::Loaded => {
+                    let asset_path = asset_server
+                        .get_handle_path(handle)
+                        .expect("couldnt get gltf scene path from handle");
                     if let Some(scene) = assets.get(handle) {
                         for (name, node_handle) in &scene.named_nodes {
-                            if name.to_lowercase().contains("plane") {
+                            if name.to_lowercase().contains("plane")
+                                || name.to_lowercase().contains("wall")
+                            {
                                 dbg!(name);
-                                if let (Some(mesh), Some(transform)) = (
-                                    get_mesh_from_gltf_node(
-                                        node_handle,
-                                        &meshes,
-                                        &gltf_meshes,
-                                        &nodes,
-                                    ),
-                                    nodes.get(node_handle).map(|node| node.transform),
+                                if let Some(mesh) = get_mesh_from_gltf_node(
+                                    node_handle,
+                                    &meshes,
+                                    &gltf_meshes,
+                                    &nodes,
                                 ) {
-                                    match get_collider_from_mesh(mesh, &transform) {
-                                        Ok(collider) => {
-                                            log::info!("spawned collider");
-                                            commands.spawn(collider);
+                                    match get_vertices_from_mesh(mesh) {
+                                        Ok(vertices_and_indices) => {
+                                            state.pending_gltf_scene_handles.insert(
+                                                asset_path.to_owned(),
+                                                (handle.clone_weak(), Some(vertices_and_indices)),
+                                            );
                                         }
                                         Err(err) => {
                                             log::error!("{err:?}");
@@ -133,10 +154,9 @@ pub enum ColliderFromMeshError {
     InvalidPositionsType(&'static str),
 }
 
-fn get_collider_from_mesh(
+fn get_vertices_from_mesh(
     mesh: &Mesh,
-    transform: &Transform,
-) -> Result<Collider, ColliderFromMeshError> {
+) -> Result<(Vec<Vec3>, Vec<[u32; 3]>), ColliderFromMeshError> {
     let positions = mesh
         .attribute(Mesh::ATTRIBUTE_POSITION)
         .map_or(Err(ColliderFromMeshError::MissingPositions), Ok)?;
@@ -166,14 +186,29 @@ fn get_collider_from_mesh(
     let triple_indices = indices.chunks(3).map(|v| [v[0], v[1], v[2]]).collect();
     let vertices = positions
         .iter()
+        .map(|v| Vec3::new(v[0], v[1], v[2]))
+        .collect();
+
+    Ok((vertices, triple_indices))
+}
+
+fn get_collider_from_vertices(
+    vertices: Vec<Vec3>,
+    triple_indices: Vec<[u32; 3]>,
+    transform: &Transform,
+) -> Collider {
+    let vertices = vertices
+        .iter()
         .map(|v| {
-            let p = Vec4::new(v[0], v[1], v[2], 0.0);
+            let p = Vec4::new(v[0], v[1], v[2], 1.0);
             let p_transformed = transform.compute_matrix() * p;
-            Vec3::new(p_transformed.x, p_transformed.y, p_transformed.z)
+            Vec3::new(
+                p_transformed.x / p_transformed.w,
+                p_transformed.y / p_transformed.w,
+                p_transformed.z / p_transformed.w,
+            )
         })
         .collect();
 
-    let collider = Collider::trimesh(vertices, triple_indices);
-
-    Ok(collider)
+    Collider::trimesh(vertices, triple_indices)
 }

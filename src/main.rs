@@ -28,7 +28,7 @@ mod math;
 mod voxel_renderer;
 mod wall;
 
-const USE_DEBUG_CAM: bool = false;
+const USE_DEBUG_CAM: bool = true;
 
 fn main() {
     let mut app = App::new();
@@ -76,7 +76,7 @@ fn setup(
     _meshes: ResMut<Assets<Mesh>>,
     _materials: ResMut<Assets<StandardMaterial>>,
 ) {
-    load_level("map.glb#Scene0", &asset_server);
+    load_level("map.glb#Scene0", &mut commands, &asset_server);
     // plane
     // commands.spawn(PbrBundle {
     //     mesh: meshes.add(shape::Plane::from_size(5.0).into()),
@@ -113,14 +113,6 @@ fn setup(
     // camera
     commands.spawn(Camera3dBundle {
         transform: Transform::from_xyz(0.0, 35.0, -15.0).looking_at(vec3(0.0, 0.0, 0.0), Vec3::Y),
-        ..default()
-    });
-
-    commands.spawn(SceneBundle {
-        scene: asset_server.load("map.glb#Scene0"),
-        transform: Transform::from_xyz(0.0, 0.0, 0.0)
-            .looking_at(Vec3::ZERO, Vec3::Y)
-            .with_rotation(Quat::from_rotation_y(0.5 * PI)),
         ..default()
     });
 
