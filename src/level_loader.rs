@@ -54,6 +54,7 @@ fn handle_scene_load_event(
     }
 }
 
+#[allow(clippy::too_many_arguments)]
 fn handle_gltf_load_event(
     mut commands: Commands,
     mut load_events: EventReader<AssetEvent<Gltf>>,

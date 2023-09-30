@@ -11,7 +11,7 @@ impl Plugin for MasterControllerPlugin {
 }
 
 enum Controller {
-    INVENTORY,
+    Inventory,
 }
 
 #[derive(Resource)]
@@ -22,7 +22,7 @@ struct ControlState {
 impl ControlState {
     pub fn new() -> Self {
         Self {
-            _controller: Controller::INVENTORY,
+            _controller: Controller::Inventory,
         }
     }
 }
