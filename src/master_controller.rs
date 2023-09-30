@@ -16,13 +16,13 @@ enum Controller {
 
 #[derive(Resource)]
 struct ControlState {
-    controller: Controller,
+    _controller: Controller,
 }
 
 impl ControlState {
     pub fn new() -> Self {
         Self {
-            controller: Controller::INVENTORY,
+            _controller: Controller::INVENTORY,
         }
     }
 }

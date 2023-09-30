@@ -4,32 +4,10 @@ use bevy::{
     log,
     prelude::*,
     render::mesh::{Indices, VertexAttributeValues},
-    utils::HashSet,
 };
 use bevy_rapier3d::prelude::Collider;
 
 pub struct LevelLoaderPlugin;
-
-#[derive(Resource)]
-struct LevelLoaderState {
-    pending_scenes: HashSet<String>,
-    loaded_scenes: HashSet<String>,
-}
-
-#[derive(Debug, Clone, PartialEq, Eq, Hash)]
-pub enum ColliderFromMeshError {
-    MissingPositions,
-    MissingIndices,
-    InvalidIndicesCount(usize),
-    InvalidPositionsType(&'static str),
-}
-
-#[derive(Debug, Clone, PartialEq, Eq, Hash)]
-pub enum ColliderMeshParsingError {
-    MissingMeshNode,
-    MissingMesh,
-    MeshColliderError(ColliderFromMeshError),
-}
 
 impl Plugin for LevelLoaderPlugin {
     fn build(&self, app: &mut App) {
@@ -146,6 +124,14 @@ fn get_mesh_from_gltf_node<'a>(
 }
 
 // taken from https://github.com/Defernus/bevy_gltf_collider/blob/9f27253e6d2e645c3570bebead34a493e4da1deb/src/mesh_collider.rs
+#[derive(Debug, Clone, PartialEq, Eq, Hash)]
+pub enum ColliderFromMeshError {
+    MissingPositions,
+    MissingIndices,
+    InvalidIndicesCount(usize),
+    InvalidPositionsType(&'static str),
+}
+
 fn get_collider_from_mesh(
     mesh: &Mesh,
     transform: &Transform,

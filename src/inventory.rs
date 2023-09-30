@@ -29,7 +29,7 @@ impl InventoryItem {
         self.location += translation;
     }
 
-    pub fn rotate_x(&mut self, ccw: bool) {
+    pub fn _rotate_x(&mut self, ccw: bool) {
         let rot_angle = ((if ccw { 90 } else { -90 }) as f32).to_radians();
 
         let rot_mat = Mat3::from_rotation_x(rot_angle);
@@ -42,7 +42,7 @@ impl InventoryItem {
         }
     }
 
-    fn get_center(&self) -> &IVec3 {
+    fn _get_center(&self) -> &IVec3 {
         self.local_points.first().unwrap()
     }
 }
