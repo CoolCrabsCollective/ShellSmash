@@ -1,4 +1,3 @@
-use crate::inventory_controller::InventoryControllerPlugin;
 use bevy::input::keyboard::KeyboardInput;
 use bevy::prelude::*;
 
@@ -6,7 +5,7 @@ pub struct MasterControllerPlugin;
 
 impl Plugin for MasterControllerPlugin {
     fn build(&self, app: &mut App) {
-        app.add_systems(Update, (process_inputs));
+        app.add_systems(Update, process_inputs);
         app.insert_resource(ControlState::new());
     }
 }

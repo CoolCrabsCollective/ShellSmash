@@ -7,6 +7,10 @@ pub struct InventoryItem {
     pub color: bevy::render::color::Color,
 }
 
+pub struct InventoryItemInfo {
+    pub color: bevy::render::color::Color,
+}
+
 impl InventoryItem {
     pub fn intersects(&self, other_location: IVec3) -> bool {
         let relative_location: IVec3 = self.location - other_location;
@@ -66,26 +70,25 @@ impl
 
 #[derive(Resource)]
 pub struct InventoryData {
-    pub grid: Vec<Vec<Vec<Option<InventoryItem>>>>,
+    pub grid: Vec<Vec<Vec<Option<InventoryItemInfo>>>>,
 }
 
 impl InventoryData {
     pub fn grid_from_items(
         items: Vec<InventoryItem>,
         grid_size: IVec3,
-    ) -> Vec<Vec<Vec<Option<InventoryItem>>>> {
-        let mut item_grid: Vec<Vec<Vec<Option<InventoryItem>>>> = Vec::new();
-
+    ) -> Vec<Vec<Vec<Option<InventoryItemInfo>>>> {
+        let mut item_grid: Vec<Vec<Vec<Option<InventoryItemInfo>>>> = Vec::new();
         for x in 0..grid_size.x {
-            let mut rows: Vec<Vec<Option<InventoryItem>>> = Vec::new();
+            let mut rows: Vec<Vec<Option<InventoryItemInfo>>> = Vec::new();
             for y in 0..grid_size.y {
-                let mut cols: Vec<Option<InventoryItem>> = Vec::new();
+                let mut cols: Vec<Option<InventoryItemInfo>> = Vec::new();
                 for z in 0..grid_size.z {
                     let mut item_found = false;
-                    for i in items.clone() {
+                    for i in &items {
                         if i.intersects(IVec3 { x, y, z }) {
                             item_found = true;
-                            cols.push(Some(i));
+                            cols.push(Some(InventoryItemInfo { color: i.color }));
                             break;
                         }
                     }
