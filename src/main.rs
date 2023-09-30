@@ -13,8 +13,8 @@ use crate::inventory_controller::InventoryControllerPlugin;
 use crate::master_controller::MasterControllerPlugin;
 use crate::voxel_renderer::VoxelRendererPlugin;
 
-use bevy_rapier3d::prelude::NoUserData;
-use bevy_rapier3d::prelude::RapierPhysicsPlugin;
+use bevy_rapier3d::prelude::{Collider, NoUserData, RigidBody};
+use bevy_rapier3d::prelude::{ColliderMassProperties, Friction, RapierPhysicsPlugin, Restitution};
 use bevy_rapier3d::render::RapierDebugRenderPlugin;
 use level_loader::load_level;
 use level_loader::LevelLoaderPlugin;
@@ -29,7 +29,8 @@ mod math;
 mod voxel_renderer;
 mod wall;
 
-const USE_DEBUG_CAM: bool = false;
+const USE_DEBUG_CAM: bool = true;
+const SPAWN_PACKING_SHIT: bool = false;
 
 fn main() {
     let mut app = App::new();
@@ -45,21 +46,17 @@ fn main() {
                 ..default()
             },
         }),
-        WireframePlugin,
-        VoxelRendererPlugin,
         LevelLoaderPlugin,
         RapierPhysicsPlugin::<NoUserData>::default(),
         RapierDebugRenderPlugin::default(),
     ))
     .add_systems(Startup, setup)
-    .add_systems(
-        Update,
-        (
-            bevy::window::close_on_esc,
-            move_inventory_items,
-            update_inventory_data,
-        ),
-    );
+    .add_systems(Update, (bevy::window::close_on_esc));
+
+    if SPAWN_PACKING_SHIT {
+        app.add_plugins((WireframePlugin, VoxelRendererPlugin));
+        app.add_systems(Update, (move_inventory_items, update_inventory_data));
+    }
 
     if !USE_DEBUG_CAM {
         app.add_plugins((MasterControllerPlugin, InventoryControllerPlugin));
@@ -141,6 +138,14 @@ fn setup(
         ..default()
     });
 
+    commands
+        .spawn(RigidBody::Dynamic)
+        .insert(Collider::capsule_y(1.0, 0.25))
+        .insert(TransformBundle::from(Transform::from_xyz(2.0, 5.0, 0.0)))
+        .insert(Friction::coefficient(0.7))
+        .insert(Restitution::coefficient(0.3))
+        .insert(ColliderMassProperties::Density(2.0));
+
     let boomerang = InventoryItem::from((
         (1, 3, 3),
         vec![(0, 0, 0), (0, 0, 1), (0, 0, 2), (-1, 0, 0), (-2, 0, 0)],
@@ -201,8 +206,10 @@ fn setup(
         ..default()
     });
 
-    commands.spawn(boomerang);
-    commands.spawn(sword);
-    commands.spawn(heart);
+    if SPAWN_PACKING_SHIT {
+        commands.spawn(boomerang);
+        commands.spawn(sword);
+        commands.spawn(heart);
+    }
     commands.insert_resource(InventoryData { grid: Vec::new() });
 }
