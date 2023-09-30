@@ -1,8 +1,7 @@
-mod camera_controller;
 mod inventory;
+mod inventory_controller;
 mod voxel_renderer;
 
-use crate::camera_controller::CameraControllerPlugin;
 use crate::inventory::InventoryItem;
 use bevy::input::keyboard::KeyCode;
 use bevy::pbr::wireframe::WireframePlugin;
@@ -10,6 +9,7 @@ use bevy::prelude::*;
 use bevy::render::settings::{WgpuFeatures, WgpuSettings};
 use bevy::render::RenderPlugin;
 use bevy::window::close_on_esc;
+use inventory_controller::InventoryControllerPlugin;
 use voxel_renderer::VoxelRendererPlugin;
 
 fn main() {
@@ -23,7 +23,7 @@ fn main() {
                 .into(),
             }),
             WireframePlugin,
-            CameraControllerPlugin,
+            InventoryControllerPlugin,
             VoxelRendererPlugin,
         ))
         .add_systems(Startup, setup)
@@ -62,7 +62,7 @@ fn setup(
     });
     // camera
     commands.spawn(Camera3dBundle {
-        transform: Transform::from_xyz(-2.0, 2.5, 5.0).looking_at(Vec3::ZERO, Vec3::Y),
+        transform: Transform::from_xyz(-15.0, 15.0, 5.0).looking_at(Vec3::ZERO, Vec3::Y),
         ..default()
     });
 
