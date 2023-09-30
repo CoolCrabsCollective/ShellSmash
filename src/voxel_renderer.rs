@@ -1,7 +1,7 @@
 use bevy::{input::keyboard::KeyboardInput, pbr::wireframe::Wireframe, prelude::*, utils::HashSet};
 use rand::random;
 
-use crate::{inventory::InventoryData, math::deg_to_rad};
+use crate::{inventory::InventoryData, math::deg_to_rad, SPAWN_PACKING_SHIT};
 
 const LEFT_RIGHT: bool = false;
 pub const GRID_DIMS: [i32; 3] = [7, 7, 7];
@@ -114,6 +114,9 @@ fn init_voxel_grid(
     let parent = commands
         .spawn((VoxelCoordinateFrame, SpatialBundle::default()))
         .id();
+    if !SPAWN_PACKING_SHIT {
+        return;
+    }
     for x in 0..GRID_DIMS[0] {
         for y in 0..GRID_DIMS[1] {
             for z in 0..GRID_DIMS[2] {

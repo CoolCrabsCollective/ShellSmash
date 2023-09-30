@@ -126,8 +126,7 @@ fn setup(
     });
     // camera
     commands.spawn(Camera3dBundle {
-        // IF YOU CHANGE THIS YOU DIE DIPSHIT
-        transform: Transform::from_xyz(0.0, 35.0, -15.0).looking_at(vec3(0.0, 0.0, 0.0), Vec3::Y),
+        transform: Transform::from_xyz(0.0, 10.0, -15.0).looking_at(vec3(0.0, 0.0, 0.0), Vec3::Y),
         ..default()
     });
 
