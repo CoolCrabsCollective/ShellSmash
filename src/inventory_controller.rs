@@ -30,7 +30,7 @@ impl ControlledOrientation {
 }
 
 #[derive(Resource)]
-pub struct InventoryControllerState {
+struct InventoryControllerState {
     unprocessed_delta: Option<(f32, f32)>,
 
     rotate: bool,

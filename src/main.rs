@@ -6,6 +6,7 @@ use bevy::pbr::{CascadeShadowConfigBuilder, DirectionalLightShadowMap};
 use bevy::prelude::*;
 use bevy::render::settings::{WgpuFeatures, WgpuSettings};
 use bevy::render::RenderPlugin;
+use camera_controller::CameraControllerPlugin;
 
 use crate::inventory::{move_inventory_items, update_inventory_data, InventoryData, InventoryItem};
 use crate::inventory_controller::InventoryControllerPlugin;
@@ -18,6 +19,7 @@ use bevy_rapier3d::render::RapierDebugRenderPlugin;
 use level_loader::load_level;
 use level_loader::LevelLoaderPlugin;
 
+mod camera_controller;
 mod inventory;
 mod inventory_controller;
 mod level_loader;
@@ -43,6 +45,7 @@ fn main() {
             WireframePlugin,
             MasterControllerPlugin,
             InventoryControllerPlugin,
+            // CameraControllerPlugin,
             VoxelRendererPlugin,
             LevelLoaderPlugin,
             RapierPhysicsPlugin::<NoUserData>::default(),

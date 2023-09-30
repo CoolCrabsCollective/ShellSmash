@@ -1,6 +1,5 @@
 use bevy::prelude::*;
 
-use crate::inventory_controller::InventoryControllerState;
 use crate::voxel_renderer::{VoxelCoordinateFrame, GRID_DIMS};
 
 #[derive(Component, Clone, Debug)]
@@ -107,31 +106,7 @@ pub fn move_inventory_items(
     inv_coord_query: Query<&Transform, With<VoxelCoordinateFrame>>,
     camera_pos_query: Query<&Transform, With<Camera>>,
     k_input: Res<Input<KeyCode>>,
-    orientation: Res<InventoryControllerState>,
 ) {
-    let quat: Quat = orientation.orientation.to_quat();
-    let _x_axis = quat
-        .mul_vec3(Vec3 {
-            x: 1.0,
-            y: 0.0,
-            z: 0.0,
-        })
-        .normalize();
-    let _y_axis = quat
-        .mul_vec3(Vec3 {
-            x: 0.0,
-            y: 1.0,
-            z: 0.0,
-        })
-        .normalize();
-    let _z_axis = quat
-        .mul_vec3(Vec3 {
-            x: 0.0,
-            y: 0.0,
-            z: 1.0,
-        })
-        .normalize();
-
     let inv_coord = inv_coord_query.single();
     let camera_coord = camera_pos_query.single();
     let _direction = (inv_coord.translation - camera_coord.translation).normalize();
