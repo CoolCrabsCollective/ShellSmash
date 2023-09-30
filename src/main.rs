@@ -1,14 +1,16 @@
-mod camera_controller;
 mod inventory;
+mod inventory_controller;
 
-use crate::camera_controller::CameraControllerPlugin;
 use crate::inventory::InventoryItem;
 use bevy::math::ivec3;
 use bevy::prelude::*;
 
 fn main() {
     App::new()
-        .add_plugins((DefaultPlugins, CameraControllerPlugin))
+        .add_plugins((
+            DefaultPlugins,
+            inventory_controller::InventoryControllerPlugin,
+        ))
         .add_systems(Startup, setup)
         .run();
 }
@@ -59,5 +61,5 @@ fn setup(
         ],
     };
 
-    item.spawn_cubes(commands, meshes, materials);
+    // item.spawn_cubes(commands, meshes, materials);
 }
