@@ -2,6 +2,7 @@ mod inventory;
 mod inventory_controller;
 mod math;
 mod voxel_renderer;
+use voxel_renderer::GRID_DIMS;
 
 use crate::inventory::InventoryData;
 use crate::inventory::InventoryItem;
@@ -76,12 +77,12 @@ fn setup(
     });
 
     let boomerang = InventoryItem::from((
-        (0, 0, 0),
+        (1, 3, 3),
         vec![(0, 0, 0), (0, 0, 1), (0, 0, 2), (-1, 0, 0), (-2, 0, 0)],
         bevy::render::color::Color::rgba(1.0, 1.0, 1.0, 1.0),
     ));
     let sword = InventoryItem::from((
-        (1, 0, 0),
+        (5, 3, 2),
         vec![
             (0, 0, 0),
             (0, 0, 1),
@@ -93,7 +94,7 @@ fn setup(
         bevy::render::color::Color::rgba(0.0, 1.0, 0.0, 1.0),
     ));
     let heart = InventoryItem::from((
-        (0, -1, 0),
+        (2, 5, 2),
         vec![
             (0, 0, 0),
             (0, 0, -1),
@@ -116,7 +117,7 @@ fn update_inventory_data(query: Query<&InventoryItem>, mut inv: ResMut<Inventory
     for p in query.iter() {
         items.push(p.clone())
     }
-    inv.grid = InventoryData::grid_from_items(items, IVec3 { x: 5, y: 5, z: 5 })
+    inv.grid = InventoryData::grid_from_items(items, IVec3::from_array(GRID_DIMS))
 }
 
 fn move_inventory_items(mut query: Query<&mut InventoryItem>, k_input: Res<Input<KeyCode>>) {

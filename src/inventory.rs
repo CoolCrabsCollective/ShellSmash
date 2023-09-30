@@ -81,11 +81,10 @@ impl InventoryData {
                 let mut cols: Vec<Option<InventoryItem>> = Vec::new();
                 for z in 0..grid_size.z {
                     let mut item_found = false;
-                    for i in items.clone() {
+                    for i in &items {
                         if i.intersects(IVec3 { x, y, z }) {
                             item_found = true;
-                            println!("{:?}", (x, y, z));
-                            cols.push(Some(i));
+                            cols.push(Some(i.clone()));
                             break;
                         }
                     }
