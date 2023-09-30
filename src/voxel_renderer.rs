@@ -1,5 +1,9 @@
-use bevy::{pbr::wireframe::Wireframe, prelude::*};
+use bevy::{input::keyboard::KeyboardInput, pbr::wireframe::Wireframe, prelude::*};
+use rand::random;
 
+use crate::math::deg_to_rad;
+
+const LEFT_RIGHT: bool = false;
 const GRID_DIMS: [i32; 3] = [5, 5, 5];
 
 pub struct VoxelRendererPlugin;
@@ -10,15 +14,22 @@ pub struct VoxelCoordinateFrame;
 #[derive(Bundle)]
 struct VoxelBundle {
     pbr_material: PbrBundle,
-    position: VoxelPosition,
+    voxel: Voxel,
+}
+
+#[derive(Debug, Component)]
+struct VoxelData {
+    position: IVec3,
+    color: Color,
 }
 
 #[derive(Component)]
-struct VoxelPosition(IVec3);
+struct Voxel(IVec3);
 
 impl Plugin for VoxelRendererPlugin {
     fn build(&self, app: &mut App) {
         app.add_systems(Startup, init_voxel_grid);
+        app.add_systems(Update, (process_inputs, update_voxels));
         // app.add_systems(Startup, init_voxel_grid);
         // app.add_systems(Update, (process_inputs, update_state, set_camera));
         // app.insert_resource(VoxelGridBundle::new());
@@ -35,7 +46,7 @@ impl VoxelBundle {
         Self {
             pbr_material: PbrBundle {
                 mesh,
-                material: materials.add(StandardMaterial::from(Color::rgb(0.3, 0.5, 0.3))),
+                material: materials.add(StandardMaterial::from(Color::rgba(0.0, 0.0, 0.0, 0.0))),
                 transform: Transform::from_translation(Vec3::new(
                     position.x as f32,
                     position.y as f32,
@@ -43,7 +54,53 @@ impl VoxelBundle {
                 )),
                 ..default()
             },
-            position: VoxelPosition(position),
+            voxel: Voxel(position),
+        }
+    }
+}
+
+fn process_inputs(
+    mut commands: Commands,
+    mut keyboard_input_events: EventReader<KeyboardInput>,
+    mut query: Query<&mut Transform, With<VoxelCoordinateFrame>>,
+) {
+    let mut coordinate_frame_transform = query.single_mut();
+
+    for event in keyboard_input_events.iter() {
+        if event.state.is_pressed() {
+            match event.key_code {
+                Some(KeyCode::Up) => {
+                    coordinate_frame_transform.scale += Vec3::new(0.1, 0.1, 0.1);
+                }
+                Some(KeyCode::Down) => {
+                    coordinate_frame_transform.scale -= Vec3::new(0.1, 0.1, 0.1);
+                }
+                Some(KeyCode::Left) => {
+                    if LEFT_RIGHT {
+                        coordinate_frame_transform.rotation *=
+                            Quat::from_axis_angle(Vec3::new(0.0, 1.0, 0.0), deg_to_rad(15.0))
+                    }
+                }
+                Some(KeyCode::Right) => {
+                    if LEFT_RIGHT {
+                        coordinate_frame_transform.rotation *=
+                            Quat::from_axis_angle(Vec3::new(0.0, 1.0, 0.0), deg_to_rad(-15.0))
+                    }
+                }
+                Some(KeyCode::R) => {
+                    let new_voxel = VoxelData {
+                        position: IVec3::new(
+                            ((random::<f32>() - 0.5) * GRID_DIMS[0] as f32) as i32,
+                            ((random::<f32>() - 0.5) * GRID_DIMS[1] as f32) as i32,
+                            ((random::<f32>() - 0.5) * GRID_DIMS[2] as f32) as i32,
+                        ),
+                        color: Color::rgba(random(), random(), random(), random()),
+                    };
+                    println!("Spawning new voxel data: {new_voxel:?}");
+                    commands.spawn(new_voxel);
+                }
+                _ => {}
+            }
         }
     }
 }
@@ -61,12 +118,44 @@ fn init_voxel_grid(
             for z in 0..GRID_DIMS[2] {
                 let child = commands
                     .spawn((
-                        VoxelBundle::new(IVec3::new(x, y, z), &mut meshes, &mut materials),
+                        VoxelBundle::new(
+                            IVec3::new(
+                                x - GRID_DIMS[0] / 2,
+                                y - GRID_DIMS[1] / 2,
+                                z - GRID_DIMS[2] / 2,
+                            ),
+                            &mut meshes,
+                            &mut materials,
+                        ),
                         Wireframe,
                     ))
                     .id();
 
                 commands.entity(parent).add_child(child);
+            }
+        }
+    }
+}
+
+fn update_voxels(
+    mut materials: ResMut<Assets<StandardMaterial>>,
+    voxel_query: Query<(&Voxel, &Handle<StandardMaterial>)>,
+    voxel_data_query: Query<&VoxelData>,
+) {
+    for (Voxel(voxel_position), voxel_material_handle) in &voxel_query {
+        if let Some(material) = materials.get_mut(voxel_material_handle) {
+            material.base_color = Color::rgba(0.0, 0.0, 0.0, 0.0);
+            material.alpha_mode = AlphaMode::Blend;
+
+            for voxel_data in &voxel_data_query {
+                if *voxel_position == voxel_data.position {
+                    material.base_color = voxel_data.color;
+                    material.alpha_mode = if voxel_data.color.a() < 1.0 {
+                        AlphaMode::Blend
+                    } else {
+                        AlphaMode::Opaque
+                    };
+                }
             }
         }
     }

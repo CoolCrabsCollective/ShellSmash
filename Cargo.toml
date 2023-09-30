@@ -7,6 +7,7 @@ edition = "2021"
 
 [dependencies]
 bevy = "0.11.3"
+rand = "0.8.5"
 
 [profile.dev]
 opt-level = 1
@@ -17,5 +18,3 @@ opt-level = 3
 #[target.x86_64-unknown-linux-gnu]
 #linker = "clang"
 #rustflags = ["-C", "link-arg=-fuse-ld=/usr/bin/mold"]
-
-

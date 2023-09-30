@@ -1,5 +1,6 @@
 mod inventory;
 mod inventory_controller;
+mod math;
 mod voxel_renderer;
 
 use crate::inventory::InventoryItem;
@@ -38,11 +39,11 @@ fn setup(
     mut materials: ResMut<Assets<StandardMaterial>>,
 ) {
     // plane
-    commands.spawn(PbrBundle {
-        mesh: meshes.add(shape::Plane::from_size(5.0).into()),
-        material: materials.add(Color::rgb(0.3, 0.5, 0.3).into()),
-        ..default()
-    });
+    // commands.spawn(PbrBundle {
+    //     mesh: meshes.add(shape::Plane::from_size(5.0).into()),
+    //     material: materials.add(Color::rgb(0.3, 0.5, 0.3).into()),
+    //     ..default()
+    // });
     // cube
     //commands.spawn(PbrBundle {
     //    mesh: meshes.add(Mesh::from(shape::Cube { size: 1.0 })),
