@@ -1,3 +1,8 @@
+mod inventory;
+mod inventory_controller;
+mod master_controller;
+mod math;
+mod voxel_renderer;
 use std::f32::consts::PI;
 
 use bevy::input::keyboard::KeyCode;
@@ -8,17 +13,11 @@ use bevy::prelude::*;
 use bevy::render::settings::{WgpuFeatures, WgpuSettings};
 use bevy::render::RenderPlugin;
 
-use voxel_renderer::GRID_DIMS;
-
-use crate::inventory::InventoryData;
-use crate::inventory::InventoryItem;
+use crate::inventory::{InventoryData, InventoryItem};
 use crate::inventory_controller::InventoryControllerPlugin;
+use crate::master_controller::MasterControllerPlugin;
 use crate::voxel_renderer::VoxelRendererPlugin;
-
-mod inventory;
-mod inventory_controller;
-mod math;
-mod voxel_renderer;
+use voxel_renderer::GRID_DIMS;
 
 // add physics
 fn main() {
@@ -36,6 +35,7 @@ fn main() {
                 },
             }),
             WireframePlugin,
+            MasterControllerPlugin,
             InventoryControllerPlugin,
             VoxelRendererPlugin,
         ))
@@ -99,6 +99,7 @@ fn setup(
 
     commands.spawn(SceneBundle {
         scene: asset_server.load("map.glb#Scene0"),
+        transform: Transform::from_xyz(-15.0, 0.0, 0.0).looking_at(Vec3::ZERO, Vec3::Y),
         ..default()
     });
 
