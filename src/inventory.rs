@@ -8,9 +8,9 @@ pub struct InventoryItem {
 impl InventoryItem {
     pub(crate) fn spawn_cubes(
         &self,
-        mut commands: Commands,
-        mut meshes: ResMut<Assets<Mesh>>,
-        mut materials: ResMut<Assets<StandardMaterial>>,
+        commands: &mut Commands,
+        meshes: &mut ResMut<Assets<Mesh>>,
+        materials: &mut ResMut<Assets<StandardMaterial>>,
     ) {
         for point in &self.points {
             // cube
@@ -35,5 +35,14 @@ impl InventoryItem {
             }
         }
         false
+    }
+}
+
+impl From<((i32, i32, i32), Vec<(i32, i32, i32)>)> for InventoryItem {
+    fn from(value: ((i32, i32, i32), Vec<(i32, i32, i32)>)) -> Self {
+        InventoryItem {
+            location: value.0.into(),
+            points: value.1.iter().map(|tup| (*tup).into()).collect(),
+        }
     }
 }
