@@ -4,6 +4,7 @@ mod voxel_renderer;
 
 use crate::camera_controller::CameraControllerPlugin;
 use crate::inventory::InventoryItem;
+use bevy::input::keyboard::KeyCode;
 use bevy::pbr::wireframe::WireframePlugin;
 use bevy::prelude::*;
 use bevy::render::settings::{WgpuFeatures, WgpuSettings};
@@ -26,7 +27,7 @@ fn main() {
             VoxelRendererPlugin,
         ))
         .add_systems(Startup, setup)
-        .add_systems(Update, bevy::window::close_on_esc)
+        .add_systems(Update, (bevy::window::close_on_esc, move_inventory_items))
         .run();
 }
 
@@ -64,6 +65,7 @@ fn setup(
         transform: Transform::from_xyz(-2.0, 2.5, 5.0).looking_at(Vec3::ZERO, Vec3::Y),
         ..default()
     });
+
     let boomerang = InventoryItem::from((
         (0, 0, 0),
         vec![(0, 0, 0), (0, 0, 1), (0, 0, 2), (-1, 0, 0), (-2, 0, 0)],
@@ -94,4 +96,15 @@ fn setup(
     boomerang.spawn_cubes(&mut commands, &mut meshes, &mut materials);
     sword.spawn_cubes(&mut commands, &mut meshes, &mut materials);
     heart.spawn_cubes(&mut commands, &mut meshes, &mut materials);
+    commands.spawn(boomerang);
+    commands.spawn(sword);
+    commands.spawn(heart);
+}
+
+fn move_inventory_items(mut query: Query<(&mut InventoryItem)>, k_input: Res<Input<KeyCode>>) {
+    for mut item in &mut query {
+        if k_input.pressed(KeyCode::Left) {
+            item.translate(IVec3 { x: 1, y: 1, z: 1 })
+        }
+    }
 }
