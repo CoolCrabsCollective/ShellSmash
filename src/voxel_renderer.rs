@@ -1,10 +1,11 @@
-use bevy::{input::keyboard::KeyboardInput, pbr::wireframe::Wireframe, prelude::*};
+use bevy::{input::keyboard::KeyboardInput, pbr::wireframe::Wireframe, prelude::*, utils::HashSet};
 use rand::random;
 
-use crate::math::deg_to_rad;
+use crate::{inventory::InventoryData, math::deg_to_rad};
 
 const LEFT_RIGHT: bool = false;
-const GRID_DIMS: [i32; 3] = [5, 5, 5];
+pub const GRID_DIMS: [i32; 3] = [7, 7, 7];
+const GRID_HALF_SIZE: [i32; 3] = [GRID_DIMS[0] / 2, GRID_DIMS[1] / 2, GRID_DIMS[2] / 2];
 
 pub struct VoxelRendererPlugin;
 
@@ -19,8 +20,8 @@ struct VoxelBundle {
 
 #[derive(Debug, Component)]
 struct VoxelData {
-    position: IVec3,
-    color: Color,
+    _position: IVec3,
+    _color: Color,
 }
 
 #[derive(Component)]
@@ -29,7 +30,7 @@ struct Voxel(IVec3);
 impl Plugin for VoxelRendererPlugin {
     fn build(&self, app: &mut App) {
         app.add_systems(Startup, init_voxel_grid);
-        app.add_systems(Update, (process_inputs, update_voxels));
+        app.add_systems(Update, (process_inputs, update_voxels_2));
         // app.add_systems(Startup, init_voxel_grid);
         // app.add_systems(Update, (process_inputs, update_state, set_camera));
         // app.insert_resource(VoxelGridBundle::new());
@@ -89,12 +90,12 @@ fn process_inputs(
                 }
                 Some(KeyCode::R) => {
                     let new_voxel = VoxelData {
-                        position: IVec3::new(
+                        _position: IVec3::new(
                             ((random::<f32>() - 0.5) * GRID_DIMS[0] as f32) as i32,
                             ((random::<f32>() - 0.5) * GRID_DIMS[1] as f32) as i32,
                             ((random::<f32>() - 0.5) * GRID_DIMS[2] as f32) as i32,
                         ),
-                        color: Color::rgba(random(), random(), random(), random()),
+                        _color: Color::rgba(random(), random(), random(), random()),
                     };
                     println!("Spawning new voxel data: {new_voxel:?}");
                     commands.spawn(new_voxel);
@@ -137,7 +138,7 @@ fn init_voxel_grid(
     }
 }
 
-fn update_voxels(
+fn _update_voxels(
     mut materials: ResMut<Assets<StandardMaterial>>,
     voxel_query: Query<(&Voxel, &Handle<StandardMaterial>)>,
     voxel_data_query: Query<&VoxelData>,
@@ -148,9 +149,9 @@ fn update_voxels(
             material.alpha_mode = AlphaMode::Blend;
 
             for voxel_data in &voxel_data_query {
-                if *voxel_position == voxel_data.position {
-                    material.base_color = voxel_data.color;
-                    material.alpha_mode = if voxel_data.color.a() < 1.0 {
+                if *voxel_position == voxel_data._position {
+                    material.base_color = voxel_data._color;
+                    material.alpha_mode = if voxel_data._color.a() < 1.0 {
                         AlphaMode::Blend
                     } else {
                         AlphaMode::Opaque
@@ -159,4 +160,46 @@ fn update_voxels(
             }
         }
     }
+}
+
+fn update_voxels_2(
+    mut materials: ResMut<Assets<StandardMaterial>>,
+    voxel_query: Query<(&Voxel, &Handle<StandardMaterial>)>,
+    inventory_data_res: Res<InventoryData>,
+) {
+    // let mut count = 0;
+    let mut locations: HashSet<IVec3> = HashSet::new();
+    for (Voxel(voxel_position), voxel_material_handle) in &voxel_query {
+        if let Some(material) = materials.get_mut(voxel_material_handle) {
+            material.base_color = Color::rgba(0.0, 0.0, 0.0, 0.0);
+            material.alpha_mode = AlphaMode::Blend;
+
+            for (x, x_list) in inventory_data_res.grid.iter().enumerate() {
+                for (y, y_list) in x_list.iter().enumerate() {
+                    for (z, item_opt) in y_list.iter().enumerate() {
+                        if let Some(inventory_item) = item_opt {
+                            let location = IVec3::new(x as i32, y as i32, z as i32)
+                                - IVec3::new(
+                                    GRID_HALF_SIZE[0],
+                                    GRID_HALF_SIZE[1],
+                                    GRID_HALF_SIZE[2],
+                                );
+                            locations.insert(location);
+                            // dbg!(location);
+                            if *voxel_position == location {
+                                material.base_color = inventory_item.color;
+                                material.alpha_mode = if inventory_item.color.a() < 1.0 {
+                                    AlphaMode::Blend
+                                } else {
+                                    AlphaMode::Opaque
+                                };
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    // dbg!(locations);
 }
