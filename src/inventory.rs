@@ -1,5 +1,6 @@
 use bevy::prelude::*;
 
+use crate::voxel_renderer::GRID_DIMS;
 #[derive(Component, Clone, Debug)]
 pub struct InventoryItem {
     pub location: IVec3,          // world location
@@ -102,5 +103,27 @@ impl InventoryData {
             item_grid.push(rows);
         }
         item_grid
+    }
+}
+
+pub fn update_inventory_data(query: Query<&InventoryItem>, mut inv: ResMut<InventoryData>) {
+    let mut items: Vec<InventoryItem> = Vec::new();
+    for p in query.iter() {
+        items.push(p.clone())
+    }
+    inv.grid = InventoryData::grid_from_items(items, IVec3::from_array(GRID_DIMS))
+}
+
+pub fn move_inventory_items(mut query: Query<&mut InventoryItem>, k_input: Res<Input<KeyCode>>) {
+    for mut item in &mut query {
+        if k_input.just_pressed(KeyCode::H) {
+            item.translate(IVec3 { x: 1, y: 0, z: 0 })
+        } else if k_input.just_pressed(KeyCode::L) {
+            item.translate(IVec3 { x: -1, y: 0, z: 0 })
+        } else if k_input.just_pressed(KeyCode::J) {
+            item.translate(IVec3 { x: 0, y: 1, z: 0 })
+        } else if k_input.just_pressed(KeyCode::K) {
+            item.translate(IVec3 { x: 0, y: -1, z: 0 })
+        }
     }
 }

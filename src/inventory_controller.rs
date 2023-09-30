@@ -20,8 +20,6 @@ struct ControlledOrientation {
     horizontal: f32,
     vertical: f32,
     zoom_pos: f32,
-
-    rotation: Quat,
 }
 
 impl ControlledOrientation {
@@ -53,7 +51,6 @@ impl InventoryControllerState {
                 horizontal: deg_to_rad(180.0),
                 vertical: deg_to_rad(-45.0),
                 zoom_pos: 0.0,
-                rotation: Quat::from_xyzw(0.0, 0.0, 0.0, 0.0),
             },
         }
     }
@@ -115,6 +112,4 @@ fn set_world_orientation(
 
     world_transform.translation.x = state.orientation.zoom_pos;
     world_transform.rotation = state.orientation.to_quat();
-
-    state.orientation.rotation = state.orientation.to_quat();
 }
