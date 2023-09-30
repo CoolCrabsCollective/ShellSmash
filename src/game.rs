@@ -4,15 +4,8 @@ use crate::level_loader::{load_level, LevelLoaderPlugin};
 use crate::player::PlayerPlugin;
 use bevy::math::vec3;
 use bevy::pbr::{CascadeShadowConfigBuilder, DirectionalLightShadowMap};
-use bevy::prelude::{
-    default, AmbientLight, App, AssetServer, Assets, Camera3dBundle, Color, Commands,
-    DirectionalLight, DirectionalLightBundle, Mesh, PbrBundle, Plugin, Quat, ResMut, SceneBundle,
-    StandardMaterial, Startup, Transform, TransformBundle, Vec3,
-};
-use bevy_rapier3d::prelude::{
-    Collider, ColliderMassProperties, Friction, NoUserData, RapierDebugRenderPlugin,
-    RapierPhysicsPlugin, Restitution, RigidBody,
-};
+use bevy::prelude::*;
+use bevy_rapier3d::prelude::*;
 use std::f32::consts::PI;
 
 pub struct GamePlugin;

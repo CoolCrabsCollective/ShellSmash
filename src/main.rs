@@ -16,7 +16,7 @@ mod player;
 mod voxel_renderer;
 mod wall;
 
-const INVENTORY_MODE: bool = false;
+const USE_DEBUG_CAM: bool = false;
 
 #[derive(Debug, Clone, Default, Eq, PartialEq, Hash, States)]
 enum GameState {
@@ -42,11 +42,8 @@ fn main() {
             ..default()
         },
     }));
-    if INVENTORY_MODE {
-        app.add_plugins(InventoryPlugin);
-    } else {
-        app.add_plugins(GamePlugin);
-    }
+    app.add_plugins(GamePlugin);
+    app.add_plugins(InventoryPlugin);
     app.add_state::<GameState>()
         .add_systems(Update, (bevy::window::close_on_esc, swap_controls));
 

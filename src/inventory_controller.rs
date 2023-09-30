@@ -123,12 +123,23 @@ fn update_state(mut state: ResMut<InventoryControllerState>) {
 }
 
 fn set_world_orientation(
-    mut model_transform_query: Query<&mut Transform, With<VoxelCoordinateFrame>>,
+    mut param_set: ParamSet<(
+        Query<&mut Transform, With<VoxelCoordinateFrame>>,
+        Query<&Transform, With<Camera>>,
+    )>,
     state: ResMut<InventoryControllerState>,
 ) {
+    let base_camera_translation = {
+        let camera_transform_query = param_set.p1();
+        let camera_transform = camera_transform_query.single();
+        camera_transform.translation + camera_transform.forward() * 2.0 * GRID_DIMS[0] as f32
+    };
+
+    let mut model_transform_query = param_set.p0();
     let mut world_transform = model_transform_query.single_mut();
 
-    world_transform.translation.x = state.orientation.zoom_pos;
+    world_transform.translation = base_camera_translation;
+    world_transform.translation.x += state.orientation.zoom_pos;
     world_transform.rotation = state.orientation.to_quat();
 }
 

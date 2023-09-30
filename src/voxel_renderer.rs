@@ -1,4 +1,6 @@
-use bevy::{input::keyboard::KeyboardInput, pbr::wireframe::Wireframe, prelude::*, utils::HashSet};
+use bevy::{
+    input::keyboard::KeyboardInput, log, pbr::wireframe::Wireframe, prelude::*, utils::HashSet,
+};
 use rand::random;
 
 use crate::{inventory::InventoryData, math::deg_to_rad};
@@ -30,10 +32,7 @@ struct Voxel(IVec3);
 impl Plugin for VoxelRendererPlugin {
     fn build(&self, app: &mut App) {
         app.add_systems(Startup, init_voxel_grid);
-        app.add_systems(Update, (process_inputs, update_voxels_2));
-        // app.add_systems(Startup, init_voxel_grid);
-        // app.add_systems(Update, (process_inputs, update_state, set_camera));
-        // app.insert_resource(VoxelGridBundle::new());
+        app.add_systems(Update, (process_inputs, update_voxels));
     }
 }
 
@@ -138,31 +137,7 @@ fn init_voxel_grid(
     }
 }
 
-fn _update_voxels(
-    mut materials: ResMut<Assets<StandardMaterial>>,
-    voxel_query: Query<(&Voxel, &Handle<StandardMaterial>)>,
-    voxel_data_query: Query<&VoxelData>,
-) {
-    for (Voxel(voxel_position), voxel_material_handle) in &voxel_query {
-        if let Some(material) = materials.get_mut(voxel_material_handle) {
-            material.base_color = Color::rgba(0.0, 0.0, 0.0, 0.0);
-            material.alpha_mode = AlphaMode::Blend;
-
-            for voxel_data in &voxel_data_query {
-                if *voxel_position == voxel_data._position {
-                    material.base_color = voxel_data._color;
-                    material.alpha_mode = if voxel_data._color.a() < 1.0 {
-                        AlphaMode::Blend
-                    } else {
-                        AlphaMode::Opaque
-                    };
-                }
-            }
-        }
-    }
-}
-
-fn update_voxels_2(
+fn update_voxels(
     mut materials: ResMut<Assets<StandardMaterial>>,
     voxel_query: Query<(&Voxel, &Handle<StandardMaterial>)>,
     inventory_data_res: Res<InventoryData>,
