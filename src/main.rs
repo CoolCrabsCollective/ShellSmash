@@ -1,3 +1,5 @@
+mod inventory;
+
 use bevy::prelude::*;
 
 fn main() {
