@@ -1,3 +1,4 @@
+use bevy::ecs::query::WorldQuery;
 use crate::config::INVENTORY_GRID_DIMENSIONS;
 use crate::{game_state::GameState, inventory_controller::InventoryControllerPlugin};
 
@@ -63,8 +64,6 @@ fn setup(mut commands: Commands) {
 
 #[derive(Component, Clone, Debug)]
 pub struct InventoryItem {
-    pub real_location: Option<Vec3>, // Actual location in world
-
     pub location: IVec3,          // grid location
     pub local_points: Vec<IVec3>, // relative coordinate, center is the first point
     pub color: Color,
@@ -112,7 +111,6 @@ impl InventoryItem {
 impl From<((i32, i32, i32), Vec<(i32, i32, i32)>, Color)> for InventoryItem {
     fn from(value: ((i32, i32, i32), Vec<(i32, i32, i32)>, Color)) -> Self {
         InventoryItem {
-            real_location: None,
             location: value.0.into(),
             local_points: value.1.iter().map(|tup| (*tup).into()).collect(),
             color: value.2,

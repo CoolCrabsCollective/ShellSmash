@@ -22,7 +22,7 @@ impl Plugin for ItemSpawner {
 }
 
 fn spawn_debug_items(
-    mut context: ResMut<DebugRenderContext>,
+    context: ResMut<DebugRenderContext>,
     keys: Res<Input<KeyCode>>,
     mut player: Query<(&Transform, &mut WeaponHolder)>,
     mut commands: Commands,
@@ -101,7 +101,7 @@ fn create_boomerang(
     meshes: ResMut<Assets<Mesh>>,
     materials: ResMut<Assets<StandardMaterial>>,
 ) {
-    let mut boomerang = InventoryItem::from((
+    let boomerang = InventoryItem::from((
         (1, 3, 3),
         vec![(0, 0, 0), (0, 0, 1), (0, 0, 2), (-1, 0, 0), (-2, 0, 0)],
         Color::rgba(1.0, 1.0, 1.0, 1.0),
@@ -110,7 +110,7 @@ fn create_boomerang(
     boomerang.create_world_entity(
         Vec3 {
             x: 0.0,
-            y: 1.0,
+            y: 0.5,
             z: 0.0,
         },
         false,

@@ -5,6 +5,7 @@ pub struct GameStatePlugin;
 #[derive(Debug, Clone, Default, Eq, PartialEq, Hash, States)]
 pub enum GameState {
     #[default]
+    Loading,
     FightingInArena,
     ManagingInventory,
 }
@@ -28,6 +29,7 @@ fn process_inputs(
                     let new_state = match current_state.get() {
                         GameState::FightingInArena => GameState::ManagingInventory,
                         GameState::ManagingInventory => GameState::FightingInArena,
+                        GameState::Loading => GameState::Loading,
                     };
                     log::info!("Changing game state to: {new_state:?}");
                     next_state.set(new_state);

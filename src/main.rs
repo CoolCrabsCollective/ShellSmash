@@ -1,17 +1,11 @@
-use bevy::prelude::*;
-use bevy::render::settings::{WgpuFeatures, WgpuSettings};
-use bevy::render::RenderPlugin;
-use game_state::GameStatePlugin;
-
-use crate::game::GamePlugin;
-use crate::inventory::InventoryPlugin;
-
+mod asset_loader;
 mod collectable;
 mod combat;
 mod config;
 mod debug_camera_controller;
 mod enemy;
 mod game;
+mod game_camera_controller;
 mod game_state;
 mod health;
 mod inventory;
@@ -26,6 +20,15 @@ mod wall;
 mod wave_manager;
 mod world_item;
 
+use asset_loader::AssetLoaderPlugin;
+use bevy::prelude::*;
+use bevy::render::settings::{WgpuFeatures, WgpuSettings};
+use bevy::render::RenderPlugin;
+use game_state::GameStatePlugin;
+
+use crate::game::GamePlugin;
+use crate::inventory::InventoryPlugin;
+
 fn main() {
     let mut app = App::new();
     app.add_plugins(DefaultPlugins.set(RenderPlugin {
@@ -34,6 +37,7 @@ fn main() {
             ..default()
         },
     }));
+    app.add_plugins(AssetLoaderPlugin);
     app.add_plugins(GamePlugin);
     app.add_plugins(InventoryPlugin);
     app.add_plugins(GameStatePlugin);
