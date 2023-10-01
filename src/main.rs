@@ -7,6 +7,7 @@ use crate::game::GamePlugin;
 use crate::inventory::InventoryPlugin;
 
 mod combat;
+mod config;
 mod debug_camera_controller;
 mod enemy;
 mod enemy_spawner;

@@ -1,9 +1,10 @@
+use crate::config::INVENTORY_GRID_DIMENSIONS;
 use crate::{game_state::GameState, inventory_controller::InventoryControllerPlugin};
 
 use bevy::pbr::wireframe::WireframePlugin;
 use bevy::prelude::*;
 
-use crate::voxel_renderer::{VoxelRendererPlugin, GRID_DIMS};
+use crate::voxel_renderer::VoxelRendererPlugin;
 
 pub struct InventoryPlugin;
 
@@ -163,7 +164,7 @@ pub fn update_inventory_data(query: Query<&InventoryItem>, mut inv: ResMut<Inven
     for p in query.iter() {
         items.push(p.clone())
     }
-    inv.grid = InventoryData::grid_from_items(items, IVec3::from_array(GRID_DIMS))
+    inv.grid = InventoryData::grid_from_items(items, IVec3::from_array(INVENTORY_GRID_DIMENSIONS))
 }
 
 #[derive(Debug)]

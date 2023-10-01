@@ -1,11 +1,18 @@
 use bevy::{input::keyboard::KeyboardInput, pbr::wireframe::Wireframe, prelude::*};
 use rand::random;
 
-use crate::{game_state::GameState, inventory::InventoryData, math::deg_to_rad};
+use crate::{
+    config::{INVENTORY_GRID_DIMENSIONS, VOXEL_RENDERER_LEFT_RIGHT_CONTROLS},
+    game_state::GameState,
+    inventory::InventoryData,
+    math::deg_to_rad,
+};
 
-const LEFT_RIGHT: bool = false;
-pub const GRID_DIMS: [i32; 3] = [7, 2, 7];
-const GRID_HALF_SIZE: [i32; 3] = [GRID_DIMS[0] / 2, GRID_DIMS[1] / 2, GRID_DIMS[2] / 2];
+const GRID_HALF_SIZE: [i32; 3] = [
+    INVENTORY_GRID_DIMENSIONS[0] / 2,
+    INVENTORY_GRID_DIMENSIONS[1] / 2,
+    INVENTORY_GRID_DIMENSIONS[2] / 2,
+];
 
 pub struct VoxelRendererPlugin;
 
@@ -82,13 +89,13 @@ fn process_inputs(
                     coordinate_frame_transform.scale -= Vec3::new(0.1, 0.1, 0.1);
                 }
                 Some(KeyCode::Left) => {
-                    if LEFT_RIGHT {
+                    if VOXEL_RENDERER_LEFT_RIGHT_CONTROLS {
                         coordinate_frame_transform.rotation *=
                             Quat::from_axis_angle(Vec3::new(0.0, 1.0, 0.0), deg_to_rad(15.0));
                     }
                 }
                 Some(KeyCode::Right) => {
-                    if LEFT_RIGHT {
+                    if VOXEL_RENDERER_LEFT_RIGHT_CONTROLS {
                         coordinate_frame_transform.rotation *=
                             Quat::from_axis_angle(Vec3::new(0.0, 1.0, 0.0), deg_to_rad(-15.0));
                     }
@@ -96,9 +103,9 @@ fn process_inputs(
                 Some(KeyCode::R) => {
                     let new_voxel = VoxelData {
                         _position: IVec3::new(
-                            ((random::<f32>() - 0.5) * GRID_DIMS[0] as f32) as i32,
-                            ((random::<f32>() - 0.5) * GRID_DIMS[1] as f32) as i32,
-                            ((random::<f32>() - 0.5) * GRID_DIMS[2] as f32) as i32,
+                            ((random::<f32>() - 0.5) * INVENTORY_GRID_DIMENSIONS[0] as f32) as i32,
+                            ((random::<f32>() - 0.5) * INVENTORY_GRID_DIMENSIONS[1] as f32) as i32,
+                            ((random::<f32>() - 0.5) * INVENTORY_GRID_DIMENSIONS[2] as f32) as i32,
                         ),
                         _color: Color::rgba(random(), random(), random(), random()),
                     };
@@ -140,16 +147,16 @@ fn init_voxel_grid(
             }),
         ))
         .id();
-    for x in 0..GRID_DIMS[0] {
-        for y in 0..GRID_DIMS[1] {
-            for z in 0..GRID_DIMS[2] {
+    for x in 0..INVENTORY_GRID_DIMENSIONS[0] {
+        for y in 0..INVENTORY_GRID_DIMENSIONS[1] {
+            for z in 0..INVENTORY_GRID_DIMENSIONS[2] {
                 let child = commands
                     .spawn((
                         VoxelBundle::new(
                             IVec3::new(
-                                x - GRID_DIMS[0] / 2,
-                                y - GRID_DIMS[1] / 2,
-                                z - GRID_DIMS[2] / 2,
+                                x - INVENTORY_GRID_DIMENSIONS[0] / 2,
+                                y - INVENTORY_GRID_DIMENSIONS[1] / 2,
+                                z - INVENTORY_GRID_DIMENSIONS[2] / 2,
                             ),
                             &mut meshes,
                             &mut materials,

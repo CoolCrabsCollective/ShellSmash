@@ -1,3 +1,4 @@
+use crate::config::ENABLE_DEBUG_PHYSICS_WORLD;
 use crate::debug_camera_controller::DebugCameraControllerPlugin;
 use crate::enemy::EnemyPlugin;
 use crate::enemy_spawner::EnemySpawnerPlugin;
@@ -6,6 +7,7 @@ use crate::inventory::InventoryItem;
 use crate::item_spawner::ItemSpawner;
 use crate::level_loader::{load_level, LevelLoaderPlugin};
 use crate::player::PlayerPlugin;
+use crate::world_item::ItemAttachmentPlugin;
 use bevy::math::vec3;
 use bevy::pbr::{CascadeShadowConfigBuilder, DirectionalLightShadowMap};
 use bevy::prelude::*;
@@ -21,11 +23,16 @@ impl Plugin for GamePlugin {
         app.add_plugins((
             LevelLoaderPlugin,
             RapierPhysicsPlugin::<NoUserData>::default(),
-            RapierDebugRenderPlugin::default().disabled(),
+            if ENABLE_DEBUG_PHYSICS_WORLD {
+                RapierDebugRenderPlugin::default()
+            } else {
+                RapierDebugRenderPlugin::default().disabled()
+            },
             PlayerPlugin,
             EnemyPlugin,
             EnemySpawnerPlugin,
             ItemSpawner,
+            ItemAttachmentPlugin,
         ))
         .add_systems(Update, debug_render_toggle)
         .insert_resource(AmbientLight {
