@@ -6,7 +6,7 @@ use rand::random;
 use crate::{inventory::InventoryData, math::deg_to_rad};
 
 const LEFT_RIGHT: bool = false;
-pub const GRID_DIMS: [i32; 3] = [7, 7, 7];
+pub const GRID_DIMS: [i32; 3] = [7, 7, 2];
 const GRID_HALF_SIZE: [i32; 3] = [GRID_DIMS[0] / 2, GRID_DIMS[1] / 2, GRID_DIMS[2] / 2];
 
 pub struct VoxelRendererPlugin;

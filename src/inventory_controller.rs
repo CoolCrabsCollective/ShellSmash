@@ -42,7 +42,7 @@ struct InventoryControllerState {
 
     rotate: bool,
     zoom: bool,
-
+    pub view_index: usize,
     pub orientation: ControlledOrientation,
 }
 
@@ -53,6 +53,7 @@ impl InventoryControllerState {
 
             rotate: false,
             zoom: false,
+            view_index: 0,
 
             orientation: ControlledOrientation {
                 horizontal: deg_to_rad(0.0),
@@ -66,28 +67,32 @@ impl InventoryControllerState {
 fn process_inputs(
     // mut mouse_motion_events: EventReader<MouseMotion>,
     key_codes: Res<Input<KeyCode>>,
-    mouse_buttons: Res<Input<MouseButton>>,
     mut state: ResMut<InventoryControllerState>,
+    mut param_set: ParamSet<(
+        Query<&Transform, With<VoxelCoordinateFrame>>,
+        Query<&mut Transform, With<Camera>>,
+    )>,
 ) {
-    if key_codes.just_pressed(KeyCode::W) {
-        state.orientation.vertical += deg_to_rad(90.0);
-    } else if key_codes.just_pressed(KeyCode::S) {
-        state.orientation.vertical += deg_to_rad(-90.0);
-    } else if key_codes.just_pressed(KeyCode::A) {
-        state.orientation.horizontal += deg_to_rad(-90.0);
-    } else if key_codes.just_pressed(KeyCode::D) {
-        state.orientation.horizontal += deg_to_rad(90.0);
+    let voxel_translation_p0 = param_set.p0();
+    let voxel_translation = voxel_translation_p0.single();
+    let vox_trans = voxel_translation.translation;
+    let views: Vec<Vec3> = vec![
+        Vec3::from((5.0, 0.0, 5.0)),
+        Vec3::from((0.0, 5.0, 5.0)),
+        Vec3::from((-5.0, 0.0, 5.0)),
+        Vec3::from((0.0, -5.0, 5.0)),
+    ];
+    if key_codes.just_pressed(KeyCode::Left) {
+        let mut camera_translation_query = param_set.p1();
+        let mut camera_translation = camera_translation_query.single_mut();
+        camera_translation.translation = vox_trans + views[state.view_index];
+        state.view_index = (state.view_index + 1) % 4;
+    } else if key_codes.just_pressed(KeyCode::Right) {
+        let mut camera_translation_query = param_set.p1();
+        let mut camera_translation = camera_translation_query.single_mut();
+        camera_translation.translation = vox_trans + views[state.view_index];
+        state.view_index = (state.view_index + 1) % 4;
     }
-
-    // for motion_event in mouse_motion_events.iter() {
-    //     state.unprocessed_delta = match state.unprocessed_delta {
-    //         Some((x, y)) => Some((x + motion_event.delta.x, y + motion_event.delta.y)),
-    //         None => Some((motion_event.delta.x, motion_event.delta.y)),
-    //     };
-    // }
-    //
-    // state.rotate = mouse_buttons.pressed(MouseButton::Right);
-    state.zoom = mouse_buttons.pressed(MouseButton::Left);
 }
 
 fn update_state(mut state: ResMut<InventoryControllerState>) {
