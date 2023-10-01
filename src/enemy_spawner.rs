@@ -6,6 +6,7 @@ use bevy::window::PrimaryWindow;
 use bevy_rapier3d::prelude::*;
 use rand::random;
 
+use crate::config::SPAWN_ENEMIES;
 use crate::enemy::EnemyBundle;
 use crate::game_state::GameState;
 
@@ -32,6 +33,10 @@ fn spawn_enemies(
     time: Res<Time>,
     mut asset_server: ResMut<AssetServer>,
 ) {
+    if !SPAWN_ENEMIES {
+        return;
+    }
+
     if spawn_timer.0.tick(time.delta()).just_finished() {
         let position = Vec3::new(
             (random::<f32>() - 0.5) * ARENA_DIMENSIONS_METERS[0],
