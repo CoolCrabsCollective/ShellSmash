@@ -5,6 +5,7 @@ use bevy::{log, prelude::*};
 use bevy_rapier3d::prelude::*;
 
 use crate::enemy::Enemy;
+use crate::game_camera_controller::GameCameraControllerPlugin;
 use crate::game_state::GameState;
 use crate::world_item::WeaponHolder;
 
@@ -27,7 +28,7 @@ pub struct PlayerControllerState {
     is_left_pressed: bool,
     is_right_pressed: bool,
 
-    velocity: Vec3,
+    pub velocity: Vec3,
 }
 
 #[derive(Event)]
@@ -71,6 +72,7 @@ impl Plugin for PlayerPlugin {
         app.add_state::<PlayerState>();
         app.add_event::<PlayerHitEvent>();
         app.insert_resource(DeathTimer(Timer::from_seconds(2.0, TimerMode::Once)));
+        app.add_plugins(GameCameraControllerPlugin);
     }
 }
 
@@ -189,6 +191,20 @@ fn player_movement(
             let pos = ray.get_point(distance);
             transform.look_at(pos, Vec3::Y);
         }
+    }
+}
+
+fn vertical_vel_reset(
+    mut player_controller_output_query: Query<(
+        &KinematicCharacterControllerOutput,
+        &mut PlayerControllerState,
+    )>,
+) {
+    let (player_controller_output, mut player_state) =
+        player_controller_output_query.get_single_mut().unwrap();
+
+    if player_controller_output.grounded {
+        player_state.velocity.y = 0.0;
     }
 }
 

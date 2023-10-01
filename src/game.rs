@@ -3,6 +3,7 @@ use std::f32::consts::PI;
 use crate::collectable::CollectablePlugin;
 use bevy::math::vec3;
 use bevy::pbr::{CascadeShadowConfigBuilder, DirectionalLightShadowMap};
+use bevy::prelude::Projection::Perspective;
 use bevy::prelude::*;
 use bevy_rapier3d::prelude::*;
 
@@ -79,6 +80,10 @@ fn setup(
     // camera
     commands.spawn(Camera3dBundle {
         transform: get_camera_position(),
+        projection: Perspective(PerspectiveProjection {
+            fov: 10.0f32.to_radians(),
+            ..default()
+        }),
         ..default()
     });
 
@@ -92,8 +97,7 @@ fn setup(
 }
 
 fn get_camera_position() -> Transform {
-    // DON'T CHANGE THE FOLLOWING LINE UNLESS YOU WANT TO DIE
-    Transform::from_xyz(0.0, 30.0, 15.0).looking_at(vec3(0.0, 0.0, 2.0), Vec3::Y)
+    Transform::from_xyz(0.0, 60.0, 30.0).looking_at(vec3(0.0, 0.0, 2.0), Vec3::Y)
 }
 
 fn reset_camera(mut camera_query: Query<&mut Transform, With<Camera>>) {
