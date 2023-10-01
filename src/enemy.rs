@@ -3,6 +3,7 @@ use bevy::prelude::*;
 use bevy::window::PrimaryWindow;
 use bevy_rapier3d::prelude::*;
 
+use crate::asset_loader::GameAssets;
 use crate::game_state::GameState;
 use crate::player::PlayerControllerState;
 
@@ -11,7 +12,7 @@ pub struct EnemyPlugin;
 #[derive(Bundle)]
 pub struct EnemyBundle {
     collider: Collider,
-    scene: SceneBundle,
+    pbr: PbrBundle,
     controller: KinematicCharacterController,
     enemy: Enemy,
 }
@@ -29,11 +30,12 @@ impl Plugin for EnemyPlugin {
 }
 
 impl EnemyBundle {
-    pub fn new(asset_server: &mut ResMut<AssetServer>, position: Vec3) -> Self {
+    pub fn new(position: Vec3, assets: Res<GameAssets>) -> Self {
         Self {
             collider: Collider::ball(0.25),
-            scene: SceneBundle {
-                scene: asset_server.load("jelly.glb#Scene0"),
+            pbr: PbrBundle {
+                mesh: assets.jelly().mesh_handle,
+                material: assets.jelly().material_handle,
                 transform: Transform::default().with_translation(position),
                 ..default()
             },
