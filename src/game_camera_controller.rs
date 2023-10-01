@@ -9,7 +9,7 @@ impl Plugin for GameCameraControllerPlugin {
     fn build(&self, app: &mut App) {
         app.add_systems(
             Update,
-            set_camera.run_if(in_state(GameState::ManagingInventory)),
+            set_camera.run_if(in_state(GameState::FightingInArena)),
         );
     }
 }
