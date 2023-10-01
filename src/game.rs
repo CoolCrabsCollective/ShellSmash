@@ -25,7 +25,7 @@ impl Plugin for GamePlugin {
             RapierDebugRenderPlugin::default().disabled(),
             PlayerPlugin,
             EnemyPlugin,
-            //EnemySpawnerPlugin,
+            EnemySpawnerPlugin,
             ItemSpawner,
             ItemAttachmentPlugin,
         ))
