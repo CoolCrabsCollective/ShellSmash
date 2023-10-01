@@ -1,5 +1,6 @@
 use crate::game_state::GameState;
 use crate::inventory::InventoryItem;
+use crate::inventory::ItemType::{MELEE_WEAPON, NON_WEAPON, RANGED_WEAPON};
 use crate::player::{PlayerControllerState, PLAYER_HEIGHT};
 use crate::world_item::{WeaponHolder, VOXEL_SIZE_IN_WORLD};
 use bevy::math::vec3;
@@ -34,6 +35,7 @@ fn spawn_debug_items(
             (1, 3, 3),
             vec![(0, 0, 0), (0, 0, 1), (0, 0, 2), (-1, 0, 2), (-2, 0, 2)],
             Color::rgba(1.0, 1.0, 1.0, 1.0),
+            RANGED_WEAPON,
         ))
     } else if keys.just_pressed(KeyCode::Key2) {
         InventoryItem::from((
@@ -44,11 +46,16 @@ fn spawn_debug_items(
                 (0, 0, 2),
                 (0, 0, 3),
                 (0, 0, 4),
+                (0, 0, 5),
+                (0, 0, 6),
                 (1, 0, 0),
                 (-1, 0, 0),
+                (0, 1, 0),
+                (0, -1, 0),
                 (0, 0, -1),
             ],
             Color::rgba(0.5, 0.5, 0.5, 1.0),
+            MELEE_WEAPON,
         ))
     } else if keys.just_pressed(KeyCode::Key3) {
         InventoryItem::from((
@@ -62,6 +69,7 @@ fn spawn_debug_items(
                 (1, 0, 1),
             ],
             Color::rgba(1.0, 0.0, 0.0, 1.0),
+            NON_WEAPON,
         ))
     } else {
         return;
@@ -93,7 +101,8 @@ fn setup(
     meshes: ResMut<Assets<Mesh>>,
     materials: ResMut<Assets<StandardMaterial>>,
 ) {
-    create_boomerang(commands, meshes, materials);
+    // create_boomerang(commands, meshes, materials);
+    create_sword(commands, meshes, materials);
 }
 
 fn create_boomerang(
@@ -105,11 +114,45 @@ fn create_boomerang(
         (1, 3, 3),
         vec![(0, 0, 0), (0, 0, 1), (0, 0, 2), (-1, 0, 0), (-2, 0, 0)],
         Color::rgba(1.0, 1.0, 1.0, 1.0),
+        RANGED_WEAPON,
     ));
 
     boomerang.create_world_entity(
         Vec3 {
             x: 0.0,
+            y: 0.5,
+            z: 0.0,
+        },
+        false,
+        true,
+        commands,
+        meshes,
+        materials,
+    );
+}
+
+fn create_sword(
+    commands: Commands,
+    meshes: ResMut<Assets<Mesh>>,
+    materials: ResMut<Assets<StandardMaterial>>,
+) {
+    let sword = InventoryItem::from((
+                                            (5, 0, 2),
+                                            vec![
+                                                (0, 0, 0),
+                                                (0, 0, 1),
+                                                (0, 0, 2),
+                                                (1, 0, 0),
+                                                (-1, 0, 0),
+                                                (0, 0, -1),
+                                            ],
+                                            Color::rgba(0.0, 1.0, 0.0, 1.0),
+                                            MELEE_WEAPON,
+                                        ));
+
+    sword.create_world_entity(
+        Vec3 {
+            x: 10.0,
             y: 0.5,
             z: 0.0,
         },

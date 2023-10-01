@@ -3,6 +3,8 @@ use crate::game_state::GameState;
 use bevy::prelude::*;
 
 use crate::inventory::InventoryItem;
+use crate::inventory::ItemType::MELEE_WEAPON;
+use crate::player::combat::PlayerCombatState;
 
 pub const VOXEL_SIZE_IN_WORLD: f32 = 0.1;
 
@@ -25,7 +27,7 @@ impl InventoryItem {
         mut materials: ResMut<Assets<StandardMaterial>>,
     ) -> Entity {
         return commands
-            .spawn((AttachedToPlayer(on_player), Collectable(collectable)))
+            .spawn((AttachedToPlayer(on_player), Collectable(collectable), self.clone()))
             .insert(PbrBundle {
                 mesh: meshes.add(self.generate_mesh()),
                 material: materials.add(self.color.clone().into()),
@@ -52,13 +54,22 @@ impl Plugin for ItemAttachmentPlugin {
 pub fn item_attachment_update(
     mut commands: Commands,
     mut param_set: ParamSet<(
-        Query<(&Transform, &WeaponHolder)>,
+        Query<(&Transform, &WeaponHolder, &PlayerCombatState)>,
         Query<(Entity, &mut Transform, &AttachedToPlayer)>,
     )>,
+    time: Res<Time>,
 ) {
     let binding = param_set.p0();
     let player_transform = binding.single().0.clone();
     let entity = binding.single().1.current_weapon.clone().map(|x| x.0);
+    let current_weapon = binding
+        .single()
+        .1
+        .current_weapon
+        .clone()
+        .map(|x| x.1)
+        .clone();
+    let state = binding.single().2.clone();
     drop(binding);
     let mut query = param_set.p1();
     for mut item in query.iter_mut() {
@@ -73,5 +84,8 @@ pub fn item_attachment_update(
         item.1.translation = player_transform.translation + player_transform.forward() * 0.5;
         item.1.rotation = player_transform.rotation;
         item.1.rotate_y(180.0f32.to_radians());
+        if current_weapon.clone().unwrap().item_type == MELEE_WEAPON {
+            item.1.rotate_y(state.get_weapon_angle(&time));
+        }
     }
 }

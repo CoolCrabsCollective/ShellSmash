@@ -105,7 +105,7 @@ fn reset_camera(mut camera_query: Query<(&mut Transform, &mut Projection)>) {
     let mut a = camera_query.single_mut();
     (*a.0) = get_camera_position();
 
-    if let Perspective(persProj) = a.1.as_mut() {
-        persProj.fov = 10.0f32.to_radians();
+    if let Perspective(pers_proj) = a.1.as_mut() {
+        pers_proj.fov = 10.0f32.to_radians();
     }
 }

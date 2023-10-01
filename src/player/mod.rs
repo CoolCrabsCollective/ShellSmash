@@ -1,4 +1,4 @@
-mod combat;
+pub(crate) mod combat;
 
 use bevy::input::keyboard::KeyboardInput;
 use bevy::math::vec3;
@@ -9,6 +9,7 @@ use bevy_rapier3d::prelude::*;
 use crate::enemy::Enemy;
 use crate::game_camera_controller::GameCameraControllerPlugin;
 use crate::game_state::GameState;
+use crate::player::combat::{PlayerCombatPlugin, PlayerCombatState};
 use crate::world_item::WeaponHolder;
 
 pub const PLAYER_HEIGHT: f32 = 0.6;
@@ -43,10 +44,7 @@ impl Plugin for PlayerPlugin {
     fn build(&self, app: &mut App) {
         app.add_systems(Startup, spawn_player);
         app.add_systems(OnEnter(GameState::FightingInArena), set_player_active);
-        app.add_systems(
-            Update,
-            process_inputs.run_if(in_state(GameState::FightingInArena)),
-        );
+        app.add_systems(Update, process_inputs);
         app.add_systems(
             Update,
             player_movement.run_if(
@@ -74,7 +72,7 @@ impl Plugin for PlayerPlugin {
         app.add_state::<PlayerState>();
         app.add_event::<PlayerHitEvent>();
         app.insert_resource(DeathTimer(Timer::from_seconds(2.0, TimerMode::Once)));
-        app.add_plugins(GameCameraControllerPlugin);
+        app.add_plugins((GameCameraControllerPlugin, PlayerCombatPlugin));
     }
 }
 
@@ -102,6 +100,7 @@ fn spawn_player(
             ..default()
         })
         .insert(PlayerControllerState::new())
+        .insert(PlayerCombatState::new())
         .insert(WeaponHolder {
             current_weapon: None,
         })

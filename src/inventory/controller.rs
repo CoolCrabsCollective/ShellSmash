@@ -213,7 +213,7 @@ fn move_inventory_items(
 fn set_fov(mut camera_query: Query<(&mut Transform, &mut Projection)>) {
     let mut proj = camera_query.single_mut().1;
 
-    if let Perspective(persProj) = proj.as_mut() {
-        persProj.fov = 45.0f32.to_radians();
+    if let Perspective(pers_proj) = proj.as_mut() {
+        pers_proj.fov = 45.0f32.to_radians();
     }
 }
