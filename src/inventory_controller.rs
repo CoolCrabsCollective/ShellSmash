@@ -1,11 +1,12 @@
+use std::time::Duration;
+
+use bevy::prelude::*;
+
 use crate::config::INVENTORY_GRID_DIMENSIONS;
 use crate::game_state::GameState;
-use crate::inventory::{InventoryData, InventoryItem};
+use crate::inventory::{InventoryData, InventoryItem, VoxelBullcrap};
 use crate::math::deg_to_rad;
 use crate::voxel_renderer::VoxelCoordinateFrame;
-use bevy::prelude::*;
-use std::cmp;
-use std::time::Duration;
 
 pub struct InventoryControllerPlugin;
 
@@ -135,18 +136,18 @@ fn update_camera_position(
     camera_translation.rotation = look_at_my_balls.rotation;
 }
 
-pub fn update_inventory_data(query: Query<&InventoryItem>, mut inv: ResMut<InventoryData>) {
+pub fn update_inventory_data(query: Query<&VoxelBullcrap>, mut inv: ResMut<InventoryData>) {
     let mut items: Vec<InventoryItem> = Vec::new();
     for p in query.iter() {
-        items.push(p.clone())
+        items.push(p.data.clone())
     }
-    inv.grid = InventoryData::grid_from_items(items, IVec3::from_array(INVENTORY_GRID_DIMENSIONS));
+    inv.grid = InventoryData::grid_from_items(items, IVec3::from_array(INVENTORY_GRID_DIMENSIONS))
 }
 
 fn move_inventory_items(
     state: Res<InventoryControllerState>,
     key_codes: Res<Input<KeyCode>>,
-    mut query_items: Query<&mut InventoryItem>,
+    mut query_items: Query<&mut VoxelBullcrap>,
 ) {
     let trans: Vec<IVec3> = vec![
         IVec3::from((0, 0, -1)),
@@ -157,11 +158,11 @@ fn move_inventory_items(
     let view_index = state.view_index;
     if key_codes.just_pressed(KeyCode::W) {
         for mut item in query_items.iter_mut() {
-            item.translate(trans[(4 - view_index) % 4]);
+            item.data.translate(trans[(4 - view_index) % 4]);
         }
     } else if key_codes.just_pressed(KeyCode::A) {
         for mut item in query_items.iter_mut() {
-            item.translate(
+            item.data.translate(
                 trans[if 1 <= view_index {
                     (5 - view_index) % 4
                 } else {
@@ -171,7 +172,7 @@ fn move_inventory_items(
         }
     } else if key_codes.just_pressed(KeyCode::S) {
         for mut item in query_items.iter_mut() {
-            item.translate(
+            item.data.translate(
                 trans[if 2 <= view_index {
                     (6 - view_index) % 4
                 } else {
@@ -181,7 +182,7 @@ fn move_inventory_items(
         }
     } else if key_codes.just_pressed(KeyCode::D) {
         for mut item in query_items.iter_mut() {
-            item.translate(
+            item.data.translate(
                 trans[if 3 <= view_index {
                     (7 - view_index) % 4
                 } else {
@@ -191,11 +192,11 @@ fn move_inventory_items(
         }
     } else if key_codes.just_pressed(KeyCode::Q) {
         for mut item in query_items.iter_mut() {
-            item.rotate(true);
+            item.data.rotate(true);
         }
     } else if key_codes.just_pressed(KeyCode::E) {
         for mut item in query_items.iter_mut() {
-            item.rotate(false);
+            item.data.rotate(false);
         }
     }
 }
