@@ -3,8 +3,8 @@ use bevy::pbr::wireframe::WireframePlugin;
 use bevy::prelude::*;
 
 use crate::inventory::controller::InventoryControllerPlugin;
-use crate::inventory::ItemType::{MELEE_WEAPON, NON_WEAPON, RANGED_WEAPON};
 use crate::inventory::data_manager::InventoryDataPlugin;
+use crate::inventory::ItemType::{MELEE_WEAPON, NON_WEAPON, RANGED_WEAPON};
 use crate::voxel_renderer::VoxelRendererPlugin;
 
 mod controller;
