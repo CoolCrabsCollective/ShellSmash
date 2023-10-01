@@ -18,7 +18,7 @@ pub struct WeaponHolder {
 
 impl InventoryItem {
     pub fn create_world_entity(
-        &mut self,
+        &self,
         location: Vec3,
         on_player: bool,
         collectable: bool,
@@ -26,8 +26,6 @@ impl InventoryItem {
         mut meshes: ResMut<Assets<Mesh>>,
         mut materials: ResMut<Assets<StandardMaterial>>,
     ) -> Entity {
-        self.real_location = Option::from(location); // Retard on
-
         return commands
             .spawn((AttachedToPlayer(on_player), Collectable(collectable)))
             .insert(PbrBundle {
