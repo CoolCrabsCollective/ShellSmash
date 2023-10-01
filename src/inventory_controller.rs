@@ -32,20 +32,6 @@ impl Plugin for InventoryControllerPlugin {
     }
 }
 
-#[derive(Copy, Clone, Debug)]
-pub struct ControlledOrientation {
-    horizontal: f32,
-    vertical: f32,
-    zoom_pos: f32,
-}
-
-impl ControlledOrientation {
-    pub fn to_quat(self) -> Quat {
-        Quat::from_euler(EulerRot::XYZ, 0.0, self.horizontal, 0.0)
-            * Quat::from_euler(EulerRot::XYZ, self.vertical, 0.0, 0.0)
-    }
-}
-
 #[derive(Resource, Debug)]
 struct CubeRotationAnime {
     enabled: bool,
@@ -92,7 +78,7 @@ fn update_cube_rotation(
 
         let mut vox = query.single_mut();
         let quat = Quat::from_rotation_y(deg_to_rad(
-            rotation_angle + parameterized_progress * rotation_angle,
+            rotation_anime.start_rotation + parameterized_progress * rotation_angle,
         ));
         vox.rotation = quat;
     } else {
@@ -113,14 +99,11 @@ fn update_cube_rotation(
         }
 
         if start_anime {
-            let vox = query.single();
             rotation_anime.enabled = true;
-            let current_rot = vox.rotation.to_euler(EulerRot::XYZ).1;
-            rotation_anime.start_rotation = current_rot;
-            rotation_anime.end_rotation = current_rot + rotation_change;
+            rotation_anime.start_rotation = rotation_anime.end_rotation;
+            rotation_anime.end_rotation = rotation_anime.start_rotation + rotation_change;
             rotation_anime.anime_time.reset();
         }
-        // vox.rotation = Quat::from_rotation_y(deg_to_rad(possible_rotations[state.view_index]));
     }
 }
 

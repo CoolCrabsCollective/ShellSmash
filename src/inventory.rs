@@ -167,10 +167,3 @@ pub fn update_inventory_data(query: Query<&InventoryItem>, mut inv: ResMut<Inven
     }
     inv.grid = InventoryData::grid_from_items(items, IVec3::from_array(INVENTORY_GRID_DIMENSIONS))
 }
-
-#[derive(Debug)]
-enum AxisSelect {
-    X,
-    Y,
-    Z,
-}
