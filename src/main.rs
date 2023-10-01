@@ -6,9 +6,11 @@ use game_state::GameStatePlugin;
 use crate::game::GamePlugin;
 use crate::inventory::InventoryPlugin;
 
+mod combat;
 mod debug_camera_controller;
 mod game;
 mod game_state;
+mod health;
 mod inventory;
 mod inventory_controller;
 mod item_mesh_generator;
@@ -17,6 +19,7 @@ mod math;
 mod player;
 mod voxel_renderer;
 mod wall;
+mod world_item;
 
 fn main() {
     let mut app = App::new();

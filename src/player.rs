@@ -5,8 +5,22 @@ use bevy::window::PrimaryWindow;
 use bevy_rapier3d::prelude::*;
 
 use crate::game_state::GameState;
+use crate::inventory::InventoryItem;
 
 pub struct PlayerPlugin;
+
+#[derive(Component)]
+pub struct PlayerControllerState {
+    is_forward_pressed: bool,
+    is_backward_pressed: bool,
+    is_left_pressed: bool,
+    is_right_pressed: bool,
+
+    is_I_pressed: bool,
+    was_I_pressed: bool,
+
+    velocity: Vec3,
+}
 
 impl Plugin for PlayerPlugin {
     fn build(&self, app: &mut App) {
@@ -19,7 +33,6 @@ impl Plugin for PlayerPlugin {
             Update,
             player_movement.run_if(in_state(GameState::FightingInArena)),
         );
-        app.insert_resource(PlayerControllerState::new());
     }
 }
 
@@ -51,17 +64,8 @@ fn setup(
             apply_impulse_to_dynamic_bodies: true,
             ..default()
         })
+        .insert(PlayerControllerState::new())
         .insert(TransformBundle::from(Transform::from_xyz(2.0, 1.0, 0.0)));
-}
-
-#[derive(Resource)]
-struct PlayerControllerState {
-    is_forward_pressed: bool,
-    is_backward_pressed: bool,
-    is_left_pressed: bool,
-    is_right_pressed: bool,
-
-    velocity: Vec3,
 }
 
 impl PlayerControllerState {
@@ -71,6 +75,10 @@ impl PlayerControllerState {
             is_backward_pressed: false,
             is_left_pressed: false,
             is_right_pressed: false,
+
+            is_I_pressed: false,
+            was_I_pressed: false,
+
             velocity: vec3(0.0, 0.0, 0.0),
         }
     }
@@ -78,8 +86,9 @@ impl PlayerControllerState {
 
 fn process_inputs(
     mut keyboard_input_events: EventReader<KeyboardInput>,
-    mut state: ResMut<PlayerControllerState>,
+    mut state: Query<&mut PlayerControllerState>,
 ) {
+    let mut state = state.single_mut();
     for event in keyboard_input_events.iter() {
         match event.key_code {
             Some(KeyCode::W) => {
@@ -94,19 +103,28 @@ fn process_inputs(
             Some(KeyCode::D) => {
                 state.is_right_pressed = event.state.is_pressed();
             }
+            Some(KeyCode::I) => {
+                state.is_I_pressed = event.state.is_pressed();
+            }
             _ => {}
         }
     }
 }
 
 fn player_movement(
-    mut controllers: Query<&mut KinematicCharacterController>,
+    mut commands: Commands,
+    mut controllers: Query<&mut KinematicCharacterController, With<PlayerControllerState>>,
     time: Res<Time>,
-    mut state: ResMut<PlayerControllerState>,
+    mut state: Query<&mut PlayerControllerState>,
     windows: Query<&Window, With<PrimaryWindow>>,
     camera_q: Query<(&Camera, &GlobalTransform)>,
-    mut transform: Query<&mut Transform, With<KinematicCharacterController>>,
+    mut transform: Query<&mut Transform, With<PlayerControllerState>>,
+    mut meshes: ResMut<Assets<Mesh>>,
+    mut materials: ResMut<Assets<StandardMaterial>>,
 ) {
+    let mut state = state.single_mut();
+    let mut transform = transform.single_mut();
+
     state.velocity.y -= 9.81 * time.delta_seconds();
     state.velocity.x /= 1.5;
     state.velocity.z /= 1.5;
@@ -128,18 +146,28 @@ fn player_movement(
 
     controllers.single_mut().translation = Some(state.velocity * time.delta_seconds());
 
+    if state.is_I_pressed && !state.was_I_pressed {
+        let boomerang = InventoryItem::from((
+            (1, 3, 3),
+            vec![(0, 0, 0), (0, 0, 1), (0, 0, 2), (-1, 0, 0), (-2, 0, 0)],
+            Color::rgba(1.0, 1.0, 1.0, 1.0),
+        ));
+
+        boomerang.create_world_entity(transform.translation, commands, meshes, materials);
+    }
+
     let (camera, camera_transform) = camera_q.single();
 
     if let Some(position) = windows.single().cursor_position() {
         let ray: Ray = camera
             .viewport_to_world(camera_transform, position)
             .unwrap();
-        if let Some(distance) = ray.intersect_plane(
-            vec3(0.0, transform.single().translation.y, 0.0),
-            vec3(0.0, 1.0, 0.0),
-        ) {
+        if let Some(distance) =
+            ray.intersect_plane(vec3(0.0, transform.translation.y, 0.0), vec3(0.0, 1.0, 0.0))
+        {
             let pos = ray.get_point(distance);
-            transform.single_mut().look_at(pos, Vec3::Y);
+            transform.look_at(pos, Vec3::Y);
         }
     }
+    state.was_I_pressed = state.is_I_pressed;
 }
