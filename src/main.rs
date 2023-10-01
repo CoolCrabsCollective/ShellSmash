@@ -12,6 +12,7 @@ mod config;
 mod debug_camera_controller;
 mod enemy;
 mod game;
+mod game_camera_controller;
 mod game_state;
 mod health;
 mod inventory;
