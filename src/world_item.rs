@@ -9,7 +9,7 @@ pub const VOXEL_SIZE_IN_WORLD: f32 = 0.1;
 pub struct AttachedToPlayer(bool);
 
 #[derive(Component)]
-pub struct Collectable(bool);
+pub struct Collectable(pub(crate) bool);
 
 #[derive(Component)]
 pub struct WeaponHolder {

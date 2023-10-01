@@ -1,3 +1,4 @@
+use crate::game_state::GameState;
 use crate::player::PlayerControllerState;
 use bevy::math::vec3;
 use bevy::prelude::*;
@@ -6,7 +7,10 @@ pub struct GameCameraControllerPlugin;
 
 impl Plugin for GameCameraControllerPlugin {
     fn build(&self, app: &mut App) {
-        app.add_systems(Update, (set_camera));
+        app.add_systems(
+            Update,
+            set_camera.run_if(in_state(GameState::FightingInArena)),
+        );
     }
 }
 
