@@ -1,17 +1,24 @@
+use crate::game_state::GameState;
 use crate::inventory::{InventoryData, InventoryItem};
 use crate::math::deg_to_rad;
 use crate::voxel_renderer::{VoxelCoordinateFrame, GRID_DIMS};
-use crate::GameState;
-use bevy::prelude::*;
+use bevy::{log, prelude::*};
 
 pub struct InventoryControllerPlugin;
 
 impl Plugin for InventoryControllerPlugin {
     fn build(&self, app: &mut App) {
-        app.add_systems(Startup, enter_inventory);
         app.add_systems(
             Update,
-            (process_inputs, update_state, update_inventory_data),
+            process_inputs.run_if(in_state(GameState::ManagingInventory)),
+        );
+        app.add_systems(
+            Update,
+            update_state.run_if(in_state(GameState::ManagingInventory)),
+        );
+        app.add_systems(
+            Update,
+            update_inventory_data.run_if(in_state(GameState::ManagingInventory)),
         );
         app.insert_resource(InventoryControllerState::new());
     }
@@ -133,53 +140,10 @@ fn update_state(mut state: ResMut<InventoryControllerState>) {
     state.zoom = false;
 }
 
-#[allow(clippy::type_complexity)]
-fn set_world_orientation(
-    mut param_set: ParamSet<(
-        Query<&mut Transform, With<VoxelCoordinateFrame>>,
-        Query<&Transform, With<Camera>>,
-    )>,
-    state: ResMut<InventoryControllerState>,
-) {
-    let base_camera_translation = {
-        let camera_transform_query = param_set.p1();
-        let camera_transform = camera_transform_query.single();
-        camera_transform.translation + camera_transform.forward() * 2.0 * GRID_DIMS[0] as f32
-    };
-
-    let mut model_transform_query = param_set.p0();
-    let world_transform = model_transform_query.get_single_mut();
-    if let Err(ref _err) = world_transform {
-        return;
-    }
-    let mut world_transform = world_transform.unwrap();
-
-    world_transform.translation = base_camera_translation;
-    world_transform.translation.x += state.orientation.zoom_pos;
-    world_transform.rotation = state.orientation.to_quat();
-}
-
 pub fn update_inventory_data(query: Query<&InventoryItem>, mut inv: ResMut<InventoryData>) {
     let mut items: Vec<InventoryItem> = Vec::new();
     for p in query.iter() {
         items.push(p.clone())
     }
     inv.grid = InventoryData::grid_from_items(items, IVec3::from_array(GRID_DIMS))
-}
-
-fn enter_inventory(
-    mut cam_transform_query: Query<&mut Transform, With<Camera>>,
-    game_state: ResMut<State<GameState>>,
-) {
-    if *game_state.get() != GameState::Inventory {
-        return;
-    }
-
-    let mut cam_transform = cam_transform_query.single_mut();
-
-    cam_transform.translation = Vec3 {
-        x: -15.0,
-        y: 5.0,
-        z: 0.0,
-    };
 }

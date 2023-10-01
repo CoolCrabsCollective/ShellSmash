@@ -1,5 +1,5 @@
-use crate::inventory_controller::InventoryControllerPlugin;
-use bevy::log;
+use crate::{game_state::GameState, inventory_controller::InventoryControllerPlugin};
+
 use bevy::pbr::wireframe::WireframePlugin;
 use bevy::prelude::*;
 
@@ -9,27 +9,31 @@ pub struct InventoryPlugin;
 
 impl Plugin for InventoryPlugin {
     fn build(&self, app: &mut App) {
-        app.add_systems(Startup, setup);
-        app.add_plugins((WireframePlugin, VoxelRendererPlugin));
-        app.add_systems(Update, (move_inventory_items, update_inventory_data));
-
-        app.add_plugins(InventoryControllerPlugin);
+        app.add_systems(OnEnter(GameState::ManagingInventory), setup);
+        app.add_plugins((
+            WireframePlugin,
+            VoxelRendererPlugin,
+            InventoryControllerPlugin,
+        ));
+        app.add_systems(
+            Update,
+            move_inventory_items.run_if(in_state(GameState::ManagingInventory)),
+        );
+        app.add_systems(
+            Update,
+            update_inventory_data.run_if(in_state(GameState::ManagingInventory)),
+        );
     }
 }
 
 /// set up a simple 3D scene
-fn setup(
-    mut commands: Commands,
-    _asset_server: ResMut<AssetServer>,
-    _meshes: ResMut<Assets<Mesh>>,
-    _materials: ResMut<Assets<StandardMaterial>>,
-) {
-    let boomerang = InventoryItem::from((
+fn setup(mut commands: Commands) {
+    let _boomerang = InventoryItem::from((
         (1, 3, 3),
         vec![(0, 0, 0), (0, 0, 1), (0, 0, 2), (-1, 0, 0), (-2, 0, 0)],
         Color::rgba(1.0, 1.0, 1.0, 1.0),
     ));
-    let sword = InventoryItem::from((
+    let _sword = InventoryItem::from((
         (5, 3, 2),
         vec![
             (0, 0, 0),
@@ -41,7 +45,7 @@ fn setup(
         ],
         Color::rgba(0.0, 1.0, 0.0, 1.0),
     ));
-    let heart = InventoryItem::from((
+    let _heart = InventoryItem::from((
         (2, 5, 2),
         vec![
             (0, 0, 0),
@@ -86,11 +90,13 @@ impl InventoryItem {
         false
     }
 
+    #[allow(dead_code)]
     pub fn translate(&mut self, translation: IVec3) {
         self.location += translation;
     }
 
-    pub fn _rotate_x(&mut self, ccw: bool) {
+    #[allow(dead_code)]
+    pub fn rotate_x(&mut self, ccw: bool) {
         let rot_angle = ((if ccw { 90 } else { -90 }) as f32).to_radians();
 
         let rot_mat = Mat3::from_rotation_x(rot_angle);
@@ -103,7 +109,8 @@ impl InventoryItem {
         }
     }
 
-    fn _get_center(&self) -> &IVec3 {
+    #[allow(dead_code)]
+    fn get_center(&self) -> &IVec3 {
         self.local_points.first().unwrap()
     }
 }
@@ -171,11 +178,5 @@ enum AxisSelect {
 }
 
 pub fn move_inventory_items(camera_pos_query: Query<&Transform, With<Camera>>) {
-    let camera_coord = camera_pos_query.get_single();
-    if let Err(ref err) = camera_coord {
-        log::error!(
-            "Cancelling move_inventory_items since camera could not be initialized: {err:?}"
-        );
-        return;
-    }
+    let _camera_coord = camera_pos_query.single();
 }

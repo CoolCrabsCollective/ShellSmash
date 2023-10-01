@@ -1,4 +1,5 @@
 use crate::debug_camera_controller::DebugCameraControllerPlugin;
+use crate::game_state::GameState;
 use crate::inventory::InventoryItem;
 use crate::level_loader::{load_level, LevelLoaderPlugin};
 use crate::player::PlayerPlugin;
@@ -13,6 +14,7 @@ pub struct GamePlugin;
 impl Plugin for GamePlugin {
     fn build(&self, app: &mut App) {
         app.add_systems(Startup, setup);
+        app.add_systems(OnEnter(GameState::FightingInArena), reset_camera);
         app.add_plugins((
             LevelLoaderPlugin,
             RapierPhysicsPlugin::<NoUserData>::default(),
@@ -58,8 +60,7 @@ fn setup(
     });
     // camera
     commands.spawn(Camera3dBundle {
-        // DON'T CHANGE THE FOLLOWING LINE UNLESS YOU WANT TO DIE
-        transform: Transform::from_xyz(0.0, 30.0, 15.0).looking_at(vec3(0.0, 0.0, 2.0), Vec3::Y),
+        transform: get_camera_position(),
         ..default()
     });
 
@@ -130,4 +131,13 @@ fn setup(
         transform: Transform::from_xyz(10.0, 21.0, 3.0),
         ..default()
     });
+}
+
+fn get_camera_position() -> Transform {
+    // DON'T CHANGE THE FOLLOWING LINE UNLESS YOU WANT TO DIE
+    Transform::from_xyz(0.0, 30.0, 15.0).looking_at(vec3(0.0, 0.0, 2.0), Vec3::Y)
+}
+
+fn reset_camera(mut camera_query: Query<&mut Transform, With<Camera>>) {
+    (*camera_query.single_mut()) = get_camera_position();
 }
