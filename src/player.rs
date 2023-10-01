@@ -1,4 +1,5 @@
 use bevy::input::keyboard::KeyboardInput;
+use bevy::log;
 use bevy::math::vec3;
 use bevy::prelude::*;
 use bevy::window::PrimaryWindow;
@@ -183,4 +184,30 @@ fn player_movement(
     }
     state.was_I_pressed = state.is_I_pressed;
     state.was_K_pressed = state.is_K_pressed;
+}
+
+fn check_for_items(
+    items: Query<&InventoryItem>,
+    mut controllers: Query<&mut KinematicCharacterController, With<PlayerControllerState>>,
+) {
+    let mut near_items: Vec<&InventoryItem> = vec![];
+    let current_location = controllers.single_mut().translation;
+
+    if current_location.is_some() {
+        let unwrap_location = current_location.unwrap();
+
+        for item in items.iter() {
+            if item.intersects(IVec3 {
+                x: unwrap_location.x as i32,
+                y: unwrap_location.y as i32,
+                z: unwrap_location.z as i32,
+            }) {
+                near_items.push(item);
+            }
+        }
+    }
+
+    if near_items.len() > 0 {
+        log::info!("Items found: {:?}", near_items)
+    }
 }
