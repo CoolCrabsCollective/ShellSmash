@@ -74,6 +74,7 @@ pub struct InventoryItem {
     pub color: Color,
 }
 
+#[derive(Debug)]
 pub struct InventoryItemInfo {
     pub color: Color,
 }
@@ -125,7 +126,7 @@ impl From<((i32, i32, i32), Vec<(i32, i32, i32)>, Color)> for InventoryItem {
     }
 }
 
-#[derive(Resource)]
+#[derive(Resource, Debug)]
 pub struct InventoryData {
     pub grid: Vec<Vec<Vec<Option<InventoryItemInfo>>>>,
 }
@@ -168,11 +169,4 @@ pub fn update_inventory_data(query: Query<&InventoryItem>, mut inv: ResMut<Inven
         items.push(p.clone())
     }
     inv.grid = InventoryData::grid_from_items(items, IVec3::from_array(INVENTORY_GRID_DIMENSIONS))
-}
-
-#[derive(Debug)]
-enum AxisSelect {
-    X,
-    Y,
-    Z,
 }
