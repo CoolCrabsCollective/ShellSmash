@@ -11,12 +11,7 @@ impl Plugin for InventoryControllerPlugin {
         app.add_systems(Startup, enter_inventory);
         app.add_systems(
             Update,
-            (
-                process_inputs,
-                update_state,
-                set_world_orientation,
-                update_inventory_data,
-            ),
+            (process_inputs, update_state, update_inventory_data),
         );
         app.insert_resource(InventoryControllerState::new());
     }
@@ -73,25 +68,36 @@ fn process_inputs(
         Query<&mut Transform, With<Camera>>,
     )>,
 ) {
+    let cam_distance = 8.0;
+
     let voxel_translation_p0 = param_set.p0();
     let voxel_translation = voxel_translation_p0.single();
     let vox_trans = voxel_translation.translation;
     let views: Vec<Vec3> = vec![
-        Vec3::from((5.0, 0.0, 5.0)),
-        Vec3::from((0.0, 5.0, 5.0)),
-        Vec3::from((-5.0, 0.0, 5.0)),
-        Vec3::from((0.0, -5.0, 5.0)),
+        Vec3::from((cam_distance, cam_distance, 0.0)),
+        Vec3::from((0.0, cam_distance, cam_distance)),
+        Vec3::from((-cam_distance, cam_distance, 0.0)),
+        Vec3::from((0.0, cam_distance, -cam_distance)),
     ];
+
     if key_codes.just_pressed(KeyCode::Left) {
         let mut camera_translation_query = param_set.p1();
         let mut camera_translation = camera_translation_query.single_mut();
         camera_translation.translation = vox_trans + views[state.view_index];
         state.view_index = (state.view_index + 1) % 4;
+        let look_at = camera_translation.looking_at(vox_trans, Vec3::Y);
+        camera_translation.rotation = look_at.rotation;
     } else if key_codes.just_pressed(KeyCode::Right) {
         let mut camera_translation_query = param_set.p1();
         let mut camera_translation = camera_translation_query.single_mut();
         camera_translation.translation = vox_trans + views[state.view_index];
-        state.view_index = (state.view_index + 1) % 4;
+        state.view_index = if state.view_index == 0 {
+            3
+        } else {
+            state.view_index - 1
+        };
+        let look_at_my_balls = camera_translation.looking_at(vox_trans, Vec3::Y);
+        camera_translation.rotation = look_at_my_balls.rotation;
     }
 }
 

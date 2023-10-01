@@ -4,7 +4,7 @@ use rand::random;
 use crate::{inventory::InventoryData, math::deg_to_rad};
 
 const LEFT_RIGHT: bool = false;
-pub const GRID_DIMS: [i32; 3] = [7, 7, 2];
+pub const GRID_DIMS: [i32; 3] = [7, 2, 7];
 const GRID_HALF_SIZE: [i32; 3] = [GRID_DIMS[0] / 2, GRID_DIMS[1] / 2, GRID_DIMS[2] / 2];
 
 pub struct VoxelRendererPlugin;
@@ -77,42 +77,42 @@ fn process_inputs(
     for event in keyboard_input_events.iter() {
         if event.state.is_pressed() {
             match event.key_code {
-                Some(KeyCode::Up) => {
-                    if let Ok(coordinate_frame_transform) = &mut coordinate_frame_transform {
-                        coordinate_frame_transform.scale += Vec3::new(0.1, 0.1, 0.1);
-                    }
-                }
-                Some(KeyCode::Down) => {
-                    if let Ok(coordinate_frame_transform) = &mut coordinate_frame_transform {
-                        coordinate_frame_transform.scale -= Vec3::new(0.1, 0.1, 0.1);
-                    }
-                }
-                Some(KeyCode::Left) => {
-                    if LEFT_RIGHT {
-                        if let Ok(coordinate_frame_transform) = &mut coordinate_frame_transform {
-                            coordinate_frame_transform.rotation *=
-                                Quat::from_axis_angle(Vec3::new(0.0, 1.0, 0.0), deg_to_rad(15.0))
-                        }
-                    }
-                }
-                Some(KeyCode::Right) => {
-                    if LEFT_RIGHT {
-                        if let Ok(coordinate_frame_transform) = &mut coordinate_frame_transform {
-                            coordinate_frame_transform.rotation *=
-                                Quat::from_axis_angle(Vec3::new(0.0, 1.0, 0.0), deg_to_rad(-15.0))
-                        }
-                    }
-                }
-                Some(KeyCode::V) => {
-                    match &mut coordinate_frame_transform {
-                        Ok(_) => {
-                            kill_voxels_event_writer.send(KillVoxelsEvent);
-                        }
-                        Err(_) => {
-                            init_voxel_grid_impl(&mut commands, &mut meshes, &mut materials);
-                        }
-                    };
-                }
+                // Some(KeyCode::Up) => {
+                //     if let Ok(coordinate_frame_transform) = &mut coordinate_frame_transform {
+                //         coordinate_frame_transform.scale += Vec3::new(0.1, 0.1, 0.1);
+                //     }
+                // }
+                // Some(KeyCode::Down) => {
+                //     if let Ok(coordinate_frame_transform) = &mut coordinate_frame_transform {
+                //         coordinate_frame_transform.scale -= Vec3::new(0.1, 0.1, 0.1);
+                //     }
+                // }
+                // Some(KeyCode::Left) => {
+                //     if LEFT_RIGHT {
+                //         if let Ok(coordinate_frame_transform) = &mut coordinate_frame_transform {
+                //             coordinate_frame_transform.rotation *=
+                //                 Quat::from_axis_angle(Vec3::new(0.0, 1.0, 0.0), deg_to_rad(15.0))
+                //         }
+                //     }
+                // }
+                // Some(KeyCode::Right) => {
+                //     if LEFT_RIGHT {
+                //         if let Ok(coordinate_frame_transform) = &mut coordinate_frame_transform {
+                //             coordinate_frame_transform.rotation *=
+                //                 Quat::from_axis_angle(Vec3::new(0.0, 1.0, 0.0), deg_to_rad(-15.0))
+                //         }
+                //     }
+                // }
+                // Some(KeyCode::V) => {
+                //     match &mut coordinate_frame_transform {
+                //         Ok(_) => {
+                //             kill_voxels_event_writer.send(KillVoxelsEvent);
+                //         }
+                //         Err(_) => {
+                //             init_voxel_grid_impl(&mut commands, &mut meshes, &mut materials);
+                //         }
+                //     };
+                // }
                 Some(KeyCode::R) => {
                     let new_voxel = VoxelData {
                         _position: IVec3::new(
@@ -164,7 +164,13 @@ fn init_voxel_grid_impl(
     materials: &mut ResMut<Assets<StandardMaterial>>,
 ) {
     let parent = commands
-        .spawn((VoxelCoordinateFrame, SpatialBundle::default()))
+        .spawn((
+            VoxelCoordinateFrame,
+            SpatialBundle::from(Transform {
+                translation: Vec3::from((0.0, 5.0, 0.0)),
+                ..default()
+            }),
+        ))
         .id();
     for x in 0..GRID_DIMS[0] {
         for y in 0..GRID_DIMS[1] {

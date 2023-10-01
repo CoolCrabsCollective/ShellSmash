@@ -3,7 +3,7 @@ use bevy::log;
 use bevy::pbr::wireframe::WireframePlugin;
 use bevy::prelude::*;
 
-use crate::voxel_renderer::{VoxelCoordinateFrame, VoxelRendererPlugin, GRID_DIMS};
+use crate::voxel_renderer::{VoxelRendererPlugin, GRID_DIMS};
 
 pub struct InventoryPlugin;
 
