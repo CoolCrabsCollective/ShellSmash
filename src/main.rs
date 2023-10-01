@@ -41,7 +41,7 @@ fn main() {
         },
     }));
     app.add_plugins(GamePlugin);
-    app.add_plugins(InventoryPlugin);
+    //app.add_plugins(InventoryPlugin);
     app.add_state::<GameState>()
         .add_systems(Update, (bevy::window::close_on_esc, swap_controls));
 

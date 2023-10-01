@@ -3,7 +3,6 @@ use bevy::math::vec3;
 use bevy::prelude::*;
 use bevy::window::PrimaryWindow;
 use bevy_rapier3d::prelude::*;
-use std::f32::consts::PI;
 
 pub struct PlayerPlugin;
 
@@ -18,8 +17,8 @@ impl Plugin for PlayerPlugin {
 fn setup(
     mut commands: Commands,
     asset_server: ResMut<AssetServer>,
-    _meshes: ResMut<Assets<Mesh>>,
-    _materials: ResMut<Assets<StandardMaterial>>,
+    mut meshes: ResMut<Assets<Mesh>>,
+    mut materials: ResMut<Assets<StandardMaterial>>,
 ) {
     commands
         .spawn(Collider::capsule_y(0.3, 0.25))
