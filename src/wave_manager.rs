@@ -6,6 +6,7 @@ use bevy::{log, prelude::*};
 use bevy_rapier3d::prelude::*;
 use rand::random;
 
+use crate::asset_loader::GameAssets;
 use crate::config::SPAWN_ENEMIES;
 use crate::enemy::{Enemy, EnemyBundle};
 use crate::game_state::GameState;
@@ -45,6 +46,7 @@ fn spawn_enemies(
     mut asset_server: ResMut<AssetServer>,
     mut start_delay_timer: ResMut<WaveStartDelayTimer>,
     mut spawn_timer: ResMut<SpawnTimer>,
+    game_assets: Res<GameAssets>,
     time: Res<Time>,
 ) {
     if !SPAWN_ENEMIES {
@@ -61,6 +63,6 @@ fn spawn_enemies(
             1.0,
             (random::<f32>() - 0.5) * ARENA_DIMENSIONS_METERS[0],
         );
-        commands.spawn(EnemyBundle::new(&mut asset_server, position));
+        commands.spawn(EnemyBundle::new(position, game_assets));
     }
 }
