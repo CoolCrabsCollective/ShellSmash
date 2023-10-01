@@ -22,14 +22,14 @@ impl Plugin for ItemSpawner {
 }
 
 fn spawn_debug_items(
-    mut context: ResMut<DebugRenderContext>,
+    context: ResMut<DebugRenderContext>,
     keys: Res<Input<KeyCode>>,
     mut player: Query<(&Transform, &mut WeaponHolder)>,
     mut commands: Commands,
     mut meshes: ResMut<Assets<Mesh>>,
     mut materials: ResMut<Assets<StandardMaterial>>,
 ) {
-    let item = if keys.just_pressed(KeyCode::Key1) {
+    let mut item = if keys.just_pressed(KeyCode::Key1) {
         InventoryItem::from((
             (1, 3, 3),
             vec![(0, 0, 0), (0, 0, 1), (0, 0, 2), (-1, 0, 2), (-2, 0, 2)],
@@ -110,7 +110,7 @@ fn create_boomerang(
     boomerang.create_world_entity(
         Vec3 {
             x: 0.0,
-            y: 1.0,
+            y: 0.5,
             z: 0.0,
         },
         false,

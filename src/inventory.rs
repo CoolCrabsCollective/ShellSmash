@@ -1,3 +1,4 @@
+use bevy::ecs::query::WorldQuery;
 use crate::config::INVENTORY_GRID_DIMENSIONS;
 use crate::{game_state::GameState, inventory_controller::InventoryControllerPlugin};
 
@@ -25,25 +26,25 @@ impl Plugin for InventoryPlugin {
 
 /// set up a simple 3D scene
 fn setup(mut commands: Commands) {
-    let _boomerang = InventoryItem::from((
-        (1, 3, 3),
+    let boomerang = InventoryItem::from((
+        (3, 0, 0),
         vec![(0, 0, 0), (0, 0, 1), (0, 0, 2), (-1, 0, 0), (-2, 0, 0)],
         Color::rgba(1.0, 1.0, 1.0, 1.0),
     ));
-    let _sword = InventoryItem::from((
-        (5, 3, 2),
+    let sword = InventoryItem::from((
+        (5, 0, 2),
         vec![
             (0, 0, 0),
             (0, 0, 1),
             (0, 0, 2),
-            (0, 1, 0),
-            (0, -1, 0),
+            (1, 0, 0),
+            (-1, 0, 0),
             (0, 0, -1),
         ],
         Color::rgba(0.0, 1.0, 0.0, 1.0),
     ));
-    let _heart = InventoryItem::from((
-        (2, 5, 2),
+    let heart = InventoryItem::from((
+        (4, 1, 1),
         vec![
             (0, 0, 0),
             (0, 0, -1),
@@ -55,13 +56,9 @@ fn setup(mut commands: Commands) {
         Color::rgba(1.0, 0.0, 0.0, 1.0),
     ));
 
-    let debug_cube =
-        InventoryItem::from(((0, 0, 0), vec![(0, 0, 0)], Color::rgba(0.0, 0.0, 0.0, 1.0)));
-
     // commands.spawn(boomerang);
-    // commands.spawn(sword);
+    commands.spawn(sword);
     // commands.spawn(heart);
-    commands.spawn(debug_cube);
     commands.insert_resource(InventoryData { grid: Vec::new() });
 }
 
@@ -72,6 +69,7 @@ pub struct InventoryItem {
     pub color: Color,
 }
 
+#[derive(Debug)]
 pub struct InventoryItemInfo {
     pub color: Color,
 }
@@ -87,16 +85,14 @@ impl InventoryItem {
         false
     }
 
-    #[allow(dead_code)]
     pub fn translate(&mut self, translation: IVec3) {
         self.location += translation;
     }
 
-    #[allow(dead_code)]
-    pub fn rotate_x(&mut self, ccw: bool) {
+    pub fn rotate(&mut self, ccw: bool) {
         let rot_angle = ((if ccw { 90 } else { -90 }) as f32).to_radians();
 
-        let rot_mat = Mat3::from_rotation_x(rot_angle);
+        let rot_mat = Mat3::from_rotation_y(rot_angle);
         for p in self.local_points.iter_mut() {
             let vec3 = Vec3::new(p.x as f32, p.y as f32, p.z as f32);
             let new_p: Vec3 = rot_mat.mul_vec3(vec3);
@@ -122,7 +118,7 @@ impl From<((i32, i32, i32), Vec<(i32, i32, i32)>, Color)> for InventoryItem {
     }
 }
 
-#[derive(Resource)]
+#[derive(Resource, Debug)]
 pub struct InventoryData {
     pub grid: Vec<Vec<Vec<Option<InventoryItemInfo>>>>,
 }
@@ -165,11 +161,4 @@ pub fn update_inventory_data(query: Query<&InventoryItem>, mut inv: ResMut<Inven
         items.push(p.clone())
     }
     inv.grid = InventoryData::grid_from_items(items, IVec3::from_array(INVENTORY_GRID_DIMENSIONS))
-}
-
-#[derive(Debug)]
-enum AxisSelect {
-    X,
-    Y,
-    Z,
 }

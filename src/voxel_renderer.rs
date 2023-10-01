@@ -40,10 +40,6 @@ impl Plugin for VoxelRendererPlugin {
         app.add_systems(OnExit(GameState::ManagingInventory), kill_voxel_grid);
         app.add_systems(
             Update,
-            process_inputs.run_if(in_state(GameState::ManagingInventory)),
-        );
-        app.add_systems(
-            Update,
             update_voxels.run_if(in_state(GameState::ManagingInventory)),
         );
     }
@@ -68,52 +64,6 @@ impl VoxelBundle {
                 ..default()
             },
             voxel: Voxel(position),
-        }
-    }
-}
-
-fn process_inputs(
-    mut commands: Commands,
-    mut keyboard_input_events: EventReader<KeyboardInput>,
-    mut query: Query<&mut Transform, With<VoxelCoordinateFrame>>,
-) {
-    let mut coordinate_frame_transform = query.single_mut();
-
-    for event in keyboard_input_events.iter() {
-        if event.state.is_pressed() {
-            match event.key_code {
-                Some(KeyCode::Up) => {
-                    coordinate_frame_transform.scale += Vec3::new(0.1, 0.1, 0.1);
-                }
-                Some(KeyCode::Down) => {
-                    coordinate_frame_transform.scale -= Vec3::new(0.1, 0.1, 0.1);
-                }
-                Some(KeyCode::Left) => {
-                    if VOXEL_RENDERER_LEFT_RIGHT_CONTROLS {
-                        coordinate_frame_transform.rotation *=
-                            Quat::from_axis_angle(Vec3::new(0.0, 1.0, 0.0), deg_to_rad(15.0));
-                    }
-                }
-                Some(KeyCode::Right) => {
-                    if VOXEL_RENDERER_LEFT_RIGHT_CONTROLS {
-                        coordinate_frame_transform.rotation *=
-                            Quat::from_axis_angle(Vec3::new(0.0, 1.0, 0.0), deg_to_rad(-15.0));
-                    }
-                }
-                Some(KeyCode::R) => {
-                    let new_voxel = VoxelData {
-                        _position: IVec3::new(
-                            ((random::<f32>() - 0.5) * INVENTORY_GRID_DIMENSIONS[0] as f32) as i32,
-                            ((random::<f32>() - 0.5) * INVENTORY_GRID_DIMENSIONS[1] as f32) as i32,
-                            ((random::<f32>() - 0.5) * INVENTORY_GRID_DIMENSIONS[2] as f32) as i32,
-                        ),
-                        _color: Color::rgba(random(), random(), random(), random()),
-                    };
-                    println!("Spawning new voxel data: {new_voxel:?}");
-                    commands.spawn(new_voxel);
-                }
-                _ => {}
-            }
         }
     }
 }
