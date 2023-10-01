@@ -1,5 +1,6 @@
 use std::time::Duration;
 
+use bevy::prelude::Projection::Perspective;
 use bevy::prelude::*;
 
 use crate::config::INVENTORY_GRID_DIMENSIONS;
@@ -28,6 +29,7 @@ impl Plugin for InventoryControllerPlugin {
             Update,
             update_inventory_data.run_if(in_state(GameState::ManagingInventory)),
         );
+        app.add_systems(OnEnter(GameState::ManagingInventory), set_fov);
         app.insert_resource(InventoryControllerState::new());
         app.insert_resource(CubeRotationAnime::new());
     }
@@ -198,5 +200,13 @@ fn move_inventory_items(
         for mut item in query_items.iter_mut() {
             item.data.rotate(false);
         }
+    }
+}
+
+fn set_fov(mut camera_query: Query<(&mut Transform, &mut Projection)>) {
+    let mut proj = camera_query.single_mut().1;
+
+    if let Perspective(persProj) = proj.as_mut() {
+        persProj.fov = 45.0f32.to_radians();
     }
 }
