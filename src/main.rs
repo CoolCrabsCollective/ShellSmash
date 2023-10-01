@@ -28,12 +28,24 @@ use crate::inventory::InventoryPlugin;
 
 fn main() {
     let mut app = App::new();
-    app.add_plugins(DefaultPlugins.set(RenderPlugin {
-        wgpu_settings: WgpuSettings {
-            features: WgpuFeatures::POLYGON_MODE_LINE,
+
+    if cfg!(target_arch = "wasm32") {
+        app.add_plugins(DefaultPlugins.set(WindowPlugin {
+            primary_window: Some(Window {
+                fit_canvas_to_parent: true,
+                ..default()
+            }),
             ..default()
-        },
-    }));
+        }));
+    } else {
+        app.add_plugins(DefaultPlugins.set(RenderPlugin {
+            wgpu_settings: WgpuSettings {
+                features: WgpuFeatures::POLYGON_MODE_LINE,
+                ..default()
+            },
+        }));
+    }
+
     app.add_plugins(AssetLoaderPlugin);
     app.add_plugins(GamePlugin);
     app.add_plugins(InventoryPlugin);
