@@ -1,11 +1,15 @@
+use crate::config::DEFAULT_BAG_LOCATION;
 use crate::game_state::GameState;
+use crate::math::deg_to_rad;
 use bevy::pbr::wireframe::WireframePlugin;
 use bevy::prelude::*;
 
 use crate::inventory::controller::InventoryControllerPlugin;
+use crate::inventory::gizmo::Gizmo;
 use crate::voxel_renderer::VoxelRendererPlugin;
 
 mod controller;
+mod gizmo;
 
 pub struct InventoryPlugin;
 
@@ -23,9 +27,6 @@ impl Plugin for InventoryPlugin {
         .insert_resource(InventoryData { grid: Vec::new() });
     }
 }
-
-#[derive(Component)]
-struct Gizmo;
 
 /// set up a simple 3D scene
 fn setup(mut commands: Commands, assets: Res<AssetServer>) {
@@ -60,15 +61,64 @@ fn setup(mut commands: Commands, assets: Res<AssetServer>) {
     ));
 
     commands.spawn(VoxelBullcrap { data: sword });
-    commands
-        .spawn(Gizmo {})
-        .insert(SceneBundle {
-            scene: assets.load("arrow_straight#Scene0"),
-            ..default()
-        })
-        .insert(TransformBundle::from(Transform::from_xyz(0.0, 8.0, 8.0)));
-}
+    let mut up_transform =
+        Transform::from_translation(DEFAULT_BAG_LOCATION + Vec3::from((0.0, 0.0, 0.0)));
+    up_transform.rotation =
+        Quat::from_euler(EulerRot::XYZ, deg_to_rad(-90.0), deg_to_rad(00.0), 0.0);
+    let mut down_transform =
+        Transform::from_translation(DEFAULT_BAG_LOCATION + Vec3::from((0.0, 0.0, 0.0)));
+    down_transform.rotation =
+        Quat::from_euler(EulerRot::XYZ, deg_to_rad(90.0), deg_to_rad(0.0), 0.0);
+    let mut left_transform =
+        Transform::from_translation(DEFAULT_BAG_LOCATION + Vec3::from((0.0, 0.0, 0.0)));
+    left_transform.rotation = Quat::from_euler(
+        EulerRot::XYZ,
+        deg_to_rad(0.0),
+        deg_to_rad(-90.0),
+        deg_to_rad(90.0),
+    );
+    let mut right_transform =
+        Transform::from_translation(DEFAULT_BAG_LOCATION + Vec3::from((0.0, 0.0, 0.0)));
+    right_transform.rotation = Quat::from_euler(
+        EulerRot::XYZ,
+        deg_to_rad(0.0),
+        deg_to_rad(90.0),
+        deg_to_rad(90.0),
+    );
 
+    commands
+        .spawn(Gizmo {
+            relative: up_transform,
+        })
+        .insert(SceneBundle {
+            scene: assets.load("arrow_straight.glb#Scene0"),
+            ..default()
+        });
+    commands
+        .spawn(Gizmo {
+            relative: down_transform,
+        })
+        .insert(SceneBundle {
+            scene: assets.load("arrow_straight.glb#Scene0"),
+            ..default()
+        });
+    commands
+        .spawn(Gizmo {
+            relative: left_transform,
+        })
+        .insert(SceneBundle {
+            scene: assets.load("arrow_straight.glb#Scene0"),
+            ..default()
+        });
+    commands
+        .spawn(Gizmo {
+            relative: right_transform,
+        })
+        .insert(SceneBundle {
+            scene: assets.load("arrow_straight.glb#Scene0"),
+            ..default()
+        });
+}
 #[derive(Component, Clone, Debug)]
 pub struct VoxelBullcrap {
     pub data: InventoryItem,

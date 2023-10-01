@@ -5,6 +5,7 @@ use bevy::prelude::*;
 
 use crate::config::INVENTORY_GRID_DIMENSIONS;
 use crate::game_state::GameState;
+use crate::inventory::gizmo::update_gizmo_position;
 use crate::inventory::{InventoryData, InventoryItem, VoxelBullcrap};
 use crate::math::deg_to_rad;
 use crate::voxel_renderer::VoxelCoordinateFrame;
@@ -13,6 +14,12 @@ pub struct InventoryControllerPlugin;
 
 impl Plugin for InventoryControllerPlugin {
     fn build(&self, app: &mut App) {
+        app.add_systems(
+            Update,
+            update_gizmo_position
+                .after(update_camera_position)
+                .run_if(in_state(GameState::ManagingInventory)),
+        );
         app.add_systems(
             Update,
             update_camera_position.run_if(in_state(GameState::ManagingInventory)),
