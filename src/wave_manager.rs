@@ -1,39 +1,57 @@
 use std::time::Duration;
 
 use bevy::math::vec3;
-use bevy::prelude::*;
 use bevy::window::PrimaryWindow;
+use bevy::{log, prelude::*};
 use bevy_rapier3d::prelude::*;
 use rand::random;
 
 use crate::config::SPAWN_ENEMIES;
-use crate::enemy::EnemyBundle;
+use crate::enemy::{Enemy, EnemyBundle};
 use crate::game_state::GameState;
 
 pub const ARENA_DIMENSIONS_METERS: [f32; 2] = [24.0, 30.0];
 
-pub struct EnemySpawnerPlugin;
+pub struct WaveManagerPlugin;
 
 #[derive(Resource)]
 struct SpawnTimer(Timer);
 
-impl Plugin for EnemySpawnerPlugin {
+#[derive(Resource)]
+struct WaveStartDelayTimer(Timer);
+
+impl Plugin for WaveManagerPlugin {
     fn build(&self, app: &mut App) {
+        app.add_systems(OnEnter(GameState::FightingInArena), reset_start_delay);
         app.add_systems(
             Update,
             spawn_enemies.run_if(in_state(GameState::FightingInArena)),
         );
+
+        app.insert_resource(WaveStartDelayTimer(Timer::from_seconds(
+            2.0,
+            TimerMode::Once,
+        )));
         app.insert_resource(SpawnTimer(Timer::from_seconds(0.5, TimerMode::Repeating)));
     }
 }
 
+fn reset_start_delay(mut start_delay_timer: ResMut<WaveStartDelayTimer>) {
+    start_delay_timer.0.reset();
+}
+
 fn spawn_enemies(
     mut commands: Commands,
+    mut asset_server: ResMut<AssetServer>,
+    mut start_delay_timer: ResMut<WaveStartDelayTimer>,
     mut spawn_timer: ResMut<SpawnTimer>,
     time: Res<Time>,
-    mut asset_server: ResMut<AssetServer>,
 ) {
     if !SPAWN_ENEMIES {
+        return;
+    }
+
+    if !start_delay_timer.0.tick(time.delta()).finished() {
         return;
     }
 
