@@ -1,11 +1,11 @@
-use bevy::ecs::query::WorldQuery;
-use crate::config::INVENTORY_GRID_DIMENSIONS;
-use crate::{game_state::GameState, inventory_controller::InventoryControllerPlugin};
-
+use crate::game_state::GameState;
 use bevy::pbr::wireframe::WireframePlugin;
 use bevy::prelude::*;
 
+use crate::inventory::controller::InventoryControllerPlugin;
 use crate::voxel_renderer::VoxelRendererPlugin;
+
+mod controller;
 
 pub struct InventoryPlugin;
 
@@ -16,11 +16,11 @@ impl Plugin for InventoryPlugin {
             WireframePlugin,
             VoxelRendererPlugin,
             InventoryControllerPlugin,
-        ));
-        app.add_systems(
-            Update,
-            update_inventory_data.run_if(in_state(GameState::ManagingInventory)),
-        );
+        ))
+        .insert_resource(Inventory {
+            content: Vec::new(),
+        })
+        .insert_resource(InventoryData { grid: Vec::new() });
     }
 }
 
@@ -56,17 +56,34 @@ fn setup(mut commands: Commands) {
         Color::rgba(1.0, 0.0, 0.0, 1.0),
     ));
 
-    // commands.spawn(boomerang);
-    commands.spawn(sword);
-    // commands.spawn(heart);
-    commands.insert_resource(InventoryData { grid: Vec::new() });
+    commands.spawn(VoxelBullcrap { data: sword });
 }
 
 #[derive(Component, Clone, Debug)]
+pub struct VoxelBullcrap {
+    pub data: InventoryItem,
+}
+
+#[derive(Clone, Debug)]
 pub struct InventoryItem {
-    pub location: IVec3,          // grid location
+    pub location: IVec3, // grid location
+    pub original_points: Vec<IVec3>,
     pub local_points: Vec<IVec3>, // relative coordinate, center is the first point
     pub color: Color,
+
+    pub hp_gain: i32,            // how much HP this item gives you for having it
+    pub attack_damage_gain: i32, // how much attack damage this item gives you for having it
+    pub attack_speed_gain: f32,  // how much attack speed this item gives you for having it
+
+    pub weapon_damage: i32, // how much base attack damage this item does when used as a weapon
+    pub weapon_is_auto: bool, // whether holding click auto attacks for this weapon
+}
+
+// inventory of what the user owns currently
+// query the resource to get it
+#[derive(Resource)]
+pub struct Inventory {
+    pub content: Vec<InventoryItem>,
 }
 
 #[derive(Debug)]
@@ -113,7 +130,13 @@ impl From<((i32, i32, i32), Vec<(i32, i32, i32)>, Color)> for InventoryItem {
         InventoryItem {
             location: value.0.into(),
             local_points: value.1.iter().map(|tup| (*tup).into()).collect(),
+            original_points: value.1.iter().map(|tup| (*tup).into()).collect(),
             color: value.2,
+            hp_gain: 0,
+            attack_damage_gain: 0,
+            attack_speed_gain: 0.0,
+            weapon_damage: 1,
+            weapon_is_auto: false,
         }
     }
 }
@@ -153,12 +176,4 @@ impl InventoryData {
         }
         item_grid
     }
-}
-
-pub fn update_inventory_data(query: Query<&InventoryItem>, mut inv: ResMut<InventoryData>) {
-    let mut items: Vec<InventoryItem> = Vec::new();
-    for p in query.iter() {
-        items.push(p.clone())
-    }
-    inv.grid = InventoryData::grid_from_items(items, IVec3::from_array(INVENTORY_GRID_DIMENSIONS))
 }

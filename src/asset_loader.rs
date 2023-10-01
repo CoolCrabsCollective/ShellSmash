@@ -50,6 +50,7 @@ fn load_all_game_assets(asset_server: Res<AssetServer>, mut game_assets: ResMut<
 fn handle_scene_load_event(
     mut load_events: EventReader<AssetEvent<Gltf>>,
     mut game_assets: ResMut<GameAssets>,
+    game_state: Res<State<GameState>>,
     mut game_state_updater: ResMut<NextState<GameState>>,
     asset_server: Res<AssetServer>,
     scenes: Res<Assets<Gltf>>,
@@ -86,7 +87,7 @@ fn handle_scene_load_event(
         }
     }
 
-    if game_assets.are_all_assets_loaded() {
+    if game_assets.are_all_assets_loaded() && *game_state.get() == GameState::Loading {
         game_state_updater.set(GameState::FightingInArena);
     }
 }

@@ -84,7 +84,7 @@ fn spawn_debug_items(
     );
 
     if on_player {
-        player.single_mut().1.current_weapon = Some(entity);
+        player.single_mut().1.current_weapon = Some((entity, item));
     }
 }
 

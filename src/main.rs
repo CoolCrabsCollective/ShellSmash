@@ -1,15 +1,12 @@
 mod asset_loader;
 mod collectable;
-mod combat;
 mod config;
 mod debug_camera_controller;
 mod enemy;
 mod game;
 mod game_camera_controller;
 mod game_state;
-mod health;
 mod inventory;
-mod inventory_controller;
 mod item_mesh_generator;
 mod item_spawner;
 mod level_loader;
