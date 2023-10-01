@@ -97,7 +97,8 @@ fn setup(
     meshes: ResMut<Assets<Mesh>>,
     materials: ResMut<Assets<StandardMaterial>>,
 ) {
-    create_boomerang(commands, meshes, materials);
+    // create_boomerang(commands, meshes, materials);
+    create_sword(commands, meshes, materials);
 }
 
 fn create_boomerang(
@@ -114,6 +115,38 @@ fn create_boomerang(
     boomerang.create_world_entity(
         Vec3 {
             x: 0.0,
+            y: 0.5,
+            z: 0.0,
+        },
+        false,
+        true,
+        commands,
+        meshes,
+        materials,
+    );
+}
+
+fn create_sword(
+    commands: Commands,
+    meshes: ResMut<Assets<Mesh>>,
+    materials: ResMut<Assets<StandardMaterial>>,
+) {
+    let sword = InventoryItem::from((
+                                            (5, 0, 2),
+                                            vec![
+                                                (0, 0, 0),
+                                                (0, 0, 1),
+                                                (0, 0, 2),
+                                                (1, 0, 0),
+                                                (-1, 0, 0),
+                                                (0, 0, -1),
+                                            ],
+                                            Color::rgba(0.0, 1.0, 0.0, 1.0),
+                                        ));
+
+    sword.create_world_entity(
+        Vec3 {
+            x: 10.0,
             y: 0.5,
             z: 0.0,
         },
