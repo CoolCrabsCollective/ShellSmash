@@ -1,3 +1,4 @@
+use crate::config::ENABLE_DEBUG_PHYSICS_WORLD;
 use crate::debug_camera_controller::DebugCameraControllerPlugin;
 use crate::enemy::EnemyPlugin;
 use crate::enemy_spawner::EnemySpawnerPlugin;
@@ -22,7 +23,11 @@ impl Plugin for GamePlugin {
         app.add_plugins((
             LevelLoaderPlugin,
             RapierPhysicsPlugin::<NoUserData>::default(),
-            RapierDebugRenderPlugin::default().disabled(),
+            if ENABLE_DEBUG_PHYSICS_WORLD {
+                RapierDebugRenderPlugin::default()
+            } else {
+                RapierDebugRenderPlugin::default().disabled()
+            },
             PlayerPlugin,
             EnemyPlugin,
             EnemySpawnerPlugin,

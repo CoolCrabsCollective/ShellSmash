@@ -1,4 +1,4 @@
-use crate::config::INVENTORY_GRID_DIMENSIONS;
+use crate::config::{CEDRIC_LOG_SPAM, INVENTORY_GRID_DIMENSIONS};
 use crate::game_state::GameState;
 use crate::inventory::{InventoryData, InventoryItem};
 use crate::math::deg_to_rad;
@@ -12,7 +12,11 @@ impl Plugin for InventoryControllerPlugin {
         app.add_systems(OnEnter(GameState::ManagingInventory), enter_inventory);
         app.add_systems(
             Update,
-            process_inputs.run_if(in_state(GameState::ManagingInventory)),
+            update_camera_position.run_if(in_state(GameState::ManagingInventory)),
+        );
+        app.add_systems(
+            Update,
+            update_cube_rotation.run_if(in_state(GameState::ManagingInventory)),
         );
         app.add_systems(
             Update,
@@ -44,6 +48,11 @@ impl ControlledOrientation {
     }
 }
 
+// #[derive(Resource)]
+// struct RotateAnime {
+//     enabled: bool;
+// }
+
 #[derive(Resource)]
 struct InventoryControllerState {
     unprocessed_delta: Option<(f32, f32)>,
@@ -72,43 +81,59 @@ impl InventoryControllerState {
     }
 }
 
-fn process_inputs(
-    // mut mouse_motion_events: EventReader<MouseMotion>,
+// fn process_inputs(
+//     key_codes: Res<Input<KeyCode>>,
+//     mut state: ResMut<InventoryControllerState>,
+//     mut query: <(
+//         Query<&mut Transform, With<VoxelCoordinateFrame>>,
+//         Query<&mut Transform, With<Camera>>,
+//     )>,
+// ) {
+//     let mut voxel_translation_p0 = param_set.p0();
+//     let mut voxel_translation = voxel_translation_p0.single_mut();
+//     let vox_trans = voxel_translation.translation;
+//     let views: Vec<f32> = vec![0.0, 90.0, 180.0, 270.0];
+//     voxel_translation.rotation = Quat::from_rotation_y(deg_to_rad(views[state.view_index]));
+//     camera_translation.translation = vox_trans + Vec3::from((0.0, cam_distance, cam_distance));
+//     let look_at_my_balls = camera_translation.looking_at(vox_trans, Vec3::Y);
+//     camera_translation.rotation = look_at_my_balls.rotation;
+// }
+
+fn update_cube_rotation(
     key_codes: Res<Input<KeyCode>>,
     mut state: ResMut<InventoryControllerState>,
+    mut query: Query<&mut Transform, With<VoxelCoordinateFrame>>,
+) {
+    let possible_rotations: Vec<f32> = vec![0.0, 90.0, 180.0, 270.0];
+    if key_codes.just_pressed(KeyCode::Left) {
+        state.view_index = if state.view_index == 0 {
+            3
+        } else {
+            state.view_index - 1
+        };
+    } else if key_codes.just_pressed(KeyCode::Right) {
+        state.view_index = (state.view_index + 1) % 4;
+    }
+    let mut vox = query.single_mut();
+    vox.rotation = Quat::from_rotation_y(deg_to_rad(possible_rotations[state.view_index]));
+}
+
+fn update_camera_position(
     mut param_set: ParamSet<(
         Query<&Transform, With<VoxelCoordinateFrame>>,
         Query<&mut Transform, With<Camera>>,
     )>,
 ) {
     let cam_distance = 8.0;
-
-    let voxel_translation_p0 = param_set.p0();
-    let voxel_translation = voxel_translation_p0.single();
-    let vox_trans = voxel_translation.translation;
-    let views: Vec<Vec3> = vec![
-        Vec3::from((cam_distance, cam_distance, 0.0)),
-        Vec3::from((0.0, cam_distance, cam_distance)),
-        Vec3::from((-cam_distance, cam_distance, 0.0)),
-        Vec3::from((0.0, cam_distance, -cam_distance)),
-    ];
-
+    let vox_trans = {
+        let vox_trans_query = param_set.p0();
+        vox_trans_query.single().translation
+    };
     let mut camera_translation_query = param_set.p1();
     let mut camera_translation = camera_translation_query.single_mut();
-    if key_codes.just_pressed(KeyCode::Left) {
-        state.view_index = (state.view_index + 1) % 4;
-    } else if key_codes.just_pressed(KeyCode::Right) {
-        state.view_index = if state.view_index == 0 {
-            3
-        } else {
-            state.view_index - 1
-        };
-        let look_at_my_balls = camera_translation.looking_at(vox_trans, Vec3::Y);
-        camera_translation.rotation = look_at_my_balls.rotation;
-    }
-    camera_translation.translation = vox_trans + views[state.view_index];
-    let look_at = camera_translation.looking_at(vox_trans, Vec3::Y);
-    camera_translation.rotation = look_at.rotation;
+    camera_translation.translation = vox_trans + Vec3::from((0.0, cam_distance, cam_distance));
+    let look_at_my_balls = camera_translation.looking_at(vox_trans, Vec3::Y);
+    camera_translation.rotation = look_at_my_balls.rotation;
 }
 
 fn update_state(mut state: ResMut<InventoryControllerState>) {
@@ -154,8 +179,14 @@ fn move_inventory_items(
         IVec3::from((1, 0, 0)),
     ];
     let view_index = state.view_index;
-    dbg!(view_index);
+    if CEDRIC_LOG_SPAM {
+        dbg!(view_index);
+    }
     if key_codes.just_pressed(KeyCode::W) {
+        for mut item in query_items.iter_mut() {
+            item.translate(trans[(4 - view_index) % 4]);
+        }
+    } else if key_codes.just_pressed(KeyCode::A) {
         for mut item in query_items.iter_mut() {
             item.translate(
                 trans[if 1 <= view_index {
@@ -165,7 +196,7 @@ fn move_inventory_items(
                 }],
             );
         }
-    } else if key_codes.just_pressed(KeyCode::A) {
+    } else if key_codes.just_pressed(KeyCode::S) {
         for mut item in query_items.iter_mut() {
             item.translate(
                 trans[if 2 <= view_index {
@@ -175,7 +206,7 @@ fn move_inventory_items(
                 }],
             );
         }
-    } else if key_codes.just_pressed(KeyCode::S) {
+    } else if key_codes.just_pressed(KeyCode::D) {
         for mut item in query_items.iter_mut() {
             item.translate(
                 trans[if 3 <= view_index {
@@ -184,10 +215,6 @@ fn move_inventory_items(
                     3 - view_index
                 }],
             );
-        }
-    } else if key_codes.just_pressed(KeyCode::D) {
-        for mut item in query_items.iter_mut() {
-            item.translate(trans[(4 - view_index) % 4]);
         }
     }
 }
