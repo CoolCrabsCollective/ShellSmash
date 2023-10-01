@@ -6,11 +6,11 @@ use game_state::GameStatePlugin;
 use crate::game::GamePlugin;
 use crate::inventory::InventoryPlugin;
 
+mod collectable;
 mod combat;
 mod config;
 mod debug_camera_controller;
 mod enemy;
-mod enemy_spawner;
 mod game;
 mod game_state;
 mod health;
@@ -23,6 +23,7 @@ mod math;
 mod player;
 mod voxel_renderer;
 mod wall;
+mod wave_manager;
 mod world_item;
 
 fn main() {

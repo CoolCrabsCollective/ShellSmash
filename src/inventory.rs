@@ -67,7 +67,7 @@ fn setup(mut commands: Commands) {
 
 #[derive(Component, Clone, Debug)]
 pub struct InventoryItem {
-    pub location: IVec3,          // world location
+    pub location: IVec3,          // grid location
     pub local_points: Vec<IVec3>, // relative coordinate, center is the first point
     pub color: Color,
 }

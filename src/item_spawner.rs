@@ -109,7 +109,7 @@ fn create_boomerang(
     boomerang.create_world_entity(
         Vec3 {
             x: 0.0,
-            y: 5.0,
+            y: 1.0,
             z: 0.0,
         },
         false,

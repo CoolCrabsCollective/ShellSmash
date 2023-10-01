@@ -14,6 +14,13 @@ pub const PLAYER_WIDTH: f32 = 0.5;
 
 pub struct PlayerPlugin;
 
+#[derive(Debug, Clone, Default, Eq, PartialEq, Hash, States)]
+pub enum PlayerState {
+    #[default]
+    Fighting,
+    Dying,
+}
+
 #[derive(Component)]
 pub struct PlayerControllerState {
     is_forward_pressed: bool,
@@ -29,30 +36,53 @@ type WomanHitByPlayer = Entity;
 #[derive(Event)]
 pub struct PlayerHitEvent(WomanHitByPlayer);
 
+#[derive(Resource)]
+struct DeathTimer(Timer);
+
 impl Plugin for PlayerPlugin {
     fn build(&self, app: &mut App) {
-        app.add_systems(Startup, setup);
+        app.add_systems(Startup, spawn_player);
+        app.add_systems(OnEnter(GameState::FightingInArena), set_player_active);
         app.add_systems(
             Update,
             process_inputs.run_if(in_state(GameState::FightingInArena)),
         );
         app.add_systems(
             Update,
-            player_movement.run_if(in_state(GameState::FightingInArena)),
+            player_movement.run_if(
+                in_state(GameState::FightingInArena).and_then(in_state(PlayerState::Fighting)),
+            ),
         );
         app.add_systems(
             Update,
-            detect_player_hit.run_if(in_state(GameState::FightingInArena)),
+            detect_player_hit.run_if(
+                in_state(GameState::FightingInArena).and_then(in_state(PlayerState::Fighting)),
+            ),
         );
         app.add_systems(
             Update,
-            handle_player_hit.run_if(in_state(GameState::FightingInArena)),
+            handle_player_hit.run_if(
+                in_state(GameState::FightingInArena).and_then(in_state(PlayerState::Fighting)),
+            ),
         );
+        app.add_systems(
+            Update,
+            tick_death_timer.run_if(
+                in_state(GameState::FightingInArena).and_then(in_state(PlayerState::Dying)),
+            ),
+        );
+        app.add_state::<PlayerState>();
         app.add_event::<PlayerHitEvent>();
+        app.insert_resource(DeathTimer(Timer::from_seconds(2.0, TimerMode::Once)));
     }
 }
 
-fn setup(mut commands: Commands, asset_server: ResMut<AssetServer>) {
+fn spawn_player(
+    mut commands: Commands,
+    asset_server: ResMut<AssetServer>,
+    mut meshes: ResMut<Assets<Mesh>>,
+    mut materials: ResMut<Assets<StandardMaterial>>,
+) {
     commands
         .spawn(Collider::capsule_y(0.3, 0.25))
         .insert(SceneBundle {
@@ -75,6 +105,10 @@ fn setup(mut commands: Commands, asset_server: ResMut<AssetServer>) {
             current_weapon: None,
         })
         .insert(TransformBundle::from(Transform::from_xyz(2.0, 1.0, 0.0)));
+}
+
+fn set_player_active(mut next_state: ResMut<NextState<PlayerState>>) {
+    next_state.set(PlayerState::Fighting);
 }
 
 impl PlayerControllerState {
@@ -182,34 +216,31 @@ fn detect_player_hit(
     }
 }
 
-fn handle_player_hit(mut player_hit_event_reader: EventReader<PlayerHitEvent>) {
+fn handle_player_hit(
+    mut player_hit_event_reader: EventReader<PlayerHitEvent>,
+    mut next_player_state: ResMut<NextState<PlayerState>>,
+) {
+    let mut _player_hit = false;
     for player_hit_event in &mut player_hit_event_reader {
         log::info!("Player hit by enemy: {:?}", player_hit_event.0);
+        _player_hit = true;
+        next_player_state.set(PlayerState::Dying);
+        break;
     }
 }
 
-fn check_for_items(
-    items: Query<&InventoryItem>,
-    mut controllers: Query<&mut KinematicCharacterController, With<PlayerControllerState>>,
+fn tick_death_timer(
+    mut death_timer: ResMut<DeathTimer>,
+    time: Res<Time>,
+    mut next_game_state: ResMut<NextState<GameState>>,
+    mut commands: Commands,
+    enemy_query: Query<Entity, With<Enemy>>,
 ) {
-    let mut near_items: Vec<&InventoryItem> = vec![];
-    let current_location = controllers.single_mut().translation;
-
-    if current_location.is_some() {
-        let unwrap_location = current_location.unwrap();
-
-        for item in items.iter() {
-            if item.intersects(IVec3 {
-                x: unwrap_location.x as i32,
-                y: unwrap_location.y as i32,
-                z: unwrap_location.z as i32,
-            }) {
-                near_items.push(item);
-            }
+    if death_timer.0.tick(time.delta()).just_finished() {
+        for enemy in &enemy_query {
+            commands.entity(enemy).despawn();
         }
-    }
-
-    if near_items.len() > 0 {
-        log::info!("Items found: {:?}", near_items)
+        death_timer.0.reset();
+        next_game_state.set(GameState::ManagingInventory);
     }
 }

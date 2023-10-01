@@ -1,12 +1,12 @@
 use crate::config::ENABLE_DEBUG_PHYSICS_WORLD;
 use crate::debug_camera_controller::DebugCameraControllerPlugin;
 use crate::enemy::EnemyPlugin;
-use crate::enemy_spawner::EnemySpawnerPlugin;
 use crate::game_state::GameState;
 use crate::inventory::InventoryItem;
 use crate::item_spawner::ItemSpawner;
 use crate::level_loader::{load_level, LevelLoaderPlugin};
 use crate::player::PlayerPlugin;
+use crate::wave_manager::WaveManagerPlugin;
 use crate::world_item::ItemAttachmentPlugin;
 use bevy::math::vec3;
 use bevy::pbr::{CascadeShadowConfigBuilder, DirectionalLightShadowMap};
@@ -30,7 +30,7 @@ impl Plugin for GamePlugin {
             },
             PlayerPlugin,
             EnemyPlugin,
-            EnemySpawnerPlugin,
+            WaveManagerPlugin,
             ItemSpawner,
             ItemAttachmentPlugin,
         ))
@@ -63,6 +63,7 @@ fn setup(
     commands.spawn(DirectionalLightBundle {
         directional_light: DirectionalLight {
             shadows_enabled: true,
+            illuminance: 100000.0,
             ..default()
         },
         transform: Transform::from_rotation(Quat::from_rotation_x(-0.75 * PI)),
@@ -71,8 +72,7 @@ fn setup(
         // We also adjusted the shadow map to be larger since we're
         // only using a single cascade.
         cascade_shadow_config: CascadeShadowConfigBuilder {
-            num_cascades: 1,
-            maximum_distance: 1.6,
+            maximum_distance: 100.0,
             ..default()
         }
         .into(),
