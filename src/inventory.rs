@@ -1,4 +1,3 @@
-
 use crate::inventory_controller::InventoryControllerPlugin;
 use bevy::log;
 use bevy::pbr::wireframe::WireframePlugin;
