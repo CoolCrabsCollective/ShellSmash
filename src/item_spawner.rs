@@ -1,6 +1,8 @@
 use crate::game_state::GameState;
 use crate::inventory::InventoryItem;
-use crate::player::PlayerControllerState;
+use crate::player::{PlayerControllerState, PLAYER_HEIGHT};
+use crate::world_item::VOXEL_SIZE_IN_WORLD;
+use bevy::math::vec3;
 use bevy::prelude::*;
 use bevy_rapier3d::prelude::DebugRenderContext;
 
@@ -68,7 +70,12 @@ fn spawn_debug_items(
     let on_player = keys.pressed(KeyCode::ControlLeft);
 
     item.create_world_entity(
-        player.single().translation,
+        player.single().translation
+            + if on_player {
+                Vec3::splat(0.0)
+            } else {
+                vec3(0.0, -PLAYER_HEIGHT + VOXEL_SIZE_IN_WORLD, 0.0)
+            },
         on_player,
         commands,
         meshes,

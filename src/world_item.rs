@@ -4,6 +4,8 @@ use bevy::prelude::*;
 use crate::inventory::InventoryItem;
 use crate::player::PlayerControllerState;
 
+pub const VOXEL_SIZE_IN_WORLD: f32 = 0.1;
+
 #[derive(Component)]
 pub struct AttachedToPlayer(bool);
 
@@ -24,7 +26,7 @@ impl InventoryItem {
                 ..default()
             })
             .insert(TransformBundle::from(
-                Transform::from_translation(location).with_scale(Vec3::splat(0.1)),
+                Transform::from_translation(location).with_scale(Vec3::splat(VOXEL_SIZE_IN_WORLD)),
             ));
     }
 }

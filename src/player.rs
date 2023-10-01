@@ -8,6 +8,9 @@ use crate::enemy::Enemy;
 use crate::game_state::GameState;
 use crate::inventory::InventoryItem;
 
+pub const PLAYER_HEIGHT: f32 = 0.6;
+pub const PLAYER_WIDTH: f32 = 0.5;
+
 pub struct PlayerPlugin;
 
 #[derive(Component)]
@@ -48,12 +51,7 @@ impl Plugin for PlayerPlugin {
     }
 }
 
-fn setup(
-    mut commands: Commands,
-    asset_server: ResMut<AssetServer>,
-    mut meshes: ResMut<Assets<Mesh>>,
-    mut materials: ResMut<Assets<StandardMaterial>>,
-) {
+fn setup(mut commands: Commands, asset_server: ResMut<AssetServer>) {
     commands
         .spawn(Collider::capsule_y(0.3, 0.25))
         .insert(SceneBundle {
