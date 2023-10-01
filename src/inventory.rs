@@ -25,25 +25,25 @@ impl Plugin for InventoryPlugin {
 
 /// set up a simple 3D scene
 fn setup(mut commands: Commands) {
-    let _boomerang = InventoryItem::from((
-        (1, 3, 3),
+    let boomerang = InventoryItem::from((
+        (3, 0, 0),
         vec![(0, 0, 0), (0, 0, 1), (0, 0, 2), (-1, 0, 0), (-2, 0, 0)],
         Color::rgba(1.0, 1.0, 1.0, 1.0),
     ));
-    let _sword = InventoryItem::from((
-        (5, 3, 2),
+    let sword = InventoryItem::from((
+        (5, 0, 2),
         vec![
             (0, 0, 0),
             (0, 0, 1),
             (0, 0, 2),
-            (0, 1, 0),
-            (0, -1, 0),
+            (1, 0, 0),
+            (-1, 0, 0),
             (0, 0, -1),
         ],
         Color::rgba(0.0, 1.0, 0.0, 1.0),
     ));
-    let _heart = InventoryItem::from((
-        (2, 5, 2),
+    let heart = InventoryItem::from((
+        (4, 1, 1),
         vec![
             (0, 0, 0),
             (0, 0, -1),
@@ -55,13 +55,9 @@ fn setup(mut commands: Commands) {
         Color::rgba(1.0, 0.0, 0.0, 1.0),
     ));
 
-    let debug_cube =
-        InventoryItem::from(((0, 0, 0), vec![(0, 0, 0)], Color::rgba(0.0, 0.0, 0.0, 1.0)));
-
-    // commands.spawn(boomerang);
-    // commands.spawn(sword);
-    // commands.spawn(heart);
-    commands.spawn(debug_cube);
+    commands.spawn(boomerang);
+    commands.spawn(sword);
+    commands.spawn(heart);
     commands.insert_resource(InventoryData { grid: Vec::new() });
 }
 
