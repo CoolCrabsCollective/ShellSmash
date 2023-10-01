@@ -1,3 +1,4 @@
+use crate::collectable::Collectable;
 use crate::game_state::GameState;
 use bevy::prelude::*;
 
@@ -9,11 +10,8 @@ pub const VOXEL_SIZE_IN_WORLD: f32 = 0.1;
 pub struct AttachedToPlayer(bool);
 
 #[derive(Component)]
-pub struct Collectable(bool);
-
-#[derive(Component)]
 pub struct WeaponHolder {
-    pub current_weapon: Option<Entity>,
+    pub current_weapon: Option<(Entity, InventoryItem)>,
 }
 
 impl InventoryItem {
@@ -60,7 +58,7 @@ pub fn item_attachment_update(
 ) {
     let binding = param_set.p0();
     let player_transform = binding.single().0.clone();
-    let entity = binding.single().1.current_weapon;
+    let entity = binding.single().1.current_weapon.clone().map(|x| x.0);
     drop(binding);
     let mut query = param_set.p1();
     for mut item in query.iter_mut() {

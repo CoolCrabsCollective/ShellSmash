@@ -23,7 +23,7 @@ impl InventoryItem {
             vec3(0.0, 0.0, -1.0),
         ];
 
-        for point in &self.local_points {
+        for point in &self.original_points {
             'dirs: for dir in &dirs {
                 let new_pos = vec3(
                     point.x as f32 + dir.x * 0.5,
