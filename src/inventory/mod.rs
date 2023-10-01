@@ -4,9 +4,11 @@ use bevy::prelude::*;
 
 use crate::inventory::controller::InventoryControllerPlugin;
 use crate::inventory::ItemType::{MELEE_WEAPON, NON_WEAPON, RANGED_WEAPON};
+use crate::inventory::data_manager::InventoryDataPlugin;
 use crate::voxel_renderer::VoxelRendererPlugin;
 
 mod controller;
+mod data_manager;
 
 pub struct InventoryPlugin;
 
@@ -17,6 +19,7 @@ impl Plugin for InventoryPlugin {
             WireframePlugin,
             VoxelRendererPlugin,
             InventoryControllerPlugin,
+            InventoryDataPlugin,
         ))
         .insert_resource(Inventory {
             content: Vec::new(),
@@ -77,7 +80,6 @@ fn setup(mut commands: Commands, assets: Res<AssetServer>) {
 pub struct VoxelBullcrap {
     pub data: InventoryItem,
 }
-
 #[derive(Clone, Debug, PartialEq)]
 pub enum ItemType {
     MELEE_WEAPON,
@@ -85,7 +87,7 @@ pub enum ItemType {
     NON_WEAPON,
 }
 
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, Component)]
 pub struct InventoryItem {
     pub location: IVec3, // grid location
     pub original_points: Vec<IVec3>,
