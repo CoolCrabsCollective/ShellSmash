@@ -1,10 +1,11 @@
 use bevy::input::keyboard::KeyboardInput;
 use bevy::log;
 use bevy::math::vec3;
-use bevy::prelude::*;
 use bevy::window::PrimaryWindow;
+use bevy::{log, prelude::*};
 use bevy_rapier3d::prelude::*;
 
+use crate::enemy::Enemy;
 use crate::game_state::GameState;
 use crate::inventory::InventoryItem;
 
@@ -26,6 +27,11 @@ pub struct PlayerControllerState {
     velocity: Vec3,
 }
 
+type WomanHitByPlayer = Entity;
+
+#[derive(Event)]
+pub struct PlayerHitEvent(WomanHitByPlayer);
+
 impl Plugin for PlayerPlugin {
     fn build(&self, app: &mut App) {
         app.add_systems(Startup, setup);
@@ -37,6 +43,15 @@ impl Plugin for PlayerPlugin {
             Update,
             player_movement.run_if(in_state(GameState::FightingInArena)),
         );
+        app.add_systems(
+            Update,
+            detect_player_hit.run_if(in_state(GameState::FightingInArena)),
+        );
+        app.add_systems(
+            Update,
+            handle_player_hit.run_if(in_state(GameState::FightingInArena)),
+        );
+        app.add_event::<PlayerHitEvent>();
     }
 }
 
@@ -184,6 +199,33 @@ fn player_movement(
     }
     state.was_I_pressed = state.is_I_pressed;
     state.was_K_pressed = state.is_K_pressed;
+}
+
+fn detect_player_hit(
+    player_controller_output_query: Query<
+        &KinematicCharacterControllerOutput,
+        With<PlayerControllerState>,
+    >,
+    enemy_entity_query: Query<Entity, With<Enemy>>,
+    mut player_hit_event_writer: EventWriter<PlayerHitEvent>,
+) {
+    let player_controller_output = player_controller_output_query.get_single();
+    if let Err(_error_ignored) = player_controller_output {
+        return;
+    }
+    let player_controller_output = player_controller_output.unwrap();
+
+    for collision in &player_controller_output.collisions {
+        if enemy_entity_query.contains(collision.entity) {
+            player_hit_event_writer.send(PlayerHitEvent(collision.entity));
+        }
+    }
+}
+
+fn handle_player_hit(mut player_hit_event_reader: EventReader<PlayerHitEvent>) {
+    for player_hit_event in &mut player_hit_event_reader {
+        log::info!("Player hit by enemy: {:?}", player_hit_event.0);
+    }
 }
 
 fn check_for_items(
