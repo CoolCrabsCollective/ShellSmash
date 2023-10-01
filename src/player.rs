@@ -6,7 +6,6 @@ use bevy_rapier3d::prelude::*;
 
 use crate::enemy::Enemy;
 use crate::game_state::GameState;
-use crate::inventory::InventoryItem;
 use crate::world_item::WeaponHolder;
 
 pub const PLAYER_HEIGHT: f32 = 0.6;
