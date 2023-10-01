@@ -1,12 +1,14 @@
 use crate::game_state::GameState;
 use crate::player::PlayerControllerState;
-use crate::world_item::Collectable;
 use bevy::log;
 use bevy::prelude::*;
 
 pub struct CollectablePlugin;
 
 type CollectedItems = Entity;
+
+#[derive(Component)]
+pub struct Collectable(pub(crate) bool);
 
 #[derive(Event)]
 pub struct ItemCollectEvent(CollectedItems);
@@ -25,7 +27,8 @@ impl Plugin for CollectablePlugin {
     }
 }
 
-fn detect_items( mut commands: Commands,
+fn detect_items(
+    mut commands: Commands,
     items: Query<(Entity, &Transform, &Collectable)>,
     player_trans: Query<&Transform, With<PlayerControllerState>>,
     mut item_collected_event_writer: EventWriter<ItemCollectEvent>,
@@ -34,7 +37,7 @@ fn detect_items( mut commands: Commands,
     let current_location = player_trans.single().translation;
 
     for item in items.iter() {
-        if item.2.0 {
+        if item.2 .0 {
             let distance_squared = current_location.distance_squared(item.1.translation);
 
             if distance_squared < detect_range * detect_range {

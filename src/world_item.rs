@@ -1,3 +1,4 @@
+use crate::collectable::Collectable;
 use crate::game_state::GameState;
 use bevy::prelude::*;
 
@@ -7,9 +8,6 @@ pub const VOXEL_SIZE_IN_WORLD: f32 = 0.1;
 
 #[derive(Component)]
 pub struct AttachedToPlayer(bool);
-
-#[derive(Component)]
-pub struct Collectable(pub(crate) bool);
 
 #[derive(Component)]
 pub struct WeaponHolder {
