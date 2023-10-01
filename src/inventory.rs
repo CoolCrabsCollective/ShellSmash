@@ -178,10 +178,18 @@ pub fn move_inventory_items(
         log::error!(
             "Cancelling move_inventory_items since camera could not be initialized: {err:?}"
         );
+        return;
     }
     let camera_coord = camera_coord.unwrap();
 
-    let inv_coord = inv_coord_query.single();
+    let inv_coord = inv_coord_query.get_single();
+    if let Err(ref err) = inv_coord {
+        log::error!(
+            "Cancelling move_inventory_items since inv coord could not be initialized: {err:?}"
+        );
+        return;
+    }
+    let inv_coord = inv_coord.unwrap();
     let direction = (inv_coord.translation - camera_coord.translation).normalize();
     let quat: Quat = inv_coord.rotation;
     let x_axis = quat
