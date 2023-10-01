@@ -30,7 +30,11 @@ fn set_camera(
         + player_transform.forward() * 1.0
         + vec3(0.0, 60.0, 30.0)
         + vec3(0.0, 0.0, -1.0);
-    let rate = 0.0025f32.powf(time.delta_seconds());
+    let mut rate = 0.0025f32.powf(time.delta_seconds());
+
+    if new_pos.distance_squared(camera_transform.translation) > 10.0 * 10.0 {
+        rate = 0.0;
+    }
 
     camera_transform.translation = camera_transform.translation * rate + new_pos * (1.0 - rate);
 }
