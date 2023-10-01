@@ -2,9 +2,7 @@ use bevy::{input::keyboard::KeyboardInput, pbr::wireframe::Wireframe, prelude::*
 use rand::random;
 
 use crate::{
-    config::{INVENTORY_GRID_DIMENSIONS, VOXEL_RENDERER_LEFT_RIGHT_CONTROLS},
-    game_state::GameState,
-    inventory::InventoryData,
+    config::INVENTORY_GRID_DIMENSIONS, game_state::GameState, inventory::InventoryData,
     math::deg_to_rad,
 };
 
