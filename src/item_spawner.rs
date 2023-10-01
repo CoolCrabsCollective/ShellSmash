@@ -29,7 +29,7 @@ fn spawn_debug_items(
     mut meshes: ResMut<Assets<Mesh>>,
     mut materials: ResMut<Assets<StandardMaterial>>,
 ) {
-    let item = if keys.just_pressed(KeyCode::Key1) {
+    let mut item = if keys.just_pressed(KeyCode::Key1) {
         InventoryItem::from((
             (1, 3, 3),
             vec![(0, 0, 0), (0, 0, 1), (0, 0, 2), (-1, 0, 2), (-2, 0, 2)],
@@ -101,7 +101,7 @@ fn create_boomerang(
     meshes: ResMut<Assets<Mesh>>,
     materials: ResMut<Assets<StandardMaterial>>,
 ) {
-    let boomerang = InventoryItem::from((
+    let mut boomerang = InventoryItem::from((
         (1, 3, 3),
         vec![(0, 0, 0), (0, 0, 1), (0, 0, 2), (-1, 0, 0), (-2, 0, 0)],
         Color::rgba(1.0, 1.0, 1.0, 1.0),

@@ -28,6 +28,8 @@ fn detect_items(
     mut controllers: Query<&mut KinematicCharacterController, With<PlayerControllerState>>,
     mut item_collected_event_writer: EventWriter<ItemCollectEvent>,
 ) {
+    let detect_range = 5.0;
+
     let mut near_items: Vec<InventoryItem> = vec![];
     let current_location = controllers.single_mut().translation;
 
@@ -35,9 +37,14 @@ fn detect_items(
         let unwrap_location = current_location.unwrap();
 
         for item in items.iter() {
-            if false {
-                near_items.push(item.clone());
-                // remove item from world
+            if item.real_location.is_some() {
+                let distance_squared =
+                    unwrap_location.distance_squared(item.real_location.unwrap());
+
+                if distance_squared < detect_range * detect_range {
+                    near_items.push(item.clone());
+                    // remove item from world
+                }
             }
         }
     }
