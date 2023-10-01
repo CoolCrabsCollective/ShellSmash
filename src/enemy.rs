@@ -65,8 +65,9 @@ fn move_enemies(
 
     let mut enemy_query = param_set.p1();
     for (mut k_controller, mut transform) in &mut enemy_query {
-        let to_player_unit_vector = player_position - transform.translation;
-        let speed = 1.0;
+        // looked kinda cool without normalize tho :eyes:
+        let to_player_unit_vector = (player_position - transform.translation).normalize();
+        let speed = 4.0;
 
         let mut current_frame_movement = Vec3::ZERO;
         current_frame_movement.y -= 9.81 * time.delta_seconds();

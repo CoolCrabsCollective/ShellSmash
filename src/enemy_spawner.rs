@@ -22,7 +22,7 @@ impl Plugin for EnemySpawnerPlugin {
             Update,
             spawn_enemies.run_if(in_state(GameState::FightingInArena)),
         );
-        app.insert_resource(SpawnTimer(Timer::from_seconds(0.5, TimerMode::Repeating)));
+        app.insert_resource(SpawnTimer(Timer::from_seconds(0.01, TimerMode::Repeating)));
     }
 }
 
