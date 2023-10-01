@@ -24,8 +24,11 @@ impl Plugin for InventoryPlugin {
     }
 }
 
+#[derive(Component)]
+struct Gizmo;
+
 /// set up a simple 3D scene
-fn setup(mut commands: Commands) {
+fn setup(mut commands: Commands, assets: Res<AssetServer>) {
     let boomerang = InventoryItem::from((
         (3, 0, 0),
         vec![(0, 0, 0), (0, 0, 1), (0, 0, 2), (-1, 0, 0), (-2, 0, 0)],
@@ -57,6 +60,13 @@ fn setup(mut commands: Commands) {
     ));
 
     commands.spawn(VoxelBullcrap { data: sword });
+    commands
+        .spawn(Gizmo {})
+        .insert(SceneBundle {
+            scene: assets.load("arrow_straight#Scene0"),
+            ..default()
+        })
+        .insert(TransformBundle::from(Transform::from_xyz(0.0, 8.0, 8.0)));
 }
 
 #[derive(Component, Clone, Debug)]
