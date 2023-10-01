@@ -8,6 +8,9 @@ use crate::enemy::Enemy;
 use crate::game_state::GameState;
 use crate::inventory::InventoryItem;
 
+pub const PLAYER_HEIGHT: f32 = 0.6;
+pub const PLAYER_WIDTH: f32 = 0.5;
+
 pub struct PlayerPlugin;
 
 #[derive(Component)]
@@ -16,12 +19,6 @@ pub struct PlayerControllerState {
     is_backward_pressed: bool,
     is_left_pressed: bool,
     is_right_pressed: bool,
-
-    is_I_pressed: bool,
-    was_I_pressed: bool,
-
-    is_K_pressed: bool,
-    was_K_pressed: bool,
 
     velocity: Vec3,
 }
@@ -54,12 +51,7 @@ impl Plugin for PlayerPlugin {
     }
 }
 
-fn setup(
-    mut commands: Commands,
-    asset_server: ResMut<AssetServer>,
-    mut meshes: ResMut<Assets<Mesh>>,
-    mut materials: ResMut<Assets<StandardMaterial>>,
-) {
+fn setup(mut commands: Commands, asset_server: ResMut<AssetServer>) {
     commands
         .spawn(Collider::capsule_y(0.3, 0.25))
         .insert(SceneBundle {
@@ -89,12 +81,6 @@ impl PlayerControllerState {
             is_left_pressed: false,
             is_right_pressed: false,
 
-            is_I_pressed: false,
-            was_I_pressed: false,
-
-            is_K_pressed: false,
-            was_K_pressed: false,
-
             velocity: vec3(0.0, 0.0, 0.0),
         }
     }
@@ -119,27 +105,18 @@ fn process_inputs(
             Some(KeyCode::D) => {
                 state.is_right_pressed = event.state.is_pressed();
             }
-            Some(KeyCode::I) => {
-                state.is_I_pressed = event.state.is_pressed();
-            }
-            Some(KeyCode::K) => {
-                state.is_K_pressed = event.state.is_pressed();
-            }
             _ => {}
         }
     }
 }
 
 fn player_movement(
-    mut commands: Commands,
     mut controllers: Query<&mut KinematicCharacterController, With<PlayerControllerState>>,
     time: Res<Time>,
     mut state: Query<&mut PlayerControllerState>,
     windows: Query<&Window, With<PrimaryWindow>>,
     camera_q: Query<(&Camera, &GlobalTransform)>,
     mut transform: Query<&mut Transform, With<PlayerControllerState>>,
-    mut meshes: ResMut<Assets<Mesh>>,
-    mut materials: ResMut<Assets<StandardMaterial>>,
 ) {
     let mut state = state.single_mut();
     let mut transform = transform.single_mut();
@@ -165,24 +142,6 @@ fn player_movement(
 
     controllers.single_mut().translation = Some(state.velocity * time.delta_seconds());
 
-    if state.is_I_pressed && !state.was_I_pressed {
-        let boomerang = InventoryItem::from((
-            (1, 3, 3),
-            vec![(0, 0, 0), (0, 0, 1), (0, 0, 2), (-1, 0, 0), (-2, 0, 0)],
-            Color::rgba(1.0, 1.0, 1.0, 1.0),
-        ));
-
-        boomerang.create_world_entity(transform.translation, false, commands, meshes, materials);
-    } else if state.is_K_pressed && !state.was_K_pressed {
-        let boomerang = InventoryItem::from((
-            (1, 3, 3),
-            vec![(0, 0, 0), (0, 0, 1), (0, 0, 2), (-1, 0, 0), (-2, 0, 0)],
-            Color::rgba(1.0, 1.0, 1.0, 1.0),
-        ));
-
-        boomerang.create_world_entity(transform.translation, true, commands, meshes, materials);
-    }
-
     let (camera, camera_transform) = camera_q.single();
 
     if let Some(position) = windows.single().cursor_position() {
@@ -196,8 +155,6 @@ fn player_movement(
             transform.look_at(pos, Vec3::Y);
         }
     }
-    state.was_I_pressed = state.is_I_pressed;
-    state.was_K_pressed = state.is_K_pressed;
 }
 
 fn detect_player_hit(
@@ -224,31 +181,5 @@ fn detect_player_hit(
 fn handle_player_hit(mut player_hit_event_reader: EventReader<PlayerHitEvent>) {
     for player_hit_event in &mut player_hit_event_reader {
         log::info!("Player hit by enemy: {:?}", player_hit_event.0);
-    }
-}
-
-fn check_for_items(
-    items: Query<&InventoryItem>,
-    mut controllers: Query<&mut KinematicCharacterController, With<PlayerControllerState>>,
-) {
-    let mut near_items: Vec<&InventoryItem> = vec![];
-    let current_location = controllers.single_mut().translation;
-
-    if current_location.is_some() {
-        let unwrap_location = current_location.unwrap();
-
-        for item in items.iter() {
-            if item.intersects(IVec3 {
-                x: unwrap_location.x as i32,
-                y: unwrap_location.y as i32,
-                z: unwrap_location.z as i32,
-            }) {
-                near_items.push(item);
-            }
-        }
-    }
-
-    if near_items.len() > 0 {
-        log::info!("Items found: {:?}", near_items)
     }
 }

@@ -4,6 +4,8 @@ use bevy::prelude::*;
 use crate::inventory::InventoryItem;
 use crate::player::PlayerControllerState;
 
+pub const VOXEL_SIZE_IN_WORLD: f32 = 0.1;
+
 #[derive(Component)]
 pub struct AttachedToPlayer(bool);
 
@@ -24,7 +26,7 @@ impl InventoryItem {
                 ..default()
             })
             .insert(TransformBundle::from(
-                Transform::from_translation(location).with_scale(Vec3::splat(0.1)),
+                Transform::from_translation(location).with_scale(Vec3::splat(VOXEL_SIZE_IN_WORLD)),
             ));
     }
 }
@@ -46,12 +48,14 @@ pub fn item_attachment_update(
         Query<(&mut Transform, &AttachedToPlayer)>,
     )>,
 ) {
-    let pos = param_set.p0().single().translation;
+    let player_transform = param_set.p0().single().clone();
     let mut query = param_set.p1();
     for mut item in query.iter_mut() {
         if !item.1 .0 {
             continue;
         }
-        item.0.translation = pos;
+        item.0.translation = player_transform.translation + player_transform.forward() * 0.5;
+        item.0.rotation = player_transform.rotation;
+        item.0.rotate_y(180.0f32.to_radians());
     }
 }
