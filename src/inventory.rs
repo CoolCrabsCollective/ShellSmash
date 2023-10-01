@@ -17,10 +17,6 @@ impl Plugin for InventoryPlugin {
         ));
         app.add_systems(
             Update,
-            move_inventory_items.run_if(in_state(GameState::ManagingInventory)),
-        );
-        app.add_systems(
-            Update,
             update_inventory_data.run_if(in_state(GameState::ManagingInventory)),
         );
     }
@@ -175,8 +171,4 @@ enum AxisSelect {
     X,
     Y,
     Z,
-}
-
-pub fn move_inventory_items(camera_pos_query: Query<&Transform, With<Camera>>) {
-    let _camera_coord = camera_pos_query.single();
 }
