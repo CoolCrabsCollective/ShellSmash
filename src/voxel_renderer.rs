@@ -98,22 +98,22 @@ fn init_voxel_grid(
     for x in 0..INVENTORY_GRID_DIMENSIONS[0] {
         for y in 0..INVENTORY_GRID_DIMENSIONS[1] {
             for z in 0..INVENTORY_GRID_DIMENSIONS[2] {
-                let child = commands
-                    .spawn((
-                        VoxelBundle::new(
-                            IVec3::new(
-                                x - INVENTORY_GRID_DIMENSIONS[0] / 2,
-                                y - INVENTORY_GRID_DIMENSIONS[1] / 2,
-                                z - INVENTORY_GRID_DIMENSIONS[2] / 2,
-                            ),
-                            &mut meshes,
-                            &mut materials,
-                        ),
-                        Wireframe,
-                    ))
-                    .id();
+                let mut child = commands.spawn((VoxelBundle::new(
+                    IVec3::new(
+                        x - INVENTORY_GRID_DIMENSIONS[0] / 2,
+                        y - INVENTORY_GRID_DIMENSIONS[1] / 2,
+                        z - INVENTORY_GRID_DIMENSIONS[2] / 2,
+                    ),
+                    &mut meshes,
+                    &mut materials,
+                ),));
 
-                commands.entity(parent).add_child(child);
+                if cfg!(not(target_arch = "wasm32")) {
+                    child.insert(Wireframe);
+                }
+
+                let child_id = child.id();
+                commands.entity(parent).add_child(child_id);
             }
         }
     }
