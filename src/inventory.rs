@@ -1,9 +1,9 @@
 use crate::{game_state::GameState, inventory_controller::InventoryControllerPlugin};
-use bevy::log;
+
 use bevy::pbr::wireframe::WireframePlugin;
 use bevy::prelude::*;
 
-use crate::voxel_renderer::{VoxelCoordinateFrame, VoxelRendererPlugin, GRID_DIMS};
+use crate::voxel_renderer::{VoxelRendererPlugin, GRID_DIMS};
 
 pub struct InventoryPlugin;
 
@@ -28,12 +28,12 @@ impl Plugin for InventoryPlugin {
 
 /// set up a simple 3D scene
 fn setup(mut commands: Commands) {
-    let boomerang = InventoryItem::from((
+    let _boomerang = InventoryItem::from((
         (1, 3, 3),
         vec![(0, 0, 0), (0, 0, 1), (0, 0, 2), (-1, 0, 0), (-2, 0, 0)],
         Color::rgba(1.0, 1.0, 1.0, 1.0),
     ));
-    let sword = InventoryItem::from((
+    let _sword = InventoryItem::from((
         (5, 3, 2),
         vec![
             (0, 0, 0),
@@ -45,7 +45,7 @@ fn setup(mut commands: Commands) {
         ],
         Color::rgba(0.0, 1.0, 0.0, 1.0),
     ));
-    let heart = InventoryItem::from((
+    let _heart = InventoryItem::from((
         (2, 5, 2),
         vec![
             (0, 0, 0),
@@ -90,11 +90,13 @@ impl InventoryItem {
         false
     }
 
+    #[allow(dead_code)]
     pub fn translate(&mut self, translation: IVec3) {
         self.location += translation;
     }
 
-    pub fn _rotate_x(&mut self, ccw: bool) {
+    #[allow(dead_code)]
+    pub fn rotate_x(&mut self, ccw: bool) {
         let rot_angle = ((if ccw { 90 } else { -90 }) as f32).to_radians();
 
         let rot_mat = Mat3::from_rotation_x(rot_angle);
@@ -107,7 +109,8 @@ impl InventoryItem {
         }
     }
 
-    fn _get_center(&self) -> &IVec3 {
+    #[allow(dead_code)]
+    fn get_center(&self) -> &IVec3 {
         self.local_points.first().unwrap()
     }
 }
