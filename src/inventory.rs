@@ -55,9 +55,9 @@ fn setup(mut commands: Commands) {
         Color::rgba(1.0, 0.0, 0.0, 1.0),
     ));
 
-    commands.spawn(boomerang);
+    // commands.spawn(boomerang);
     commands.spawn(sword);
-    commands.spawn(heart);
+    // commands.spawn(heart);
     commands.insert_resource(InventoryData { grid: Vec::new() });
 }
 
@@ -86,16 +86,14 @@ impl InventoryItem {
         false
     }
 
-    #[allow(dead_code)]
     pub fn translate(&mut self, translation: IVec3) {
         self.location += translation;
     }
 
-    #[allow(dead_code)]
-    pub fn rotate_x(&mut self, ccw: bool) {
+    pub fn rotate(&mut self, ccw: bool) {
         let rot_angle = ((if ccw { 90 } else { -90 }) as f32).to_radians();
 
-        let rot_mat = Mat3::from_rotation_x(rot_angle);
+        let rot_mat = Mat3::from_rotation_y(rot_angle);
         for p in self.local_points.iter_mut() {
             let vec3 = Vec3::new(p.x as f32, p.y as f32, p.z as f32);
             let new_p: Vec3 = rot_mat.mul_vec3(vec3);
