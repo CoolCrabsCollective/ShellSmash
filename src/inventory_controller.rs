@@ -2,13 +2,12 @@ use crate::game_state::GameState;
 use crate::inventory::{InventoryData, InventoryItem};
 use crate::math::deg_to_rad;
 use crate::voxel_renderer::{VoxelCoordinateFrame, GRID_DIMS};
-use bevy::prelude::*;
+use bevy::{log, prelude::*};
 
 pub struct InventoryControllerPlugin;
 
 impl Plugin for InventoryControllerPlugin {
     fn build(&self, app: &mut App) {
-        app.add_systems(OnEnter(GameState::ManagingInventory), enter_inventory);
         app.add_systems(
             Update,
             process_inputs.run_if(in_state(GameState::ManagingInventory)),
@@ -93,11 +92,19 @@ fn process_inputs(
         let mut camera_translation_query = param_set.p1();
         let mut camera_translation = camera_translation_query.single_mut();
         camera_translation.translation = vox_trans + views[state.view_index];
+        log::info!(
+            "inventory_controller process_inputs left: position={:?}",
+            camera_translation.translation
+        );
         state.view_index = (state.view_index + 1) % 4;
     } else if key_codes.just_pressed(KeyCode::Right) {
         let mut camera_translation_query = param_set.p1();
         let mut camera_translation = camera_translation_query.single_mut();
         camera_translation.translation = vox_trans + views[state.view_index];
+        log::info!(
+            "inventory_controller process_inputs right: position={:?}",
+            camera_translation.translation
+        );
         state.view_index = (state.view_index + 1) % 4;
     }
 }
@@ -157,6 +164,7 @@ fn set_world_orientation(
 
     world_transform.translation = base_camera_translation;
     world_transform.translation.x += state.orientation.zoom_pos;
+
     world_transform.rotation = state.orientation.to_quat();
 }
 
@@ -166,14 +174,4 @@ pub fn update_inventory_data(query: Query<&InventoryItem>, mut inv: ResMut<Inven
         items.push(p.clone())
     }
     inv.grid = InventoryData::grid_from_items(items, IVec3::from_array(GRID_DIMS))
-}
-
-fn enter_inventory(mut cam_transform_query: Query<&mut Transform, With<Camera>>) {
-    let mut cam_transform = cam_transform_query.single_mut();
-
-    cam_transform.translation = Vec3 {
-        x: -15.0,
-        y: 5.0,
-        z: 0.0,
-    };
 }
