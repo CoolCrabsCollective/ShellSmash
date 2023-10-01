@@ -1,4 +1,4 @@
-use crate::config::{CEDRIC_LOG_SPAM, INVENTORY_GRID_DIMENSIONS};
+use crate::config::INVENTORY_GRID_DIMENSIONS;
 use crate::game_state::GameState;
 use crate::inventory::{InventoryData, InventoryItem};
 use crate::math::deg_to_rad;
@@ -22,10 +22,6 @@ impl Plugin for InventoryControllerPlugin {
         app.add_systems(
             Update,
             move_inventory_items.run_if(in_state(GameState::ManagingInventory)),
-        );
-        app.add_systems(
-            Update,
-            update_state.run_if(in_state(GameState::ManagingInventory)),
         );
         app.add_systems(
             Update,
@@ -71,29 +67,12 @@ impl CubeRotationAnime {
 
 #[derive(Resource)]
 struct InventoryControllerState {
-    unprocessed_delta: Option<(f32, f32)>,
-
-    rotate: bool,
-    zoom: bool,
     pub view_index: usize,
-    pub orientation: ControlledOrientation,
 }
 
 impl InventoryControllerState {
     pub fn new() -> Self {
-        Self {
-            unprocessed_delta: None,
-
-            rotate: false,
-            zoom: false,
-            view_index: 0,
-
-            orientation: ControlledOrientation {
-                horizontal: deg_to_rad(0.0),
-                vertical: deg_to_rad(0.0),
-                zoom_pos: 0.0,
-            },
-        }
+        Self { view_index: 0 }
     }
 }
 
@@ -163,25 +142,12 @@ fn update_camera_position(
     camera_translation.rotation = look_at_my_balls.rotation;
 }
 
-fn update_state(mut state: ResMut<InventoryControllerState>) {
-    if let Some(unprocessed_delta) = state.unprocessed_delta {
-        if state.zoom {
-            let mouse_sensitivity = 0.02;
-
-            state.orientation.zoom_pos += unprocessed_delta.1 * mouse_sensitivity;
-        }
-    }
-    state.unprocessed_delta = None;
-    state.rotate = false;
-    state.zoom = false;
-}
-
 pub fn update_inventory_data(query: Query<&InventoryItem>, mut inv: ResMut<InventoryData>) {
     let mut items: Vec<InventoryItem> = Vec::new();
     for p in query.iter() {
         items.push(p.clone())
     }
-    inv.grid = InventoryData::grid_from_items(items, IVec3::from_array(INVENTORY_GRID_DIMENSIONS))
+    inv.grid = InventoryData::grid_from_items(items, IVec3::from_array(INVENTORY_GRID_DIMENSIONS));
 }
 
 fn get_initial_camera_transform() -> Transform {
@@ -206,9 +172,6 @@ fn move_inventory_items(
         IVec3::from((1, 0, 0)),
     ];
     let view_index = state.view_index;
-    if CEDRIC_LOG_SPAM {
-        dbg!(view_index);
-    }
     if key_codes.just_pressed(KeyCode::W) {
         for mut item in query_items.iter_mut() {
             item.translate(trans[(4 - view_index) % 4]);
