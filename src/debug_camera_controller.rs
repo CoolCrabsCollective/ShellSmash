@@ -188,7 +188,7 @@ fn set_camera(
         return;
     }
 
-    log::info!("set_camera: position={:?}", state.position);
+    // log::info!("set_camera: position={:?}", state.position);
     camera_transform.translation = state.position;
     camera_transform.rotation = state.view_direction.to_quat();
 }

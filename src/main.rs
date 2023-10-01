@@ -8,6 +8,8 @@ use crate::inventory::InventoryPlugin;
 
 mod combat;
 mod debug_camera_controller;
+mod enemy;
+mod enemy_spawner;
 mod game;
 mod game_state;
 mod health;
