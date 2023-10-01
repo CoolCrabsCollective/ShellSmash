@@ -8,6 +8,7 @@ pub struct InventoryControllerPlugin;
 
 impl Plugin for InventoryControllerPlugin {
     fn build(&self, app: &mut App) {
+        app.add_systems(OnEnter(GameState::ManagingInventory), enter_inventory);
         app.add_systems(
             Update,
             process_inputs.run_if(in_state(GameState::ManagingInventory)),
@@ -174,4 +175,12 @@ pub fn update_inventory_data(query: Query<&InventoryItem>, mut inv: ResMut<Inven
         items.push(p.clone())
     }
     inv.grid = InventoryData::grid_from_items(items, IVec3::from_array(GRID_DIMS))
+}
+
+fn get_initial_camera_transform() -> Transform {
+    Transform::default().with_translation(Vec3::new(500.0, 0.0, 0.0))
+}
+
+fn enter_inventory(mut cam_transform_query: Query<&mut Transform, With<Camera>>) {
+    (*cam_transform_query.single_mut()) = get_initial_camera_transform();
 }
