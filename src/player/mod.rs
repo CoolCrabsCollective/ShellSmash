@@ -43,10 +43,7 @@ impl Plugin for PlayerPlugin {
     fn build(&self, app: &mut App) {
         app.add_systems(Startup, spawn_player);
         app.add_systems(OnEnter(GameState::FightingInArena), set_player_active);
-        app.add_systems(
-            Update,
-            process_inputs.run_if(in_state(GameState::FightingInArena)),
-        );
+        app.add_systems(Update, process_inputs);
         app.add_systems(
             Update,
             player_movement.run_if(
