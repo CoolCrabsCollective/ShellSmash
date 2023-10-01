@@ -39,6 +39,7 @@ fn create_boomerang(
             y: 5.0,
             z: 0.0,
         },
+        false,
         commands,
         meshes,
         materials,
