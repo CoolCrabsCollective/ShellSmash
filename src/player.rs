@@ -18,8 +18,8 @@ impl Plugin for PlayerPlugin {
 fn setup(
     mut commands: Commands,
     asset_server: ResMut<AssetServer>,
-    mut meshes: ResMut<Assets<Mesh>>,
-    mut materials: ResMut<Assets<StandardMaterial>>,
+    _meshes: ResMut<Assets<Mesh>>,
+    _materials: ResMut<Assets<StandardMaterial>>,
 ) {
     commands
         .spawn(Collider::capsule_y(0.3, 0.25))

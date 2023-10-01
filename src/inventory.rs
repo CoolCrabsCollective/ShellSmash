@@ -1,4 +1,3 @@
-use crate::debug_camera_controller::DebugCameraControllerPlugin;
 use crate::inventory_controller::InventoryControllerPlugin;
 use bevy::log;
 use bevy::pbr::wireframe::WireframePlugin;
@@ -55,9 +54,13 @@ fn setup(
         Color::rgba(1.0, 0.0, 0.0, 1.0),
     ));
 
-    commands.spawn(boomerang);
-    commands.spawn(sword);
-    commands.spawn(heart);
+    let debug_cube =
+        InventoryItem::from(((0, 0, 0), vec![(0, 0, 0)], Color::rgba(0.0, 0.0, 0.0, 1.0)));
+
+    // commands.spawn(boomerang);
+    // commands.spawn(sword);
+    // commands.spawn(heart);
+    commands.spawn(debug_cube);
     commands.insert_resource(InventoryData { grid: Vec::new() });
 }
 
@@ -167,117 +170,12 @@ enum AxisSelect {
     Z,
 }
 
-pub fn move_inventory_items(
-    mut query: Query<&mut InventoryItem>,
-    inv_coord_query: Query<&Transform, With<VoxelCoordinateFrame>>,
-    camera_pos_query: Query<&Transform, With<Camera>>,
-    k_input: Res<Input<KeyCode>>,
-) {
+pub fn move_inventory_items(camera_pos_query: Query<&Transform, With<Camera>>) {
     let camera_coord = camera_pos_query.get_single();
     if let Err(ref err) = camera_coord {
         log::error!(
             "Cancelling move_inventory_items since camera could not be initialized: {err:?}"
         );
-    }
-    let camera_coord = camera_coord.unwrap();
-
-    let inv_coord = inv_coord_query.single();
-    let direction = (inv_coord.translation - camera_coord.translation).normalize();
-    let quat: Quat = inv_coord.rotation;
-    let x_axis = quat
-        .mul_vec3(Vec3 {
-            x: 1.0,
-            y: 0.0,
-            z: 0.0,
-        })
-        .normalize();
-    let y_axis = quat
-        .mul_vec3(Vec3 {
-            x: 0.0,
-            y: 1.0,
-            z: 0.0,
-        })
-        .normalize();
-    let z_axis = quat
-        .mul_vec3(Vec3 {
-            x: 0.0,
-            y: 0.0,
-            z: 1.0,
-        })
-        .normalize();
-
-    let mut principal_axis = x_axis;
-    let mut axis_selected = AxisSelect::X;
-
-    if principal_axis.dot(direction).abs() < y_axis.dot(direction).abs() {
-        principal_axis = y_axis;
-        axis_selected = AxisSelect::Y;
-    }
-    if principal_axis.dot(direction).abs() < z_axis.dot(direction).abs() {
-        principal_axis = z_axis;
-        axis_selected = AxisSelect::Z;
-    }
-
-    let sign: i32 = if principal_axis.dot(direction) < 0.0 {
-        1
-    } else {
-        -1
-    };
-    let translation_up = IVec3 {
-        x: 0,
-        y: match axis_selected {
-            AxisSelect::X => sign,
-            AxisSelect::Z => sign,
-            _ => 0,
-        },
-        z: match axis_selected {
-            AxisSelect::Z => -sign,
-            _ => 0,
-        },
-    };
-    let translation_down = IVec3 {
-        x: 0,
-        y: match axis_selected {
-            AxisSelect::X => -sign,
-            AxisSelect::Z => -sign,
-            _ => 0,
-        },
-        z: 0,
-    };
-    let translation_right = IVec3 {
-        x: match axis_selected {
-            AxisSelect::Y => sign,
-            AxisSelect::Z => sign,
-            _ => 0,
-        },
-        y: 0,
-        z: match axis_selected {
-            AxisSelect::X => -sign,
-            _ => 0,
-        },
-    };
-    let translation_left = IVec3 {
-        x: match axis_selected {
-            AxisSelect::Z => -sign,
-            _ => 0,
-        },
-        y: 0,
-        z: match axis_selected {
-            AxisSelect::X => sign,
-            _ => 0,
-        },
-    };
-
-    // dbg!(axis_selected);
-    for mut item in &mut query {
-        if k_input.just_pressed(KeyCode::H) {
-            item.translate(translation_left)
-        } else if k_input.just_pressed(KeyCode::L) {
-            item.translate(translation_right)
-        } else if k_input.just_pressed(KeyCode::J) {
-            item.translate(translation_down)
-        } else if k_input.just_pressed(KeyCode::K) {
-            item.translate(translation_up)
-        }
+        return;
     }
 }
