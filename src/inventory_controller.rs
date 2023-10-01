@@ -3,14 +3,14 @@ use crate::game_state::GameState;
 use crate::inventory::{InventoryData, InventoryItem};
 use crate::math::deg_to_rad;
 use crate::voxel_renderer::VoxelCoordinateFrame;
-use bevy::{log, prelude::*};
+use bevy::prelude::*;
+use std::cmp;
 use std::time::Duration;
 
 pub struct InventoryControllerPlugin;
 
 impl Plugin for InventoryControllerPlugin {
     fn build(&self, app: &mut App) {
-        app.add_systems(OnEnter(GameState::ManagingInventory), enter_inventory);
         app.add_systems(
             Update,
             update_camera_position.run_if(in_state(GameState::ManagingInventory)),
@@ -108,19 +108,29 @@ fn update_cube_rotation(
 }
 
 fn update_camera_position(
+    key_codes: Res<Input<KeyCode>>,
     mut param_set: ParamSet<(
         Query<&Transform, With<VoxelCoordinateFrame>>,
         Query<&mut Transform, With<Camera>>,
     )>,
 ) {
-    let cam_distance = 8.0;
+    let increment = 2.0;
+    let max_increment = 10.0;
+    let mut change = 0.0;
+    if key_codes.just_pressed(KeyCode::Up) {
+        change = change + increment;
+    } else if key_codes.just_pressed(KeyCode::Down) {
+        change = change - increment;
+    }
     let vox_trans = {
         let vox_trans_query = param_set.p0();
         vox_trans_query.single().translation
     };
     let mut camera_translation_query = param_set.p1();
     let mut camera_translation = camera_translation_query.single_mut();
-    camera_translation.translation = vox_trans + Vec3::from((0.0, cam_distance, cam_distance));
+    let mut camera_y = camera_translation.translation.y + change;
+    camera_y = camera_y.max(-max_increment).min(max_increment);
+    camera_translation.translation = vox_trans + Vec3::from((0.0, camera_y, 8.0));
     let look_at_my_balls = camera_translation.looking_at(vox_trans, Vec3::Y);
     camera_translation.rotation = look_at_my_balls.rotation;
 }
@@ -131,16 +141,6 @@ pub fn update_inventory_data(query: Query<&InventoryItem>, mut inv: ResMut<Inven
         items.push(p.clone())
     }
     inv.grid = InventoryData::grid_from_items(items, IVec3::from_array(INVENTORY_GRID_DIMENSIONS));
-}
-
-fn get_initial_camera_transform() -> Transform {
-    Transform::default()
-        .with_translation(Vec3::new(500.0, 8.0, 8.0))
-        .looking_at(Vec3::new(500.0, 0.0, 0.0), Vec3::Y)
-}
-
-fn enter_inventory(mut cam_transform_query: Query<&mut Transform, With<Camera>>) {
-    (*cam_transform_query.single_mut()) = get_initial_camera_transform();
 }
 
 fn move_inventory_items(
@@ -188,6 +188,14 @@ fn move_inventory_items(
                     3 - view_index
                 }],
             );
+        }
+    } else if key_codes.just_pressed(KeyCode::Q) {
+        for mut item in query_items.iter_mut() {
+            item.rotate(true);
+        }
+    } else if key_codes.just_pressed(KeyCode::E) {
+        for mut item in query_items.iter_mut() {
+            item.rotate(false);
         }
     }
 }
