@@ -9,17 +9,21 @@ pub const VOXEL_SIZE_IN_WORLD: f32 = 0.1;
 #[derive(Component)]
 pub struct AttachedToPlayer(bool);
 
+#[derive(Component)]
+pub struct Collectable(bool);
+
 impl InventoryItem {
     pub fn create_world_entity(
         &self,
         location: Vec3,
         on_player: bool,
+        collectable: bool,
         mut commands: Commands,
         mut meshes: ResMut<Assets<Mesh>>,
         mut materials: ResMut<Assets<StandardMaterial>>,
     ) {
         commands
-            .spawn(AttachedToPlayer(on_player))
+            .spawn((AttachedToPlayer(on_player), Collectable(collectable)))
             .insert(PbrBundle {
                 mesh: meshes.add(self.generate_mesh()),
                 material: materials.add(self.color.clone().into()),
