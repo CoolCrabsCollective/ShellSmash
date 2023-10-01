@@ -36,8 +36,7 @@ fn detect_items(
     let current_location = player_trans.single().translation;
 
     for item in items.iter() {
-        let distance_squared =
-            current_location.distance_squared(item.1.translation);
+        let distance_squared = current_location.distance_squared(item.1.translation);
 
         if distance_squared < detect_range * detect_range {
             item_collected_event_writer.send(ItemCollectEvent(item.0));
@@ -45,9 +44,12 @@ fn detect_items(
     }
 }
 
-pub fn handle_item_collect(mut commands: Commands, mut item_collect_event_reader: EventReader<ItemCollectEvent>,
-                        current_state: ResMut<State<GameState>>,
-                        mut next_state: ResMut<NextState<GameState>>,) {
+pub fn handle_item_collect(
+    mut commands: Commands,
+    mut item_collect_event_reader: EventReader<ItemCollectEvent>,
+    current_state: ResMut<State<GameState>>,
+    mut next_state: ResMut<NextState<GameState>>,
+) {
     if item_collect_event_reader.len() > 0 {
         for item in &mut item_collect_event_reader {
             commands.entity(item.0).despawn();
@@ -56,6 +58,7 @@ pub fn handle_item_collect(mut commands: Commands, mut item_collect_event_reader
         let new_state = match current_state.get() {
             GameState::FightingInArena => GameState::ManagingInventory,
             GameState::ManagingInventory => GameState::FightingInArena,
+            GameState::Loading => GameState::Loading,
         };
         log::info!("Changing game state to: {new_state:?}");
         next_state.set(new_state);
