@@ -1,4 +1,4 @@
-use crate::config::INVENTORY_GRID_DIMENSIONS;
+use crate::config::{CEDRIC_LOG_SPAM, INVENTORY_GRID_DIMENSIONS};
 use crate::game_state::GameState;
 use crate::inventory::{InventoryData, InventoryItem};
 use crate::math::deg_to_rad;
@@ -154,7 +154,9 @@ fn move_inventory_items(
         IVec3::from((1, 0, 0)),
     ];
     let view_index = state.view_index;
-    dbg!(view_index);
+    if CEDRIC_LOG_SPAM {
+        dbg!(view_index);
+    }
     if key_codes.just_pressed(KeyCode::W) {
         for mut item in query_items.iter_mut() {
             item.translate(

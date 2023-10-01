@@ -42,7 +42,7 @@ fn handle_gltf_load_event(
                             if name.to_lowercase().contains("plane")
                                 || name.to_lowercase().contains("wall")
                             {
-                                dbg!(name);
+                                log::info!("Generating collider from level object: {name:?}");
                                 if let (Some(mesh), Some(transform)) = (
                                     get_mesh_from_gltf_node(
                                         node_handle,
@@ -67,7 +67,6 @@ fn handle_gltf_load_event(
                                 }
                             }
                         }
-                        dbg!(scene.named_nodes.keys());
                     }
                 }
                 LoadState::Failed => {
