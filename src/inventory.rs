@@ -1,4 +1,3 @@
-use crate::debug_camera_controller::DebugCameraControllerPlugin;
 use crate::inventory_controller::InventoryControllerPlugin;
 use bevy::log;
 use bevy::pbr::wireframe::WireframePlugin;
@@ -177,5 +176,6 @@ pub fn move_inventory_items(camera_pos_query: Query<&Transform, With<Camera>>) {
         log::error!(
             "Cancelling move_inventory_items since camera could not be initialized: {err:?}"
         );
+        return;
     }
 }

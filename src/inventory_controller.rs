@@ -127,6 +127,7 @@ fn update_state(mut state: ResMut<InventoryControllerState>) {
     state.zoom = false;
 }
 
+#[allow(clippy::type_complexity)]
 fn set_world_orientation(
     mut param_set: ParamSet<(
         Query<&mut Transform, With<VoxelCoordinateFrame>>,
@@ -141,7 +142,11 @@ fn set_world_orientation(
     };
 
     let mut model_transform_query = param_set.p0();
-    let mut world_transform = model_transform_query.single_mut();
+    let world_transform = model_transform_query.get_single_mut();
+    if let Err(ref _err) = world_transform {
+        return;
+    }
+    let mut world_transform = world_transform.unwrap();
 
     world_transform.translation = base_camera_translation;
     world_transform.translation.x += state.orientation.zoom_pos;

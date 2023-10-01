@@ -12,10 +12,9 @@ mod inventory_controller;
 mod item_mesh_generator;
 mod level_loader;
 mod math;
+mod player;
 mod voxel_renderer;
 mod wall;
-
-const USE_DEBUG_CAM: bool = false;
 
 #[derive(Debug, Clone, Default, Eq, PartialEq, Hash, States)]
 enum GameState {
