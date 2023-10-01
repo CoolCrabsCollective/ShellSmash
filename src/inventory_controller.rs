@@ -4,6 +4,7 @@ use crate::inventory::{InventoryData, InventoryItem};
 use crate::math::deg_to_rad;
 use crate::voxel_renderer::VoxelCoordinateFrame;
 use bevy::{log, prelude::*};
+use std::time::Duration;
 
 pub struct InventoryControllerPlugin;
 
@@ -31,6 +32,7 @@ impl Plugin for InventoryControllerPlugin {
             update_inventory_data.run_if(in_state(GameState::ManagingInventory)),
         );
         app.insert_resource(InventoryControllerState::new());
+        app.insert_resource(CubeRotationAnime::new());
     }
 }
 
@@ -48,10 +50,24 @@ impl ControlledOrientation {
     }
 }
 
-// #[derive(Resource)]
-// struct RotateAnime {
-//     enabled: bool;
-// }
+#[derive(Resource, Debug)]
+struct CubeRotationAnime {
+    enabled: bool,
+    anime_time: Timer,
+    start_rotation: f32,
+    end_rotation: f32,
+}
+
+impl CubeRotationAnime {
+    fn new() -> CubeRotationAnime {
+        CubeRotationAnime {
+            enabled: false,
+            anime_time: Timer::new(Duration::from_millis(750), TimerMode::Once),
+            start_rotation: 0.0,
+            end_rotation: 0.0,
+        }
+    }
+}
 
 #[derive(Resource)]
 struct InventoryControllerState {
@@ -81,41 +97,52 @@ impl InventoryControllerState {
     }
 }
 
-// fn process_inputs(
-//     key_codes: Res<Input<KeyCode>>,
-//     mut state: ResMut<InventoryControllerState>,
-//     mut query: <(
-//         Query<&mut Transform, With<VoxelCoordinateFrame>>,
-//         Query<&mut Transform, With<Camera>>,
-//     )>,
-// ) {
-//     let mut voxel_translation_p0 = param_set.p0();
-//     let mut voxel_translation = voxel_translation_p0.single_mut();
-//     let vox_trans = voxel_translation.translation;
-//     let views: Vec<f32> = vec![0.0, 90.0, 180.0, 270.0];
-//     voxel_translation.rotation = Quat::from_rotation_y(deg_to_rad(views[state.view_index]));
-//     camera_translation.translation = vox_trans + Vec3::from((0.0, cam_distance, cam_distance));
-//     let look_at_my_balls = camera_translation.looking_at(vox_trans, Vec3::Y);
-//     camera_translation.rotation = look_at_my_balls.rotation;
-// }
-
 fn update_cube_rotation(
     key_codes: Res<Input<KeyCode>>,
+    time: Res<Time>,
+    mut rotation_anime: ResMut<CubeRotationAnime>,
     mut state: ResMut<InventoryControllerState>,
     mut query: Query<&mut Transform, With<VoxelCoordinateFrame>>,
 ) {
-    let possible_rotations: Vec<f32> = vec![0.0, 90.0, 180.0, 270.0];
-    if key_codes.just_pressed(KeyCode::Left) {
-        state.view_index = if state.view_index == 0 {
-            3
-        } else {
-            state.view_index - 1
-        };
-    } else if key_codes.just_pressed(KeyCode::Right) {
-        state.view_index = (state.view_index + 1) % 4;
+    if rotation_anime.enabled {
+        rotation_anime.anime_time.tick(time.delta());
+        rotation_anime.enabled = !rotation_anime.anime_time.finished();
+        let progress = rotation_anime.anime_time.percent();
+        let parameterized_progress = 1.0 / (1.0 + f32::exp(-12.0 * (progress - 0.5)));
+        let rotation_angle = rotation_anime.end_rotation - rotation_anime.start_rotation;
+
+        let mut vox = query.single_mut();
+        let quat = Quat::from_rotation_y(deg_to_rad(
+            rotation_angle + parameterized_progress * rotation_angle,
+        ));
+        vox.rotation = quat;
+    } else {
+        let mut start_anime: bool = false;
+        let mut rotation_change = 0.0;
+        if key_codes.just_pressed(KeyCode::Left) {
+            state.view_index = if state.view_index == 0 {
+                3
+            } else {
+                state.view_index - 1
+            };
+            start_anime = true;
+            rotation_change = -90.0;
+        } else if key_codes.just_pressed(KeyCode::Right) {
+            state.view_index = (state.view_index + 1) % 4;
+            start_anime = true;
+            rotation_change = 90.0;
+        }
+
+        if start_anime {
+            let vox = query.single();
+            rotation_anime.enabled = true;
+            let current_rot = vox.rotation.to_euler(EulerRot::XYZ).1;
+            rotation_anime.start_rotation = current_rot;
+            rotation_anime.end_rotation = current_rot + rotation_change;
+            rotation_anime.anime_time.reset();
+        }
+        // vox.rotation = Quat::from_rotation_y(deg_to_rad(possible_rotations[state.view_index]));
     }
-    let mut vox = query.single_mut();
-    vox.rotation = Quat::from_rotation_y(deg_to_rad(possible_rotations[state.view_index]));
 }
 
 fn update_camera_position(

@@ -88,18 +88,18 @@ fn process_inputs(
                 Some(KeyCode::Down) => {
                     coordinate_frame_transform.scale -= Vec3::new(0.1, 0.1, 0.1);
                 }
-                Some(KeyCode::Left) => {
-                    if VOXEL_RENDERER_LEFT_RIGHT_CONTROLS {
-                        coordinate_frame_transform.rotation *=
-                            Quat::from_axis_angle(Vec3::new(0.0, 1.0, 0.0), deg_to_rad(15.0));
-                    }
-                }
-                Some(KeyCode::Right) => {
-                    if VOXEL_RENDERER_LEFT_RIGHT_CONTROLS {
-                        coordinate_frame_transform.rotation *=
-                            Quat::from_axis_angle(Vec3::new(0.0, 1.0, 0.0), deg_to_rad(-15.0));
-                    }
-                }
+                // Some(KeyCode::Left) => {
+                //     if VOXEL_RENDERER_LEFT_RIGHT_CONTROLS {
+                //         coordinate_frame_transform.rotation *=
+                //             Quat::from_axis_angle(Vec3::new(0.0, 1.0, 0.0), deg_to_rad(15.0));
+                //     }
+                // }
+                // Some(KeyCode::Right) => {
+                //     if VOXEL_RENDERER_LEFT_RIGHT_CONTROLS {
+                //         coordinate_frame_transform.rotation *=
+                //             Quat::from_axis_angle(Vec3::new(0.0, 1.0, 0.0), deg_to_rad(-15.0));
+                //     }
+                // }
                 Some(KeyCode::R) => {
                     let new_voxel = VoxelData {
                         _position: IVec3::new(
