@@ -15,6 +15,10 @@ impl Plugin for InventoryControllerPlugin {
         );
         app.add_systems(
             Update,
+            move_inventory_items.run_if(in_state(GameState::ManagingInventory)),
+        );
+        app.add_systems(
+            Update,
             update_state.run_if(in_state(GameState::ManagingInventory)),
         );
         app.add_systems(
@@ -88,17 +92,11 @@ fn process_inputs(
         Vec3::from((0.0, cam_distance, -cam_distance)),
     ];
 
+    let mut camera_translation_query = param_set.p1();
+    let mut camera_translation = camera_translation_query.single_mut();
     if key_codes.just_pressed(KeyCode::Left) {
-        let mut camera_translation_query = param_set.p1();
-        let mut camera_translation = camera_translation_query.single_mut();
-        camera_translation.translation = vox_trans + views[state.view_index];
         state.view_index = (state.view_index + 1) % 4;
-        let look_at = camera_translation.looking_at(vox_trans, Vec3::Y);
-        camera_translation.rotation = look_at.rotation;
     } else if key_codes.just_pressed(KeyCode::Right) {
-        let mut camera_translation_query = param_set.p1();
-        let mut camera_translation = camera_translation_query.single_mut();
-        camera_translation.translation = vox_trans + views[state.view_index];
         state.view_index = if state.view_index == 0 {
             3
         } else {
@@ -107,34 +105,18 @@ fn process_inputs(
         let look_at_my_balls = camera_translation.looking_at(vox_trans, Vec3::Y);
         camera_translation.rotation = look_at_my_balls.rotation;
     }
+    camera_translation.translation = vox_trans + views[state.view_index];
+    let look_at = camera_translation.looking_at(vox_trans, Vec3::Y);
+    camera_translation.rotation = look_at.rotation;
 }
 
 fn update_state(mut state: ResMut<InventoryControllerState>) {
     if let Some(unprocessed_delta) = state.unprocessed_delta {
-        // if state.rotate {
-        //     let mouse_sensitivity = 0.002;
-        //
-        //     state.orientation.horizontal += -unprocessed_delta.0 * mouse_sensitivity;
-        //     state.orientation.vertical += -unprocessed_delta.1 * mouse_sensitivity;
-        // }
-
         if state.zoom {
             let mouse_sensitivity = 0.02;
 
             state.orientation.zoom_pos += unprocessed_delta.1 * mouse_sensitivity;
         }
-
-        // println!(
-        //     "Horizontal: {:?} ({:?} rad)",
-        //     rad_to_deg(state.orientation.horizontal),
-        //     state.orientation.horizontal
-        // );
-
-        // println!(
-        //     "Vertical: {:?} ({:?} rad)",
-        //     rad_to_deg(state.orientation.vertical),
-        //     state.orientation.vertical
-        // );
     }
     state.unprocessed_delta = None;
     state.rotate = false;
@@ -157,4 +139,54 @@ fn get_initial_camera_transform() -> Transform {
 
 fn enter_inventory(mut cam_transform_query: Query<&mut Transform, With<Camera>>) {
     (*cam_transform_query.single_mut()) = get_initial_camera_transform();
+}
+
+fn move_inventory_items(
+    state: Res<InventoryControllerState>,
+    key_codes: Res<Input<KeyCode>>,
+    mut query_items: Query<&mut InventoryItem>,
+) {
+    let trans: Vec<IVec3> = vec![
+        IVec3::from((0, 0, -1)),
+        IVec3::from((-1, 0, 0)),
+        IVec3::from((0, 0, 1)),
+        IVec3::from((1, 0, 0)),
+    ];
+    let view_index = state.view_index;
+    dbg!(view_index);
+    if key_codes.just_pressed(KeyCode::W) {
+        for mut item in query_items.iter_mut() {
+            item.translate(
+                trans[if 1 <= view_index {
+                    (5 - view_index) % 4
+                } else {
+                    1 - view_index
+                }],
+            );
+        }
+    } else if key_codes.just_pressed(KeyCode::A) {
+        for mut item in query_items.iter_mut() {
+            item.translate(
+                trans[if 2 <= view_index {
+                    (6 - view_index) % 4
+                } else {
+                    2 - view_index
+                }],
+            );
+        }
+    } else if key_codes.just_pressed(KeyCode::S) {
+        for mut item in query_items.iter_mut() {
+            item.translate(
+                trans[if 3 <= view_index {
+                    (7 - view_index) % 4
+                } else {
+                    3 - view_index
+                }],
+            );
+        }
+    } else if key_codes.just_pressed(KeyCode::D) {
+        for mut item in query_items.iter_mut() {
+            item.translate(trans[(4 - view_index) % 4]);
+        }
+    }
 }
