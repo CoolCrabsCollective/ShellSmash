@@ -1,7 +1,7 @@
 use crate::game_state::GameState;
 use crate::inventory::InventoryItem;
 use crate::player::{PlayerControllerState, PLAYER_HEIGHT};
-use crate::world_item::VOXEL_SIZE_IN_WORLD;
+use crate::world_item::{WeaponHolder, VOXEL_SIZE_IN_WORLD};
 use bevy::math::vec3;
 use bevy::prelude::*;
 use bevy_rapier3d::prelude::DebugRenderContext;
@@ -24,7 +24,7 @@ impl Plugin for ItemSpawner {
 fn spawn_debug_items(
     mut context: ResMut<DebugRenderContext>,
     keys: Res<Input<KeyCode>>,
-    player: Query<&Transform, With<PlayerControllerState>>,
+    mut player: Query<(&Transform, &mut WeaponHolder)>,
     mut commands: Commands,
     mut meshes: ResMut<Assets<Mesh>>,
     mut materials: ResMut<Assets<StandardMaterial>>,
@@ -69,18 +69,23 @@ fn spawn_debug_items(
 
     let on_player = keys.pressed(KeyCode::ControlLeft);
 
-    item.create_world_entity(
-        player.single().translation
+    let entity = item.create_world_entity(
+        player.single().0.translation
             + if on_player {
                 Vec3::splat(0.0)
             } else {
                 vec3(0.0, -PLAYER_HEIGHT + VOXEL_SIZE_IN_WORLD, 0.0)
             },
         on_player,
+        false,
         commands,
         meshes,
         materials,
     );
+
+    if on_player {
+        player.single_mut().1.current_weapon = Some(entity);
+    }
 }
 
 fn setup(
@@ -109,6 +114,7 @@ fn create_boomerang(
             z: 0.0,
         },
         false,
+        true,
         commands,
         meshes,
         materials,

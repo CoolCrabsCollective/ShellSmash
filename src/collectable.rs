@@ -1,6 +1,7 @@
 use crate::game_state::GameState;
 use crate::inventory::InventoryItem;
 use crate::player::PlayerControllerState;
+use crate::world_item::Collectable;
 use bevy::log;
 use bevy::prelude::*;
 use bevy_rapier3d::prelude::KinematicCharacterController;
@@ -23,7 +24,7 @@ impl Plugin for CollectablePlugin {
 }
 
 fn detect_items(
-    items: Query<&InventoryItem>,
+    items: Query<&InventoryItem, With<Collectable>>,
     mut controllers: Query<&mut KinematicCharacterController, With<PlayerControllerState>>,
     mut item_collected_event_writer: EventWriter<ItemCollectEvent>,
 ) {

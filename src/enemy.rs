@@ -31,7 +31,7 @@ impl Plugin for EnemyPlugin {
 impl EnemyBundle {
     pub fn new(asset_server: &mut ResMut<AssetServer>, position: Vec3) -> Self {
         Self {
-            collider: Collider::capsule_y(0.3, 0.25),
+            collider: Collider::ball(0.25),
             scene: SceneBundle {
                 scene: asset_server.load("jelly.glb#Scene0"),
                 transform: Transform::default().with_translation(position),
