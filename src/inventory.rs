@@ -184,9 +184,6 @@ pub fn move_inventory_items(
 
     let inv_coord = inv_coord_query.get_single();
     if let Err(ref err) = inv_coord {
-        log::error!(
-            "Cancelling move_inventory_items since inv coord could not be initialized: {err:?}"
-        );
         return;
     }
     let inv_coord = inv_coord.unwrap();

@@ -138,9 +138,6 @@ fn set_world_orientation(
     let mut model_transform_query = param_set.p0();
     let world_transform = model_transform_query.get_single_mut();
     if let Err(ref err) = world_transform {
-        log::error!(
-            "Cancelling set_world_orientation since inv coord could not be initialized: {err:?}"
-        );
         return;
     }
     let mut world_transform = world_transform.unwrap();
