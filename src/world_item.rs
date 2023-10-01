@@ -1,4 +1,3 @@
-use bevy::ecs::system::EntityCommands;
 use bevy::prelude::*;
 
 use crate::inventory::InventoryItem;
@@ -10,12 +9,13 @@ impl InventoryItem {
     pub fn create_world_entity(
         &self,
         location: Vec3,
+        on_player: bool,
         mut commands: Commands,
         mut meshes: ResMut<Assets<Mesh>>,
         mut materials: ResMut<Assets<StandardMaterial>>,
     ) {
         commands
-            .spawn(AttachedToPlayer(false))
+            .spawn(AttachedToPlayer(on_player))
             .insert(PbrBundle {
                 mesh: meshes.add(self.generate_mesh()),
                 material: materials.add(self.color.clone().into()),

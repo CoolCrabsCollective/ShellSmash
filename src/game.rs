@@ -18,16 +18,23 @@ impl Plugin for GamePlugin {
         app.add_plugins((
             LevelLoaderPlugin,
             RapierPhysicsPlugin::<NoUserData>::default(),
-            RapierDebugRenderPlugin::default(),
+            RapierDebugRenderPlugin::default().disabled(),
             PlayerPlugin,
-        ));
-        app.insert_resource(AmbientLight {
+        ))
+        .add_systems(Update, debug_render_toggle)
+        .insert_resource(AmbientLight {
             color: Color::WHITE,
             brightness: 1.0 / 5.0f32,
         })
         .insert_resource(DirectionalLightShadowMap { size: 4096 });
 
         app.add_plugins(DebugCameraControllerPlugin);
+    }
+}
+
+fn debug_render_toggle(mut context: ResMut<DebugRenderContext>, keys: Res<Input<KeyCode>>) {
+    if keys.just_released(KeyCode::F12) {
+        context.enabled = !context.enabled;
     }
 }
 

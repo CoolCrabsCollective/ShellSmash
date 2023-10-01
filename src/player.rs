@@ -19,6 +19,9 @@ pub struct PlayerControllerState {
     is_I_pressed: bool,
     was_I_pressed: bool,
 
+    is_K_pressed: bool,
+    was_K_pressed: bool,
+
     velocity: Vec3,
 }
 
@@ -48,11 +51,6 @@ fn setup(
             scene: asset_server.load("player.glb#Scene0"),
             ..default()
         })
-        .insert(PbrBundle {
-            mesh: meshes.add(Mesh::from(shape::Box::new(1.0, 0.1, 1.0))),
-            material: materials.add(Color::rgb(0.3, 0.5, 0.3).into()),
-            ..default()
-        })
         .insert(KinematicCharacterController {
             // The character offset is set to 0.01.
             offset: CharacterLength::Absolute(0.01),
@@ -78,6 +76,9 @@ impl PlayerControllerState {
 
             is_I_pressed: false,
             was_I_pressed: false,
+
+            is_K_pressed: false,
+            was_K_pressed: false,
 
             velocity: vec3(0.0, 0.0, 0.0),
         }
@@ -105,6 +106,9 @@ fn process_inputs(
             }
             Some(KeyCode::I) => {
                 state.is_I_pressed = event.state.is_pressed();
+            }
+            Some(KeyCode::K) => {
+                state.is_K_pressed = event.state.is_pressed();
             }
             _ => {}
         }
@@ -153,7 +157,15 @@ fn player_movement(
             Color::rgba(1.0, 1.0, 1.0, 1.0),
         ));
 
-        boomerang.create_world_entity(transform.translation, commands, meshes, materials);
+        boomerang.create_world_entity(transform.translation, false, commands, meshes, materials);
+    } else if state.is_K_pressed && !state.was_K_pressed {
+        let boomerang = InventoryItem::from((
+            (1, 3, 3),
+            vec![(0, 0, 0), (0, 0, 1), (0, 0, 2), (-1, 0, 0), (-2, 0, 0)],
+            Color::rgba(1.0, 1.0, 1.0, 1.0),
+        ));
+
+        boomerang.create_world_entity(transform.translation, true, commands, meshes, materials);
     }
 
     let (camera, camera_transform) = camera_q.single();
@@ -170,4 +182,5 @@ fn player_movement(
         }
     }
     state.was_I_pressed = state.is_I_pressed;
+    state.was_K_pressed = state.is_K_pressed;
 }
