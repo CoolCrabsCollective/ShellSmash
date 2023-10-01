@@ -87,7 +87,7 @@ fn spawn_player(
     commands
         .spawn(Collider::capsule_y(0.3, 0.25))
         .insert(SceneBundle {
-            scene: asset_server.load("player.glb#Scene0"),
+            scene: asset_server.load("hermit.glb#Scene0"),
             ..default()
         })
         .insert(KinematicCharacterController {

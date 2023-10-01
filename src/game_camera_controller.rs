@@ -1,7 +1,7 @@
 use crate::game_state::GameState;
 use crate::player::PlayerControllerState;
 use bevy::math::vec3;
-use bevy::prelude::*;
+use bevy::{log, prelude::*};
 
 pub struct GameCameraControllerPlugin;
 
