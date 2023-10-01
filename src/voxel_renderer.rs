@@ -135,7 +135,7 @@ fn init_voxel_grid(
         .spawn((
             VoxelCoordinateFrame,
             SpatialBundle::from(Transform {
-                translation: Vec3::from((0.0, 5.0, 0.0)),
+                translation: Vec3::from((500.0, 0.0, 0.0)),
                 ..default()
             }),
         ))

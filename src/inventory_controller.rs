@@ -150,7 +150,9 @@ pub fn update_inventory_data(query: Query<&InventoryItem>, mut inv: ResMut<Inven
 }
 
 fn get_initial_camera_transform() -> Transform {
-    Transform::default().with_translation(Vec3::new(500.0, 0.0, 0.0))
+    Transform::default()
+        .with_translation(Vec3::new(500.0, 8.0, 8.0))
+        .looking_at(Vec3::new(500.0, 0.0, 0.0), Vec3::Y)
 }
 
 fn enter_inventory(mut cam_transform_query: Query<&mut Transform, With<Camera>>) {
