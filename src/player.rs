@@ -4,6 +4,7 @@ use bevy::prelude::*;
 use bevy::window::PrimaryWindow;
 use bevy_rapier3d::prelude::*;
 
+use crate::enemy::Enemy;
 use crate::game_state::GameState;
 use crate::inventory::InventoryItem;
 
@@ -35,6 +36,10 @@ impl Plugin for PlayerPlugin {
         app.add_systems(
             Update,
             player_movement.run_if(in_state(GameState::FightingInArena)),
+        );
+        app.add_systems(
+            Update,
+            player_hit_detector.run_if(in_state(GameState::FightingInArena)),
         );
     }
 }
@@ -183,4 +188,11 @@ fn player_movement(
     }
     state.was_I_pressed = state.is_I_pressed;
     state.was_K_pressed = state.is_K_pressed;
+}
+
+fn player_hit_detector(
+    player_collider_query: Query<&Collider, With<PlayerControllerState>>,
+    enemy_collider_query: Query<&Collider, With<Enemy>>,
+) {
+    for enemy_collider in &enemy_collider_query {}
 }
