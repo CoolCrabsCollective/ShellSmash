@@ -30,10 +30,8 @@ pub struct PlayerControllerState {
     velocity: Vec3,
 }
 
-type WomanHitByPlayer = Entity;
-
 #[derive(Event)]
-pub struct PlayerHitEvent(WomanHitByPlayer);
+pub struct PlayerHitEvent(Entity);
 
 #[derive(Resource)]
 struct DeathTimer(Timer);
