@@ -16,8 +16,6 @@ mod player;
 mod voxel_renderer;
 mod wall;
 
-const USE_DEBUG_CAM: bool = false;
-
 #[derive(Debug, Clone, Default, Eq, PartialEq, Hash, States)]
 enum GameState {
     #[default]

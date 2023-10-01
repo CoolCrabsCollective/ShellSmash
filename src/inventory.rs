@@ -1,4 +1,4 @@
-use crate::debug_camera_controller::DebugCameraControllerPlugin;
+
 use crate::inventory_controller::InventoryControllerPlugin;
 use bevy::log;
 use bevy::pbr::wireframe::WireframePlugin;
@@ -183,7 +183,7 @@ pub fn move_inventory_items(
     let camera_coord = camera_coord.unwrap();
 
     let inv_coord = inv_coord_query.get_single();
-    if let Err(ref err) = inv_coord {
+    if let Err(ref _err) = inv_coord {
         return;
     }
     let inv_coord = inv_coord.unwrap();

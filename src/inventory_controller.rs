@@ -2,7 +2,7 @@ use crate::inventory::{InventoryData, InventoryItem};
 use crate::math::deg_to_rad;
 use crate::voxel_renderer::{VoxelCoordinateFrame, GRID_DIMS};
 use crate::GameState;
-use bevy::{log, prelude::*};
+use bevy::prelude::*;
 
 pub struct InventoryControllerPlugin;
 
@@ -122,6 +122,7 @@ fn update_state(mut state: ResMut<InventoryControllerState>) {
     state.zoom = false;
 }
 
+#[allow(clippy::type_complexity)]
 fn set_world_orientation(
     mut param_set: ParamSet<(
         Query<&mut Transform, With<VoxelCoordinateFrame>>,
@@ -137,7 +138,7 @@ fn set_world_orientation(
 
     let mut model_transform_query = param_set.p0();
     let world_transform = model_transform_query.get_single_mut();
-    if let Err(ref err) = world_transform {
+    if let Err(ref _err) = world_transform {
         return;
     }
     let mut world_transform = world_transform.unwrap();

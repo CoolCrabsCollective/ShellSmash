@@ -1,6 +1,4 @@
-use bevy::{
-    input::keyboard::KeyboardInput, log, pbr::wireframe::Wireframe, prelude::*, utils::HashSet,
-};
+use bevy::{input::keyboard::KeyboardInput, pbr::wireframe::Wireframe, prelude::*};
 use rand::random;
 
 use crate::{inventory::InventoryData, math::deg_to_rad};
@@ -133,6 +131,7 @@ fn process_inputs(
     }
 }
 
+#[allow(clippy::type_complexity)]
 fn process_kill_voxels_event(
     mut kill_voxels_event_reader: EventReader<KillVoxelsEvent>,
     mut commands: Commands,
@@ -196,8 +195,6 @@ fn update_voxels(
     voxel_query: Query<(&Voxel, &Handle<StandardMaterial>)>,
     inventory_data_res: Res<InventoryData>,
 ) {
-    // let mut count = 0;
-    let mut locations: HashSet<IVec3> = HashSet::new();
     for (Voxel(voxel_position), voxel_material_handle) in &voxel_query {
         if let Some(material) = materials.get_mut(voxel_material_handle) {
             material.base_color = Color::rgba(0.0, 0.0, 0.0, 0.0);
@@ -213,7 +210,6 @@ fn update_voxels(
                                     GRID_HALF_SIZE[1],
                                     GRID_HALF_SIZE[2],
                                 );
-                            locations.insert(location);
                             // dbg!(location);
                             if *voxel_position == location {
                                 material.base_color = inventory_item.color;
@@ -229,6 +225,4 @@ fn update_voxels(
             }
         }
     }
-
-    // dbg!(locations);
 }
