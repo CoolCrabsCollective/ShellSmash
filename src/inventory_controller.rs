@@ -19,10 +19,6 @@ impl Plugin for InventoryControllerPlugin {
         );
         app.add_systems(
             Update,
-            set_world_orientation.run_if(in_state(GameState::ManagingInventory)),
-        );
-        app.add_systems(
-            Update,
             update_inventory_data.run_if(in_state(GameState::ManagingInventory)),
         );
         app.insert_resource(InventoryControllerState::new());
@@ -80,33 +76,36 @@ fn process_inputs(
         Query<&mut Transform, With<Camera>>,
     )>,
 ) {
+    let cam_distance = 8.0;
+
     let voxel_translation_p0 = param_set.p0();
     let voxel_translation = voxel_translation_p0.single();
     let vox_trans = voxel_translation.translation;
     let views: Vec<Vec3> = vec![
-        Vec3::from((5.0, 0.0, 5.0)),
-        Vec3::from((0.0, 5.0, 5.0)),
-        Vec3::from((-5.0, 0.0, 5.0)),
-        Vec3::from((0.0, -5.0, 5.0)),
+        Vec3::from((cam_distance, cam_distance, 0.0)),
+        Vec3::from((0.0, cam_distance, cam_distance)),
+        Vec3::from((-cam_distance, cam_distance, 0.0)),
+        Vec3::from((0.0, cam_distance, -cam_distance)),
     ];
+
     if key_codes.just_pressed(KeyCode::Left) {
         let mut camera_translation_query = param_set.p1();
         let mut camera_translation = camera_translation_query.single_mut();
         camera_translation.translation = vox_trans + views[state.view_index];
-        log::info!(
-            "inventory_controller process_inputs left: position={:?}",
-            camera_translation.translation
-        );
         state.view_index = (state.view_index + 1) % 4;
+        let look_at = camera_translation.looking_at(vox_trans, Vec3::Y);
+        camera_translation.rotation = look_at.rotation;
     } else if key_codes.just_pressed(KeyCode::Right) {
         let mut camera_translation_query = param_set.p1();
         let mut camera_translation = camera_translation_query.single_mut();
         camera_translation.translation = vox_trans + views[state.view_index];
-        log::info!(
-            "inventory_controller process_inputs right: position={:?}",
-            camera_translation.translation
-        );
-        state.view_index = (state.view_index + 1) % 4;
+        state.view_index = if state.view_index == 0 {
+            3
+        } else {
+            state.view_index - 1
+        };
+        let look_at_my_balls = camera_translation.looking_at(vox_trans, Vec3::Y);
+        camera_translation.rotation = look_at_my_balls.rotation;
     }
 }
 
@@ -142,33 +141,6 @@ fn update_state(mut state: ResMut<InventoryControllerState>) {
     state.zoom = false;
 }
 
-#[allow(clippy::type_complexity)]
-fn set_world_orientation(
-    mut param_set: ParamSet<(
-        Query<&mut Transform, With<VoxelCoordinateFrame>>,
-        Query<&Transform, With<Camera>>,
-    )>,
-    state: ResMut<InventoryControllerState>,
-) {
-    let base_camera_translation = {
-        let camera_transform_query = param_set.p1();
-        let camera_transform = camera_transform_query.single();
-        camera_transform.translation + camera_transform.forward() * 2.0 * GRID_DIMS[0] as f32
-    };
-
-    let mut model_transform_query = param_set.p0();
-    let world_transform = model_transform_query.get_single_mut();
-    if let Err(ref _err) = world_transform {
-        return;
-    }
-    let mut world_transform = world_transform.unwrap();
-
-    world_transform.translation = base_camera_translation;
-    world_transform.translation.x += state.orientation.zoom_pos;
-
-    world_transform.rotation = state.orientation.to_quat();
-}
-
 pub fn update_inventory_data(query: Query<&InventoryItem>, mut inv: ResMut<InventoryData>) {
     let mut items: Vec<InventoryItem> = Vec::new();
     for p in query.iter() {
@@ -178,7 +150,9 @@ pub fn update_inventory_data(query: Query<&InventoryItem>, mut inv: ResMut<Inven
 }
 
 fn get_initial_camera_transform() -> Transform {
-    Transform::default().with_translation(Vec3::new(500.0, 0.0, 0.0))
+    Transform::default()
+        .with_translation(Vec3::new(500.0, 8.0, 8.0))
+        .looking_at(Vec3::new(500.0, 0.0, 0.0), Vec3::Y)
 }
 
 fn enter_inventory(mut cam_transform_query: Query<&mut Transform, With<Camera>>) {
