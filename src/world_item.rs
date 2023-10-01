@@ -1,6 +1,8 @@
+use crate::game_state::GameState;
 use bevy::prelude::*;
 
 use crate::inventory::InventoryItem;
+use crate::player::PlayerControllerState;
 
 #[derive(Component)]
 pub struct AttachedToPlayer(bool);
@@ -24,5 +26,32 @@ impl InventoryItem {
             .insert(TransformBundle::from(
                 Transform::from_translation(location).with_scale(Vec3::splat(0.1)),
             ));
+    }
+}
+
+pub struct ItemAttachmentPlugin;
+
+impl Plugin for ItemAttachmentPlugin {
+    fn build(&self, app: &mut App) {
+        app.add_systems(
+            Update,
+            item_attachment_update.run_if(in_state(GameState::FightingInArena)),
+        );
+    }
+}
+
+pub fn item_attachment_update(
+    mut param_set: ParamSet<(
+        Query<&Transform, With<PlayerControllerState>>,
+        Query<(&mut Transform, &AttachedToPlayer)>,
+    )>,
+) {
+    let pos = param_set.p0().single().translation;
+    let mut query = param_set.p1();
+    for mut item in query.iter_mut() {
+        if !item.1 .0 {
+            continue;
+        }
+        item.0.translation = pos;
     }
 }

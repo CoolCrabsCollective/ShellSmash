@@ -6,6 +6,7 @@ use crate::inventory::InventoryItem;
 use crate::item_spawner::ItemSpawner;
 use crate::level_loader::{load_level, LevelLoaderPlugin};
 use crate::player::PlayerPlugin;
+use crate::world_item::ItemAttachmentPlugin;
 use bevy::math::vec3;
 use bevy::pbr::{CascadeShadowConfigBuilder, DirectionalLightShadowMap};
 use bevy::prelude::*;
@@ -24,8 +25,9 @@ impl Plugin for GamePlugin {
             RapierDebugRenderPlugin::default().disabled(),
             PlayerPlugin,
             EnemyPlugin,
-            EnemySpawnerPlugin,
+            //EnemySpawnerPlugin,
             ItemSpawner,
+            ItemAttachmentPlugin,
         ))
         .add_systems(Update, debug_render_toggle)
         .insert_resource(AmbientLight {
