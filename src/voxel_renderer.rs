@@ -4,7 +4,7 @@ use rand::random;
 use crate::{game_state::GameState, inventory::InventoryData, math::deg_to_rad};
 
 const LEFT_RIGHT: bool = false;
-pub const GRID_DIMS: [i32; 3] = [7, 7, 2];
+pub const GRID_DIMS: [i32; 3] = [7, 2, 7];
 const GRID_HALF_SIZE: [i32; 3] = [GRID_DIMS[0] / 2, GRID_DIMS[1] / 2, GRID_DIMS[2] / 2];
 
 pub struct VoxelRendererPlugin;
@@ -132,7 +132,13 @@ fn init_voxel_grid(
     mut materials: ResMut<Assets<StandardMaterial>>,
 ) {
     let parent = commands
-        .spawn((VoxelCoordinateFrame, SpatialBundle::default()))
+        .spawn((
+            VoxelCoordinateFrame,
+            SpatialBundle::from(Transform {
+                translation: Vec3::from((500.0, 0.0, 0.0)),
+                ..default()
+            }),
+        ))
         .id();
     for x in 0..GRID_DIMS[0] {
         for y in 0..GRID_DIMS[1] {

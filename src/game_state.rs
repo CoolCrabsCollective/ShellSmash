@@ -1,4 +1,4 @@
-use bevy::{input::keyboard::KeyboardInput, prelude::*};
+use bevy::{input::keyboard::KeyboardInput, log, prelude::*};
 
 pub struct GameStatePlugin;
 
@@ -25,10 +25,12 @@ fn process_inputs(
         if event.state.is_pressed() {
             match event.key_code {
                 Some(KeyCode::V) => {
-                    next_state.set(match current_state.get() {
+                    let new_state = match current_state.get() {
                         GameState::FightingInArena => GameState::ManagingInventory,
                         GameState::ManagingInventory => GameState::FightingInArena,
-                    });
+                    };
+                    log::info!("Changing game state to: {new_state:?}");
+                    next_state.set(new_state);
                 }
                 _ => {}
             }

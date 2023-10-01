@@ -1,7 +1,7 @@
 use bevy::input::keyboard::KeyboardInput;
 use bevy::input::mouse::MouseMotion;
 use bevy::math::Vec3;
-use bevy::prelude::*;
+use bevy::{log, prelude::*};
 
 use crate::math::deg_to_rad;
 
@@ -188,6 +188,7 @@ fn set_camera(
         return;
     }
 
+    log::info!("set_camera: position={:?}", state.position);
     camera_transform.translation = state.position;
     camera_transform.rotation = state.view_direction.to_quat();
 }
