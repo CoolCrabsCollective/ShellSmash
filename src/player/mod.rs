@@ -1,4 +1,4 @@
-mod combat;
+pub(crate) mod combat;
 
 use bevy::input::keyboard::KeyboardInput;
 use bevy::math::vec3;
@@ -9,6 +9,7 @@ use bevy_rapier3d::prelude::*;
 use crate::enemy::Enemy;
 use crate::game_camera_controller::GameCameraControllerPlugin;
 use crate::game_state::GameState;
+use crate::player::combat::PlayerCombatState;
 use crate::world_item::WeaponHolder;
 
 pub const PLAYER_HEIGHT: f32 = 0.6;
@@ -99,6 +100,7 @@ fn spawn_player(
             ..default()
         })
         .insert(PlayerControllerState::new())
+        .insert(PlayerCombatState::new())
         .insert(WeaponHolder {
             current_weapon: None,
         })

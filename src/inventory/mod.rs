@@ -86,6 +86,7 @@ pub struct InventoryItem {
     pub attack_speed_gain: f32,  // how much attack speed this item gives you for having it
 
     pub weapon_damage: i32, // how much base attack damage this item does when used as a weapon
+    pub weapon_attack_speed: f32, // how much base attack speed this item has when used as a weapon
     pub weapon_is_auto: bool, // whether holding click auto attacks for this weapon
 }
 
@@ -147,6 +148,7 @@ impl From<((i32, i32, i32), Vec<(i32, i32, i32)>, Color)> for InventoryItem {
             attack_speed_gain: 0.0,
             weapon_damage: 1,
             weapon_is_auto: false,
+            weapon_attack_speed: 1.0,
         }
     }
 }
