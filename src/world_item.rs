@@ -25,7 +25,7 @@ impl InventoryItem {
         mut materials: ResMut<Assets<StandardMaterial>>,
     ) -> Entity {
         return commands
-            .spawn((AttachedToPlayer(on_player), Collectable(collectable)))
+            .spawn((AttachedToPlayer(on_player), Collectable(collectable), self.clone()))
             .insert(PbrBundle {
                 mesh: meshes.add(self.generate_mesh()),
                 material: materials.add(self.color.clone().into()),
