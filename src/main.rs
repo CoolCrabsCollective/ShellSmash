@@ -8,12 +8,15 @@ use crate::inventory::InventoryPlugin;
 
 mod combat;
 mod debug_camera_controller;
+mod enemy;
+mod enemy_spawner;
 mod game;
 mod game_state;
 mod health;
 mod inventory;
 mod inventory_controller;
 mod item_mesh_generator;
+mod item_spawner;
 mod level_loader;
 mod math;
 mod player;
