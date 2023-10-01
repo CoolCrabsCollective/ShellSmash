@@ -14,6 +14,7 @@ mod health;
 mod inventory;
 mod inventory_controller;
 mod item_mesh_generator;
+mod item_spawner;
 mod level_loader;
 mod math;
 mod player;

@@ -1,6 +1,7 @@
 use crate::debug_camera_controller::DebugCameraControllerPlugin;
 use crate::game_state::GameState;
 use crate::inventory::InventoryItem;
+use crate::item_spawner::ItemSpawner;
 use crate::level_loader::{load_level, LevelLoaderPlugin};
 use crate::player::PlayerPlugin;
 use bevy::math::vec3;
@@ -20,6 +21,7 @@ impl Plugin for GamePlugin {
             RapierPhysicsPlugin::<NoUserData>::default(),
             RapierDebugRenderPlugin::default(),
             PlayerPlugin,
+            ItemSpawner,
         ));
         app.insert_resource(AmbientLight {
             color: Color::WHITE,
