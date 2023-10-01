@@ -17,12 +17,6 @@ pub struct PlayerControllerState {
     is_left_pressed: bool,
     is_right_pressed: bool,
 
-    is_I_pressed: bool,
-    was_I_pressed: bool,
-
-    is_K_pressed: bool,
-    was_K_pressed: bool,
-
     velocity: Vec3,
 }
 
@@ -89,12 +83,6 @@ impl PlayerControllerState {
             is_left_pressed: false,
             is_right_pressed: false,
 
-            is_I_pressed: false,
-            was_I_pressed: false,
-
-            is_K_pressed: false,
-            was_K_pressed: false,
-
             velocity: vec3(0.0, 0.0, 0.0),
         }
     }
@@ -119,27 +107,18 @@ fn process_inputs(
             Some(KeyCode::D) => {
                 state.is_right_pressed = event.state.is_pressed();
             }
-            Some(KeyCode::I) => {
-                state.is_I_pressed = event.state.is_pressed();
-            }
-            Some(KeyCode::K) => {
-                state.is_K_pressed = event.state.is_pressed();
-            }
             _ => {}
         }
     }
 }
 
 fn player_movement(
-    mut commands: Commands,
     mut controllers: Query<&mut KinematicCharacterController, With<PlayerControllerState>>,
     time: Res<Time>,
     mut state: Query<&mut PlayerControllerState>,
     windows: Query<&Window, With<PrimaryWindow>>,
     camera_q: Query<(&Camera, &GlobalTransform)>,
     mut transform: Query<&mut Transform, With<PlayerControllerState>>,
-    mut meshes: ResMut<Assets<Mesh>>,
-    mut materials: ResMut<Assets<StandardMaterial>>,
 ) {
     let mut state = state.single_mut();
     let mut transform = transform.single_mut();
@@ -165,24 +144,6 @@ fn player_movement(
 
     controllers.single_mut().translation = Some(state.velocity * time.delta_seconds());
 
-    if state.is_I_pressed && !state.was_I_pressed {
-        let boomerang = InventoryItem::from((
-            (1, 3, 3),
-            vec![(0, 0, 0), (0, 0, 1), (0, 0, 2), (-1, 0, 0), (-2, 0, 0)],
-            Color::rgba(1.0, 1.0, 1.0, 1.0),
-        ));
-
-        boomerang.create_world_entity(transform.translation, false, commands, meshes, materials);
-    } else if state.is_K_pressed && !state.was_K_pressed {
-        let boomerang = InventoryItem::from((
-            (1, 3, 3),
-            vec![(0, 0, 0), (0, 0, 1), (0, 0, 2), (-1, 0, 0), (-2, 0, 0)],
-            Color::rgba(1.0, 1.0, 1.0, 1.0),
-        ));
-
-        boomerang.create_world_entity(transform.translation, true, commands, meshes, materials);
-    }
-
     let (camera, camera_transform) = camera_q.single();
 
     if let Some(position) = windows.single().cursor_position() {
@@ -196,8 +157,6 @@ fn player_movement(
             transform.look_at(pos, Vec3::Y);
         }
     }
-    state.was_I_pressed = state.is_I_pressed;
-    state.was_K_pressed = state.is_K_pressed;
 }
 
 fn detect_player_hit(
