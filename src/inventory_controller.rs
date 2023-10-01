@@ -1,7 +1,8 @@
+use crate::config::INVENTORY_GRID_DIMENSIONS;
 use crate::game_state::GameState;
 use crate::inventory::{InventoryData, InventoryItem};
 use crate::math::deg_to_rad;
-use crate::voxel_renderer::{VoxelCoordinateFrame, GRID_DIMS};
+use crate::voxel_renderer::VoxelCoordinateFrame;
 use bevy::{log, prelude::*};
 
 pub struct InventoryControllerPlugin;
@@ -128,7 +129,7 @@ pub fn update_inventory_data(query: Query<&InventoryItem>, mut inv: ResMut<Inven
     for p in query.iter() {
         items.push(p.clone())
     }
-    inv.grid = InventoryData::grid_from_items(items, IVec3::from_array(GRID_DIMS))
+    inv.grid = InventoryData::grid_from_items(items, IVec3::from_array(INVENTORY_GRID_DIMENSIONS))
 }
 
 fn get_initial_camera_transform() -> Transform {
