@@ -1,9 +1,11 @@
+use crate::game_state::GameState;
 use bevy::pbr::wireframe::WireframePlugin;
 use bevy::prelude::*;
 
-use crate::config::INVENTORY_GRID_DIMENSIONS;
+use crate::inventory::controller::InventoryControllerPlugin;
 use crate::voxel_renderer::VoxelRendererPlugin;
-use crate::{game_state::GameState, inventory_controller::InventoryControllerPlugin};
+
+mod controller;
 
 pub struct InventoryPlugin;
 

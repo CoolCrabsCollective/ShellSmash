@@ -53,7 +53,7 @@ impl CubeRotationAnime {
 }
 
 #[derive(Resource)]
-struct InventoryControllerState {
+pub struct InventoryControllerState {
     pub view_index: usize,
 }
 

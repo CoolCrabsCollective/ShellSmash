@@ -1,3 +1,5 @@
+mod combat;
+
 use bevy::input::keyboard::KeyboardInput;
 use bevy::math::vec3;
 use bevy::window::PrimaryWindow;
