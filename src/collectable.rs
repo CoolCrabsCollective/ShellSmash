@@ -3,12 +3,10 @@ use crate::player::PlayerControllerState;
 use crate::world_item::Collectable;
 use bevy::log;
 use bevy::prelude::*;
-use bevy_rapier3d::prelude::KinematicCharacterController;
-use crate::inventory::InventoryItem;
 
 pub struct CollectablePlugin;
 
-type CollectedItems = Vec<Entity>;
+type CollectedItems = Entity;
 
 #[derive(Event)]
 pub struct ItemCollectEvent(CollectedItems);
@@ -42,17 +40,24 @@ fn detect_items(
             current_location.distance_squared(item.1.translation);
 
         if distance_squared < detect_range * detect_range {
-            near_items.push(item.0);
+            item_collected_event_writer.send(ItemCollectEvent(item.0));
         }
-    }
-
-    if near_items.len() > 0 {
-        item_collected_event_writer.send(ItemCollectEvent(near_items));
     }
 }
 
-fn handle_item_collect(mut item_collect_event_reader: EventReader<ItemCollectEvent>) {
-    for item_collect_event in &mut item_collect_event_reader {
-        log::info!("Item collected by player: {:?}", item_collect_event.0);
+pub fn handle_item_collect(mut commands: Commands, mut item_collect_event_reader: EventReader<ItemCollectEvent>,
+                        current_state: ResMut<State<GameState>>,
+                        mut next_state: ResMut<NextState<GameState>>,) {
+    if item_collect_event_reader.len() > 0 {
+        for item in &mut item_collect_event_reader {
+            commands.entity(item.0).despawn();
+        }
+
+        let new_state = match current_state.get() {
+            GameState::FightingInArena => GameState::ManagingInventory,
+            GameState::ManagingInventory => GameState::FightingInArena,
+        };
+        log::info!("Changing game state to: {new_state:?}");
+        next_state.set(new_state);
     }
 }
