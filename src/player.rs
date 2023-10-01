@@ -1,7 +1,9 @@
 use bevy::input::keyboard::KeyboardInput;
 use bevy::math::vec3;
 use bevy::prelude::*;
+use bevy::window::PrimaryWindow;
 use bevy_rapier3d::prelude::*;
+use std::f32::consts::PI;
 
 pub struct PlayerPlugin;
 
@@ -23,6 +25,11 @@ fn setup(
         .spawn(Collider::capsule_y(0.3, 0.25))
         .insert(SceneBundle {
             scene: asset_server.load("player.glb#Scene0"),
+            ..default()
+        })
+        .insert(PbrBundle {
+            mesh: meshes.add(Mesh::from(shape::Box::new(1.0, 0.1, 1.0))),
+            material: materials.add(Color::rgb(0.3, 0.5, 0.3).into()),
             ..default()
         })
         .insert(KinematicCharacterController {
@@ -88,6 +95,9 @@ fn player_movement(
     mut controllers: Query<&mut KinematicCharacterController>,
     time: Res<Time>,
     mut state: ResMut<PlayerControllerState>,
+    windows: Query<&Window, With<PrimaryWindow>>,
+    camera_q: Query<(&Camera, &GlobalTransform)>,
+    mut transform: Query<&mut Transform, With<KinematicCharacterController>>,
 ) {
     state.velocity.y -= 9.81 * time.delta_seconds();
     state.velocity.x /= 1.5;
@@ -108,7 +118,20 @@ fn player_movement(
         state.velocity.x = 6.0;
     }
 
-    for mut controller in controllers.iter_mut() {
-        controller.translation = Some(state.velocity * time.delta_seconds());
+    controllers.single_mut().translation = Some(state.velocity * time.delta_seconds());
+
+    let (camera, camera_transform) = camera_q.single();
+
+    if let Some(position) = windows.single().cursor_position() {
+        let ray: Ray = camera
+            .viewport_to_world(camera_transform, position)
+            .unwrap();
+        if let Some(distance) = ray.intersect_plane(
+            vec3(0.0, transform.single().translation.y, 0.0),
+            vec3(0.0, 1.0, 0.0),
+        ) {
+            let pos = ray.get_point(distance);
+            transform.single_mut().look_at(pos, Vec3::Y);
+        }
     }
 }
