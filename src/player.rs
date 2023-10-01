@@ -7,6 +7,7 @@ use bevy_rapier3d::prelude::*;
 use crate::enemy::Enemy;
 use crate::game_state::GameState;
 use crate::inventory::InventoryItem;
+use crate::world_item::WeaponHolder;
 
 pub const PLAYER_HEIGHT: f32 = 0.6;
 pub const PLAYER_WIDTH: f32 = 0.5;
@@ -70,6 +71,9 @@ fn setup(mut commands: Commands, asset_server: ResMut<AssetServer>) {
             ..default()
         })
         .insert(PlayerControllerState::new())
+        .insert(WeaponHolder {
+            current_weapon: None,
+        })
         .insert(TransformBundle::from(Transform::from_xyz(2.0, 1.0, 0.0)));
 }
 
