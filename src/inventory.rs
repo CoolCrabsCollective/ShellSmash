@@ -1,4 +1,4 @@
-use crate::inventory_controller::InventoryControllerPlugin;
+use crate::{game_state::GameState, inventory_controller::InventoryControllerPlugin};
 use bevy::log;
 use bevy::pbr::wireframe::WireframePlugin;
 use bevy::prelude::*;
@@ -9,21 +9,25 @@ pub struct InventoryPlugin;
 
 impl Plugin for InventoryPlugin {
     fn build(&self, app: &mut App) {
-        app.add_systems(Startup, setup);
-        app.add_plugins((WireframePlugin, VoxelRendererPlugin));
-        app.add_systems(Update, (move_inventory_items, update_inventory_data));
-
-        app.add_plugins(InventoryControllerPlugin);
+        app.add_systems(OnEnter(GameState::ManagingInventory), setup);
+        app.add_plugins((
+            WireframePlugin,
+            VoxelRendererPlugin,
+            InventoryControllerPlugin,
+        ));
+        app.add_systems(
+            Update,
+            move_inventory_items.run_if(in_state(GameState::ManagingInventory)),
+        );
+        app.add_systems(
+            Update,
+            update_inventory_data.run_if(in_state(GameState::ManagingInventory)),
+        );
     }
 }
 
 /// set up a simple 3D scene
-fn setup(
-    mut commands: Commands,
-    _asset_server: ResMut<AssetServer>,
-    _meshes: ResMut<Assets<Mesh>>,
-    _materials: ResMut<Assets<StandardMaterial>>,
-) {
+fn setup(mut commands: Commands) {
     let boomerang = InventoryItem::from((
         (1, 3, 3),
         vec![(0, 0, 0), (0, 0, 1), (0, 0, 2), (-1, 0, 0), (-2, 0, 0)],
@@ -171,11 +175,5 @@ enum AxisSelect {
 }
 
 pub fn move_inventory_items(camera_pos_query: Query<&Transform, With<Camera>>) {
-    let camera_coord = camera_pos_query.get_single();
-    if let Err(ref err) = camera_coord {
-        log::error!(
-            "Cancelling move_inventory_items since camera could not be initialized: {err:?}"
-        );
-        return;
-    }
+    let _camera_coord = camera_pos_query.single();
 }

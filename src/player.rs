@@ -4,12 +4,21 @@ use bevy::prelude::*;
 use bevy::window::PrimaryWindow;
 use bevy_rapier3d::prelude::*;
 
+use crate::game_state::GameState;
+
 pub struct PlayerPlugin;
 
 impl Plugin for PlayerPlugin {
     fn build(&self, app: &mut App) {
-        app.add_systems(Startup, setup)
-            .add_systems(Update, (process_inputs, player_movement));
+        app.add_systems(Startup, setup);
+        app.add_systems(
+            Update,
+            process_inputs.run_if(in_state(GameState::FightingInArena)),
+        );
+        app.add_systems(
+            Update,
+            player_movement.run_if(in_state(GameState::FightingInArena)),
+        );
         app.insert_resource(PlayerControllerState::new());
     }
 }
