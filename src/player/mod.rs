@@ -9,7 +9,7 @@ use bevy_rapier3d::prelude::*;
 use crate::enemy::Enemy;
 use crate::game_camera_controller::GameCameraControllerPlugin;
 use crate::game_state::GameState;
-use crate::player::combat::PlayerCombatState;
+use crate::player::combat::{PlayerCombatPlugin, PlayerCombatState};
 use crate::world_item::WeaponHolder;
 
 pub const PLAYER_HEIGHT: f32 = 0.6;
@@ -72,7 +72,7 @@ impl Plugin for PlayerPlugin {
         app.add_state::<PlayerState>();
         app.add_event::<PlayerHitEvent>();
         app.insert_resource(DeathTimer(Timer::from_seconds(2.0, TimerMode::Once)));
-        app.add_plugins(GameCameraControllerPlugin);
+        app.add_plugins((GameCameraControllerPlugin, PlayerCombatPlugin));
     }
 }
 
