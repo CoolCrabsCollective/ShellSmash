@@ -77,6 +77,7 @@ fn spawn_debug_items(
                 vec3(0.0, -PLAYER_HEIGHT + VOXEL_SIZE_IN_WORLD, 0.0)
             },
         on_player,
+        false,
         commands,
         meshes,
         materials,
@@ -113,6 +114,7 @@ fn create_boomerang(
             z: 0.0,
         },
         false,
+        true,
         commands,
         meshes,
         materials,
