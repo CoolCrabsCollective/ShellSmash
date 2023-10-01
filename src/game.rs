@@ -1,6 +1,9 @@
 use crate::debug_camera_controller::DebugCameraControllerPlugin;
+use crate::enemy::EnemyPlugin;
+use crate::enemy_spawner::EnemySpawnerPlugin;
 use crate::game_state::GameState;
 use crate::inventory::InventoryItem;
+use crate::item_spawner::ItemSpawner;
 use crate::level_loader::{load_level, LevelLoaderPlugin};
 use crate::player::PlayerPlugin;
 use bevy::math::vec3;
@@ -18,16 +21,26 @@ impl Plugin for GamePlugin {
         app.add_plugins((
             LevelLoaderPlugin,
             RapierPhysicsPlugin::<NoUserData>::default(),
-            RapierDebugRenderPlugin::default(),
+            RapierDebugRenderPlugin::default().disabled(),
             PlayerPlugin,
-        ));
-        app.insert_resource(AmbientLight {
+            EnemyPlugin,
+            EnemySpawnerPlugin,
+            ItemSpawner,
+        ))
+        .add_systems(Update, debug_render_toggle)
+        .insert_resource(AmbientLight {
             color: Color::WHITE,
             brightness: 1.0 / 5.0f32,
         })
         .insert_resource(DirectionalLightShadowMap { size: 4096 });
 
         app.add_plugins(DebugCameraControllerPlugin);
+    }
+}
+
+fn debug_render_toggle(mut context: ResMut<DebugRenderContext>, keys: Res<Input<KeyCode>>) {
+    if keys.just_released(KeyCode::F12) {
+        context.enabled = !context.enabled;
     }
 }
 
