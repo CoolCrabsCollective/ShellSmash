@@ -6,6 +6,7 @@ use game_state::GameStatePlugin;
 use crate::game::GamePlugin;
 use crate::inventory::InventoryPlugin;
 
+mod collectable;
 mod combat;
 mod config;
 mod debug_camera_controller;

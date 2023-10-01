@@ -226,29 +226,3 @@ fn handle_player_hit(mut player_hit_event_reader: EventReader<PlayerHitEvent>) {
         log::info!("Player hit by enemy: {:?}", player_hit_event.0);
     }
 }
-
-fn check_for_items(
-    items: Query<&InventoryItem>,
-    mut controllers: Query<&mut KinematicCharacterController, With<PlayerControllerState>>,
-) {
-    let mut near_items: Vec<&InventoryItem> = vec![];
-    let current_location = controllers.single_mut().translation;
-
-    if current_location.is_some() {
-        let unwrap_location = current_location.unwrap();
-
-        for item in items.iter() {
-            if item.intersects(IVec3 {
-                x: unwrap_location.x as i32,
-                y: unwrap_location.y as i32,
-                z: unwrap_location.z as i32,
-            }) {
-                near_items.push(item);
-            }
-        }
-    }
-
-    if near_items.len() > 0 {
-        log::info!("Items found: {:?}", near_items)
-    }
-}
