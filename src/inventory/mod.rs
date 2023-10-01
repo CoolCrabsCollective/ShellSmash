@@ -4,6 +4,7 @@ use bevy::prelude::*;
 
 use crate::inventory::controller::InventoryControllerPlugin;
 use crate::inventory::data_manager::InventoryDataPlugin;
+use crate::inventory::ItemType::{MELEE_WEAPON, NON_WEAPON, RANGED_WEAPON};
 use crate::voxel_renderer::VoxelRendererPlugin;
 
 mod controller;
@@ -33,35 +34,38 @@ struct Gizmo;
 /// set up a simple 3D scene
 fn setup(mut commands: Commands, assets: Res<AssetServer>,
          mut inventory: ResMut<Inventory>,) {
-    // let boomerang = InventoryItem::from((
-    //     (3, 0, 0),
-    //     vec![(0, 0, 0), (0, 0, 1), (0, 0, 2), (-1, 0, 0), (-2, 0, 0)],
-    //     Color::rgba(1.0, 1.0, 1.0, 1.0),
-    // ));
-    // let sword = InventoryItem::from((
-    //     (5, 0, 2),
-    //     vec![
-    //         (0, 0, 0),
-    //         (0, 0, 1),
-    //         (0, 0, 2),
-    //         (1, 0, 0),
-    //         (-1, 0, 0),
-    //         (0, 0, -1),
-    //     ],
-    //     Color::rgba(0.0, 1.0, 0.0, 1.0),
-    // ));
-    // let heart = InventoryItem::from((
-    //     (4, 1, 1),
-    //     vec![
-    //         (0, 0, 0),
-    //         (0, 0, -1),
-    //         (1, 0, 0),
-    //         (-1, 0, 0),
-    //         (-1, 0, 1),
-    //         (1, 0, 1),
-    //     ],
-    //     Color::rgba(1.0, 0.0, 0.0, 1.0),
-    // ));
+    let boomerang = InventoryItem::from((
+        (3, 0, 0),
+        vec![(0, 0, 0), (0, 0, 1), (0, 0, 2), (-1, 0, 0), (-2, 0, 0)],
+        Color::rgba(1.0, 1.0, 1.0, 1.0),
+        RANGED_WEAPON,
+    ));
+    let sword = InventoryItem::from((
+        (5, 0, 2),
+        vec![
+            (0, 0, 0),
+            (0, 0, 1),
+            (0, 0, 2),
+            (1, 0, 0),
+            (-1, 0, 0),
+            (0, 0, -1),
+        ],
+        Color::rgba(0.0, 1.0, 0.0, 1.0),
+        MELEE_WEAPON,
+    ));
+    let heart = InventoryItem::from((
+        (4, 1, 1),
+        vec![
+            (0, 0, 0),
+            (0, 0, -1),
+            (1, 0, 0),
+            (-1, 0, 0),
+            (-1, 0, 1),
+            (1, 0, 1),
+        ],
+        Color::rgba(1.0, 0.0, 0.0, 1.0),
+        NON_WEAPON,
+    ));
 
     for item in &inventory.content {
         commands.spawn(VoxelBullcrap { data: item.clone() });
@@ -79,6 +83,12 @@ fn setup(mut commands: Commands, assets: Res<AssetServer>,
 pub struct VoxelBullcrap {
     pub data: InventoryItem,
 }
+#[derive(Clone, Debug, PartialEq)]
+pub enum ItemType {
+    MELEE_WEAPON,
+    RANGED_WEAPON,
+    NON_WEAPON,
+}
 
 #[derive(Clone, Debug, Component)]
 pub struct InventoryItem {
@@ -94,6 +104,8 @@ pub struct InventoryItem {
     pub weapon_damage: i32, // how much base attack damage this item does when used as a weapon
     pub weapon_attack_speed: f32, // how much base attack speed this item has when used as a weapon
     pub weapon_is_auto: bool, // whether holding click auto attacks for this weapon
+
+    pub item_type: ItemType,
 }
 
 // inventory of what the user owns currently
@@ -142,8 +154,8 @@ impl InventoryItem {
     }
 }
 
-impl From<((i32, i32, i32), Vec<(i32, i32, i32)>, Color)> for InventoryItem {
-    fn from(value: ((i32, i32, i32), Vec<(i32, i32, i32)>, Color)) -> Self {
+impl From<((i32, i32, i32), Vec<(i32, i32, i32)>, Color, ItemType)> for InventoryItem {
+    fn from(value: ((i32, i32, i32), Vec<(i32, i32, i32)>, Color, ItemType)) -> Self {
         InventoryItem {
             location: value.0.into(),
             local_points: value.1.iter().map(|tup| (*tup).into()).collect(),
@@ -155,6 +167,7 @@ impl From<((i32, i32, i32), Vec<(i32, i32, i32)>, Color)> for InventoryItem {
             weapon_damage: 1,
             weapon_is_auto: false,
             weapon_attack_speed: 1.0,
+            item_type: value.3,
         }
     }
 }

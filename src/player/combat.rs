@@ -1,7 +1,7 @@
 use crate::game_state::GameState;
 use bevy::app::{App, Plugin};
 use bevy::prelude::{
-    in_state, Component, Input, IntoSystemConfigs, KeyCode, MouseButton, Query, Res, Update,
+    dbg, in_state, Component, Input, IntoSystemConfigs, KeyCode, MouseButton, Query, Res, Update,
 };
 use bevy::time::Time;
 use bevy_rapier3d::na::clamp;
@@ -42,7 +42,7 @@ impl PlayerCombatState {
             attack_speed: 1.0,
             current_hp: 5,
             max_hp: 5,
-            last_attack: 0.0,
+            last_attack: -10000.0,
         }
     }
     pub fn compute_from_inventory(&mut self, inv: &Res<Inventory>) {
@@ -55,13 +55,20 @@ impl PlayerCombatState {
 
     pub fn get_weapon_angle(&self, time: &Res<Time>) -> f32 {
         let anim_duration = BASE_ATTACK_COOLDOWN * self.attack_speed;
-        let anim_progress = clamp(
-            time.elapsed_seconds() - self.last_attack + anim_duration,
-            0.0,
-            1.0,
-        );
+        let anim_progress = 1.0
+            - clamp(
+                ((self.last_attack + anim_duration) - time.elapsed_seconds()) / anim_duration,
+                0.0,
+                1.0,
+            );
 
-        return (anim_progress * 140.0 - 70.0).to_radians();
+        return if anim_progress < 0.5 {
+            let anim_progress = anim_progress / 0.5;
+            (anim_progress * 140.0 - 70.0).to_radians()
+        } else {
+            let anim_progress = (anim_progress - 0.5) / 0.5;
+            ((1.0 - anim_progress) * 140.0 - 70.0).to_radians()
+        };
     }
 }
 

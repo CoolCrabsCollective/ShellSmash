@@ -1,5 +1,6 @@
 use crate::game_state::GameState;
 use crate::inventory::InventoryItem;
+use crate::inventory::ItemType::{MELEE_WEAPON, NON_WEAPON, RANGED_WEAPON};
 use crate::player::{PlayerControllerState, PLAYER_HEIGHT};
 use crate::world_item::{WeaponHolder, VOXEL_SIZE_IN_WORLD};
 use bevy::math::vec3;
@@ -34,6 +35,7 @@ fn spawn_debug_items(
             (1, 3, 3),
             vec![(0, 0, 0), (0, 0, 1), (0, 0, 2), (-1, 0, 2), (-2, 0, 2)],
             Color::rgba(1.0, 1.0, 1.0, 1.0),
+            RANGED_WEAPON,
         ))
     } else if keys.just_pressed(KeyCode::Key2) {
         InventoryItem::from((
@@ -53,6 +55,7 @@ fn spawn_debug_items(
                 (0, 0, -1),
             ],
             Color::rgba(0.5, 0.5, 0.5, 1.0),
+            MELEE_WEAPON,
         ))
     } else if keys.just_pressed(KeyCode::Key3) {
         InventoryItem::from((
@@ -66,6 +69,7 @@ fn spawn_debug_items(
                 (1, 0, 1),
             ],
             Color::rgba(1.0, 0.0, 0.0, 1.0),
+            NON_WEAPON,
         ))
     } else {
         return;
@@ -110,6 +114,7 @@ fn create_boomerang(
         (1, 3, 3),
         vec![(0, 0, 0), (0, 0, 1), (0, 0, 2), (-1, 0, 0), (-2, 0, 0)],
         Color::rgba(1.0, 1.0, 1.0, 1.0),
+        RANGED_WEAPON,
     ));
 
     boomerang.create_world_entity(
@@ -142,6 +147,7 @@ fn create_sword(
                                                 (0, 0, -1),
                                             ],
                                             Color::rgba(0.0, 1.0, 0.0, 1.0),
+                                            MELEE_WEAPON,
                                         ));
 
     sword.create_world_entity(
