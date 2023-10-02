@@ -9,7 +9,7 @@ use bevy_mod_raycast::Ray3d;
 
 use crate::inventory::controller::InventoryControllerState;
 
-use super::VoxelBullcrap;
+use super::PackedInventoryItem;
 
 #[derive(Component, Debug)]
 pub struct Gizmo {
@@ -35,7 +35,8 @@ pub fn update_gizmo_position(
             + camera_transform.forward() * 1.5
             + camera_transform.right() * 0.8
             + camera_transform.up() * -0.3;
-        transform.rotation = camera_transform.rotation.mul_quat(gizmo.relative.rotation);
+        transform.rotation = gizmo.relative.rotation;
+        // transform.rotation = camera_transform.rotation.mul_quat(gizmo.relative.rotation);
     }
 }
 
@@ -47,7 +48,7 @@ pub fn highlight_gizmo(
     meshes: Res<Assets<Mesh>>,
     mouse_input: Res<Input<MouseButton>>,
     state: Res<InventoryControllerState>,
-    mut query_voxel: Query<&mut VoxelBullcrap>,
+    mut query_voxel: Query<&mut PackedInventoryItem>,
     query_window: Query<&Window, With<PrimaryWindow>>,
 ) {
     let cursor_pos = { query_window.single().cursor_position() };
