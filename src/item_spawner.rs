@@ -31,12 +31,15 @@ fn spawn_debug_items(
     mut materials: ResMut<Assets<StandardMaterial>>,
 ) {
     let mut item = if keys.just_pressed(KeyCode::Key1) {
-        InventoryItem::from((
+        let mut item = InventoryItem::from((
             (1, 3, 3),
             vec![(0, 0, 0), (0, 0, 1), (0, 0, 2), (-1, 0, 2), (-2, 0, 2)],
             Color::rgba(1.0, 1.0, 1.0, 1.0),
             RANGED_WEAPON,
-        ))
+        ));
+        item.weapon_attack_speed = 10.0;
+        item.projectile_speed = 30.0;
+        item
     } else if keys.just_pressed(KeyCode::Key2) {
         InventoryItem::from((
             (5, 3, 2),
@@ -137,18 +140,18 @@ fn create_sword(
     materials: ResMut<Assets<StandardMaterial>>,
 ) {
     let sword = InventoryItem::from((
-                                            (5, 0, 2),
-                                            vec![
-                                                (0, 0, 0),
-                                                (0, 0, 1),
-                                                (0, 0, 2),
-                                                (1, 0, 0),
-                                                (-1, 0, 0),
-                                                (0, 0, -1),
-                                            ],
-                                            Color::rgba(0.0, 1.0, 0.0, 1.0),
-                                            MELEE_WEAPON,
-                                        ));
+        (5, 0, 2),
+        vec![
+            (0, 0, 0),
+            (0, 0, 1),
+            (0, 0, 2),
+            (1, 0, 0),
+            (-1, 0, 0),
+            (0, 0, -1),
+        ],
+        Color::rgba(0.0, 1.0, 0.0, 1.0),
+        MELEE_WEAPON,
+    ));
 
     sword.create_world_entity(
         Vec3 {

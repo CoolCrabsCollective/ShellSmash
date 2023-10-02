@@ -1,6 +1,7 @@
 use std::f32::consts::PI;
 
 use crate::collectable::CollectablePlugin;
+use crate::projectile::ProjectilePlugin;
 use bevy::math::vec3;
 use bevy::pbr::{CascadeShadowConfigBuilder, DirectionalLightShadowMap};
 use bevy::prelude::Projection::Perspective;
@@ -32,6 +33,7 @@ impl Plugin for GamePlugin {
             ItemSpawner,
             ItemAttachmentPlugin,
             CollectablePlugin,
+            ProjectilePlugin,
         ))
         .add_systems(Update, debug_render_toggle)
         .insert_resource(AmbientLight {
@@ -88,13 +90,13 @@ fn setup(
         ..default()
     });
 
-    commands.spawn(SceneBundle {
-        scene: asset_server.load("enemy.glb#Scene0"),
-        transform: Transform::from_xyz(5.0, 0.0, -5.0)
-            .looking_at(Vec3::ZERO, Vec3::Y)
-            .with_scale(vec3(0.25, 0.25, 0.25)),
-        ..default()
-    });
+    // commands.spawn(SceneBundle {
+    //     scene: asset_server.load("enemy.glb#Scene0"),
+    //     transform: Transform::from_xyz(5.0, 0.0, -5.0)
+    //         .looking_at(Vec3::ZERO, Vec3::Y)
+    //         .with_scale(vec3(0.25, 0.25, 0.25)),
+    //     ..default()
+    // });
 }
 
 fn get_camera_position() -> Transform {

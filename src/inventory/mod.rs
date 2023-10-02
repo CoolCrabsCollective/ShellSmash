@@ -207,6 +207,8 @@ pub struct InventoryItem {
     pub weapon_attack_speed: f32, // how much base attack speed this item has when used as a weapon
     pub weapon_is_auto: bool, // whether holding click auto attacks for this weapon
 
+    pub projectile_speed: f32, // how fast the ranged weapon's 'bullets' travel
+
     pub item_type: ItemType,
 }
 
@@ -270,6 +272,7 @@ impl From<((i32, i32, i32), Vec<(i32, i32, i32)>, Color, ItemType)> for Inventor
             weapon_is_auto: false,
             weapon_attack_speed: 1.0,
             item_type: value.3,
+            projectile_speed: 1.0,
         }
     }
 }
