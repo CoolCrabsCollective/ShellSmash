@@ -12,6 +12,7 @@ use crate::asset_loader::GameAssets;
 use crate::config::SPAWN_ENEMIES;
 use crate::enemy::{Enemy, EnemyBundle};
 use crate::game_state::GameState;
+use crate::item_spawner::spawn_random_item;
 use crate::player::PlayerControllerState;
 use crate::wave_manager::waves::DEFINED_WAVES;
 
@@ -167,12 +168,29 @@ fn check_for_wave_end(
     enemy_entity_query: Query<Entity, With<Enemy>>,
     mut current_wave: ResMut<Wave>,
     mut next_state: ResMut<NextState<WaveState>>,
+
+    mut commands: Commands,
+    mut meshes: ResMut<Assets<Mesh>>,
+    mut materials: ResMut<Assets<StandardMaterial>>,
 ) {
     if enemy_entity_query.iter().len() <= 0 {
         log::info!("Ending wave: {}", current_wave.count);
 
         next_state.set(WaveState::WAVE_END);
         current_wave.count += 1;
+
+        drop_items(&mut commands, meshes, materials, current_wave);
+    }
+}
+
+fn drop_items(
+    commands: &mut Commands,
+    mut meshes: ResMut<Assets<Mesh>>,
+    mut materials: ResMut<Assets<StandardMaterial>>,
+    mut current_wave: ResMut<Wave>,
+) {
+    for i in 0..current_wave.wave_definition.drop_item_count {
+        spawn_random_item(commands, &mut meshes, &mut materials);
     }
 }
 
