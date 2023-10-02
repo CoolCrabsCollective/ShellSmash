@@ -34,7 +34,7 @@ pub fn update_gizmo_position(
 pub fn highlight_gizmo(
     mut param_set: ParamSet<(
         Query<&Window, With<PrimaryWindow>>,
-        Query<(&Transform, &Gizmo, &Handle<Mesh>)>,
+        Query<(&mut Transform, &Gizmo, &Handle<Mesh>)>,
         Query<(&Camera, &GlobalTransform)>,
     )>,
     meshes: Res<Assets<Mesh>>,
@@ -51,15 +51,16 @@ pub fn highlight_gizmo(
         };
 
         let mut gizmo_query = param_set.p1();
-        for (trans, gizmo, mesh) in gizmo_query.iter_mut() {
-            dbg!(mesh);
+        for (mut trans, gizmo, mesh) in gizmo_query.iter_mut() {
             if let Some(intersection) = ray_intersection_over_mesh(
                 meshes.get(mesh).unwrap(),
                 &trans.compute_matrix(),
                 &ray,
                 bevy_mod_raycast::Backfaces::Cull,
             ) {
-                println!("YOO");
+                trans.scale = Vec3::from((1.1, 1.1, 1.1));
+            } else {
+                trans.scale = Vec3::from((1.0, 1.0, 1.0));
             }
         }
     }
