@@ -182,7 +182,13 @@ pub fn setup(
     // This is shit but x is relative forward
     // y is relative right, z is relative up to camera
 
+    // note: don't get memed by the name of the transforms
+    // they don't mean shit, check the IteMDirection
+
     backwards_transform.translation = Vec3::from((0.0, 0.1, 0.0));
+    backwards_transform.rotate_y(180.0f32.to_radians());
+    backwards_transform.rotate_z(180.0f32.to_radians());
+    backwards_transform.rotate_y(20.0f32.to_radians());
     commands
         .spawn(Gizmo {
             relative: backwards_transform,
@@ -206,31 +212,31 @@ pub fn setup(
             ..default()
         })
         .insert(NotShadowReceiver);
-    right_transform.translation = Vec3::from((0.0, 0.0, 0.2));
-    commands
-        .spawn(Gizmo {
-            relative: right_transform,
-            item_dir: ItemDirection::ROLL_LEFT,
-        })
-        .insert(PbrBundle {
-            mesh: game_assets.arrow_rotated().mesh_handle,
-            material: game_assets.arrow_rotated().material_handle,
-            ..default()
-        })
-        .insert(NotShadowReceiver);
-    left_transform.rotate_x(180.0f32.to_radians());
-    left_transform.translation = Vec3::from((0.0, 0.0, -0.2));
-    commands
-        .spawn(Gizmo {
-            relative: left_transform,
-            item_dir: ItemDirection::ROLL_RIGHT,
-        })
-        .insert(PbrBundle {
-            mesh: game_assets.arrow_rotated().mesh_handle,
-            material: game_assets.arrow_rotated().material_handle,
-            ..default()
-        })
-        .insert(NotShadowReceiver);
+    // right_transform.translation = Vec3::from((0.0, 0.0, 0.2));
+    // commands
+    //     .spawn(Gizmo {
+    //         relative: right_transform,
+    //         item_dir: ItemDirection::ROLL_LEFT,
+    //     })
+    //     .insert(PbrBundle {
+    //         mesh: game_assets.arrow_rotated().mesh_handle,
+    //         material: game_assets.arrow_rotated().material_handle,
+    //         ..default()
+    //     })
+    //     .insert(NotShadowReceiver);
+    // left_transform.rotate_x(180.0f32.to_radians());
+    // left_transform.translation = Vec3::from((0.0, 0.0, -0.2));
+    // commands
+    //     .spawn(Gizmo {
+    //         relative: left_transform,
+    //         item_dir: ItemDirection::ROLL_RIGHT,
+    //     })
+    //     .insert(PbrBundle {
+    //         mesh: game_assets.arrow_rotated().mesh_handle,
+    //         material: game_assets.arrow_rotated().material_handle,
+    //         ..default()
+    //     })
+    //     .insert(NotShadowReceiver);
 
     up_transform.translation = Vec3::from((0.0, 0.0, 0.1));
     up_transform.rotate_z(90.0f32.to_radians());
