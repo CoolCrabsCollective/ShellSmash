@@ -134,12 +134,13 @@ fn setup(
         })
         .insert(TransformBundle::from(Transform::from_xyz(2.0, 1.0, 0.0)));
 
+    let bubble: Mesh = Mesh::try_from(shape::Icosphere {
+        radius: PLAYER_SHOOTING_PROJECTILE_CUBE_HALF_SIZE * 2.0,
+        subdivisions: 3,
+    })
+    .unwrap();
     shooting_state.mesh_material_handle = Some((
-        meshes.add(Mesh::from(shape::Box::new(
-            PLAYER_SHOOTING_PROJECTILE_CUBE_HALF_SIZE * 2.0,
-            PLAYER_SHOOTING_PROJECTILE_CUBE_HALF_SIZE * 2.0,
-            PLAYER_SHOOTING_PROJECTILE_CUBE_HALF_SIZE * 2.0,
-        ))),
+        meshes.add(bubble),
         materials.add(Color::rgb(0.05, 0.4, 0.9).into()),
     ));
 }

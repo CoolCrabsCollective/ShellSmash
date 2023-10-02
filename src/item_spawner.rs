@@ -1,7 +1,10 @@
 use bevy::prelude::*;
+use bevy::prelude::*;
+use rand::{random, Rng};
 
 use crate::inventory::ItemType::{MELEE_WEAPON, NON_WEAPON, RANGED_WEAPON};
 use crate::inventory::{InventoryItem, ItemTypeId};
+use crate::wave_manager::ARENA_DIMENSIONS_METERS;
 
 pub struct ItemSpawner;
 
@@ -200,3 +203,26 @@ fn create_heart(
 
     heart.create_world_entity(location, false, true, commands, meshes, materials);
 }
+pub fn spawn_random_item(
+    mut commands: &mut Commands,
+    mut meshes: &mut ResMut<Assets<Mesh>>,
+    mut materials: &mut ResMut<Assets<StandardMaterial>>,
+) {
+    let mut rng = rand::thread_rng();
+    let spawn_id = rng.gen_range(0..4);
+
+    let position = Vec3::new(
+        (random::<f32>() - 0.5) * ARENA_DIMENSIONS_METERS[0],
+        0.5,
+        (random::<f32>() - 0.5) * ARENA_DIMENSIONS_METERS[0],
+    );
+
+    match spawn_id {
+        0 => {
+            create_heart(commands, meshes, materials, position);
+        }
+        _ => {}
+    }
+}
+
+fn monitor_spawns() {}

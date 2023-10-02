@@ -3,11 +3,13 @@ use std::time::Duration;
 use bevy::{log, prelude::*};
 use bevy_rapier3d::prelude::*;
 use rand::random;
+use rand::Rng;
 
 use crate::asset_loader::GameAssets;
 use crate::config::SPAWN_ENEMIES;
-use crate::enemy::{Enemy, EnemyBundle};
+use crate::enemy::{Enemy, EnemyBundle, EnemyType};
 use crate::game_state::GameState;
+use crate::item_spawner::spawn_random_item;
 use crate::player::PlayerControllerState;
 use crate::wave_manager::waves::DEFINED_WAVES;
 
@@ -31,7 +33,8 @@ pub struct WaveDefinition {
     start_delay: f32,
     spawn_rate: f32,
 
-    enemy_count: i32,
+    jellyfish_count: i32,
+    urchin_count: i32,
     shrimp_count: i32,
 
     drop_item_count: i32,
@@ -130,7 +133,10 @@ fn spawn_enemies(
         return;
     }
 
-    if current_wave.wave_definition.enemy_count <= 0 {
+    if current_wave.wave_definition.jellyfish_count <= 0
+        && current_wave.wave_definition.urchin_count <= 0
+        && current_wave.wave_definition.shrimp_count <= 0
+    {
         next_state.set(WaveState::ACTIVE_WAVE);
         return;
     }
@@ -141,7 +147,39 @@ fn spawn_enemies(
 
         let player_transform = player_transform_query.single();
 
-        while !spawned && attempts < 10 {
+        let mut enemy_type = EnemyType::Jellyfish;
+        let mut enemy_count = &mut current_wave.wave_definition.jellyfish_count;
+
+        let mut selected = false;
+        while !selected && attempts < 10 {
+            attempts += 1;
+
+            let mut rng = rand::thread_rng();
+            let spawnTypeId = rng.gen_range(0..3);
+            match spawnTypeId {
+                0 => {
+                    enemy_type = EnemyType::Jellyfish;
+                    enemy_count = &mut current_wave.wave_definition.jellyfish_count;
+                }
+                1 => {
+                    enemy_type = EnemyType::Urchin;
+                    enemy_count = &mut current_wave.wave_definition.urchin_count;
+                }
+                2 => {
+                    enemy_type = EnemyType::Shrimp;
+                    enemy_count = &mut current_wave.wave_definition.shrimp_count;
+                }
+                _ => {}
+            }
+
+            if *enemy_count > 0 {
+                selected = true;
+            }
+        }
+
+        attempts = 0;
+
+        while !spawned && attempts < 10 && selected {
             attempts += 1;
 
             let position = Vec3::new(
@@ -150,10 +188,10 @@ fn spawn_enemies(
                 (random::<f32>() - 0.5) * ARENA_DIMENSIONS_METERS[0],
             );
             if (player_transform.translation - position).length() > 3.0 {
-                commands.spawn(EnemyBundle::new(position, &game_assets));
+                commands.spawn(EnemyBundle::new(position, &game_assets, enemy_type));
                 spawned = true;
 
-                current_wave.wave_definition.enemy_count -= 1;
+                *enemy_count -= 1;
             }
         }
 
@@ -165,12 +203,29 @@ fn check_for_wave_end(
     enemy_entity_query: Query<Entity, With<Enemy>>,
     mut current_wave: ResMut<Wave>,
     mut next_state: ResMut<NextState<WaveState>>,
+
+    mut commands: Commands,
+    mut meshes: ResMut<Assets<Mesh>>,
+    mut materials: ResMut<Assets<StandardMaterial>>,
 ) {
     if enemy_entity_query.iter().len() <= 0 {
         log::info!("Ending wave: {}", current_wave.count);
 
         next_state.set(WaveState::WAVE_END);
         current_wave.count += 1;
+
+        drop_items(&mut commands, meshes, materials, current_wave);
+    }
+}
+
+fn drop_items(
+    commands: &mut Commands,
+    mut meshes: ResMut<Assets<Mesh>>,
+    mut materials: ResMut<Assets<StandardMaterial>>,
+    mut current_wave: ResMut<Wave>,
+) {
+    for i in 0..current_wave.wave_definition.drop_item_count {
+        spawn_random_item(commands, &mut meshes, &mut materials);
     }
 }
 

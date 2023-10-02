@@ -18,8 +18,17 @@ pub struct EnemyBundle {
     enemy: Enemy,
 }
 
+#[derive(Copy, Clone)]
+pub enum EnemyType {
+    Jellyfish,
+    Urchin,
+    Shrimp,
+}
+
 #[derive(Component)]
-pub struct Enemy;
+pub struct Enemy {
+    enemy_type: EnemyType,
+}
 
 impl Plugin for EnemyPlugin {
     fn build(&self, app: &mut App) {
@@ -39,12 +48,24 @@ impl Plugin for EnemyPlugin {
 }
 
 impl EnemyBundle {
-    pub fn new(position: Vec3, assets: &Res<GameAssets>) -> Self {
+    pub fn new(position: Vec3, assets: &Res<GameAssets>, enemy_type: EnemyType) -> Self {
         Self {
             collider: Collider::ball(ENEMY_COLLIDER_RADIUS),
             pbr: PbrBundle {
-                mesh: assets.jelly().mesh_handle,
-                material: assets.jelly().material_handle,
+                mesh: match enemy_type {
+                    EnemyType::Jellyfish => assets.jelly(),
+                    EnemyType::Urchin => assets.urchin(),
+                    EnemyType::Shrimp => assets.shrimp(),
+                    _ => assets.urchin(),
+                }
+                .mesh_handle,
+                material: match enemy_type {
+                    EnemyType::Jellyfish => assets.jelly(),
+                    EnemyType::Urchin => assets.urchin(),
+                    EnemyType::Shrimp => assets.shrimp(),
+                    _ => assets.urchin(),
+                }
+                .material_handle,
                 transform: Transform::default().with_translation(position),
                 ..default()
             },
@@ -59,7 +80,7 @@ impl EnemyBundle {
                 apply_impulse_to_dynamic_bodies: true,
                 ..default()
             },
-            enemy: Enemy,
+            enemy: Enemy { enemy_type },
         }
     }
 }
