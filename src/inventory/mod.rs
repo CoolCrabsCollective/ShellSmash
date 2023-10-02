@@ -1,3 +1,4 @@
+use crate::asset_loader::GameAssets;
 use crate::config::DEFAULT_BAG_LOCATION;
 use crate::game_state::GameState;
 use crate::math::deg_to_rad;
@@ -34,7 +35,12 @@ impl Plugin for InventoryPlugin {
 }
 
 /// set up a simple 3D scene
-fn setup(mut commands: Commands, assets: Res<AssetServer>, mut inventory: ResMut<Inventory>) {
+fn setup(
+    mut commands: Commands,
+    assets: Res<AssetServer>,
+    mut inventory: ResMut<Inventory>,
+    game_assets: Res<GameAssets>,
+) {
     // let boomerang = InventoryItem::from((
     //     (3, 0, 0),
     //     vec![(0, 0, 0), (0, 0, 1), (0, 0, 2), (-1, 0, 0), (-2, 0, 0)],
@@ -115,48 +121,54 @@ fn setup(mut commands: Commands, assets: Res<AssetServer>, mut inventory: ResMut
         .spawn(Gizmo {
             relative: up_transform,
         })
-        .insert(SceneBundle {
-            scene: assets.load("arrow_straight.glb#Scene0"),
+        .insert(PbrBundle {
+            mesh: game_assets.arrow_straight().mesh_handle,
+            material: game_assets.arrow_straight().material_handle,
             ..default()
         });
     commands
         .spawn(Gizmo {
             relative: down_transform,
         })
-        .insert(SceneBundle {
-            scene: assets.load("arrow_straight.glb#Scene0"),
+        .insert(PbrBundle {
+            mesh: game_assets.arrow_straight().mesh_handle,
+            material: game_assets.arrow_straight().material_handle,
             ..default()
         });
     commands
         .spawn(Gizmo {
             relative: left_transform,
         })
-        .insert(SceneBundle {
-            scene: assets.load("arrow_straight.glb#Scene0"),
+        .insert(PbrBundle {
+            mesh: game_assets.arrow_straight().mesh_handle,
+            material: game_assets.arrow_straight().material_handle,
             ..default()
         });
     commands
         .spawn(Gizmo {
             relative: right_transform,
         })
-        .insert(SceneBundle {
-            scene: assets.load("arrow_straight.glb#Scene0"),
+        .insert(PbrBundle {
+            mesh: game_assets.arrow_straight().mesh_handle,
+            material: game_assets.arrow_straight().material_handle,
             ..default()
         });
     commands
         .spawn(Gizmo {
             relative: forward_transform,
         })
-        .insert(SceneBundle {
-            scene: assets.load("arrow_straight.glb#Scene0"),
+        .insert(PbrBundle {
+            mesh: game_assets.arrow_straight().mesh_handle,
+            material: game_assets.arrow_straight().material_handle,
             ..default()
         });
     commands
         .spawn(Gizmo {
             relative: backward_transform,
         })
-        .insert(SceneBundle {
-            scene: assets.load("arrow_straight.glb#Scene0"),
+        .insert(PbrBundle {
+            mesh: game_assets.arrow_straight().mesh_handle,
+            material: game_assets.arrow_straight().material_handle,
             ..default()
         });
 
