@@ -1,3 +1,4 @@
+use bevy::ecs::system::EntityCommands;
 use bevy::prelude::*;
 use bevy_rapier3d::prelude::Collider;
 
@@ -7,6 +8,7 @@ use crate::inventory::ItemType::MELEE_WEAPON;
 use crate::inventory::{Inventory, InventoryItem};
 use crate::player::combat::PlayerCombatState;
 use crate::player::PlayerState;
+use crate::ui::health_bar::UIHeart;
 
 pub const VOXEL_SIZE_IN_WORLD: f32 = 0.2;
 
@@ -45,11 +47,12 @@ impl InventoryItem {
             .id();
     }
 
-    pub fn create_world_entity_but_given_the_freedom_to_pass_your_own_transform_and_collider_like_it_always_should_have_been__god_bless_america_ok_boomer(
+    pub fn create_ui_entity(
         &self,
         transform: Transform,
         on_player: bool,
         collectable: bool,
+        ui_heart: bool,
         commands: &mut Commands,
         meshes: &mut ResMut<Assets<Mesh>>,
         materials: &mut ResMut<Assets<StandardMaterial>>,
@@ -60,7 +63,6 @@ impl InventoryItem {
             Collectable(collectable),
             self.clone(),
         ));
-
         e_commands.insert(PbrBundle {
             mesh: meshes.add(self.generate_mesh(true)),
             material: materials.add(self.color.clone().into()),
@@ -70,6 +72,10 @@ impl InventoryItem {
 
         if let Some(collider) = collider {
             e_commands.insert(collider);
+        }
+
+        if ui_heart {
+            e_commands.insert(UIHeart);
         }
 
         return e_commands.id();
@@ -138,17 +144,19 @@ fn equip_update(
     mut commands: Commands,
     mut meshes: ResMut<Assets<Mesh>>,
     mut materials: ResMut<Assets<StandardMaterial>>,
-    mut player_query: Query<(&mut WeaponHolder, &Transform, &PlayerCombatState)>,
-    inventory_query: Res<Inventory>,
+    mut player_query: Query<(&mut WeaponHolder, &Transform, &mut PlayerCombatState)>,
+    inventory: Res<Inventory>,
 ) {
-    let (mut player_weapon, player_transform, _) = player_query.single_mut();
+    let (mut player_weapon, player_transform, mut combat_state) = player_query.single_mut();
+
+    combat_state.compute_from_inventory(&inventory);
 
     if !player_weapon.current_weapon.is_none() {
         let player_weapon_id = player_weapon.current_weapon.clone().unwrap().1.item_type_id;
 
         let mut found_item = false;
 
-        for item in &inventory_query.content {
+        for item in &inventory.content {
             if item.item_type_id == player_weapon_id {
                 found_item = true;
                 break;
@@ -161,7 +169,7 @@ fn equip_update(
         }
     }
 
-    let item = inventory_query.first_weapon();
+    let item = inventory.first_weapon();
     if player_weapon.current_weapon.is_none() && item != None {
         let item = item.unwrap();
         let entity = item.create_world_entity(

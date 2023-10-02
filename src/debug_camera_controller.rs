@@ -1,8 +1,9 @@
-use crate::game::HolyCam;
 use bevy::input::keyboard::KeyboardInput;
 use bevy::input::mouse::MouseMotion;
 use bevy::math::Vec3;
-use bevy::{log, prelude::*};
+use bevy::prelude::*;
+
+use crate::game::HolyCam;
 
 pub struct DebugCameraControllerPlugin;
 

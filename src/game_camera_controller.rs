@@ -1,8 +1,9 @@
+use bevy::math::vec3;
+use bevy::prelude::*;
+
 use crate::game::HolyCam;
 use crate::game_state::GameState;
 use crate::player::PlayerControllerState;
-use bevy::math::vec3;
-use bevy::{log, prelude::*};
 
 pub struct GameCameraControllerPlugin;
 
@@ -18,7 +19,7 @@ impl Plugin for GameCameraControllerPlugin {
 #[derive(Resource)]
 struct GameCameraState {}
 
-fn set_camera(
+pub fn set_camera(
     mut camera_transform_query: Query<
         (&mut Transform, &Camera, &HolyCam),
         Without<PlayerControllerState>,
