@@ -1,7 +1,14 @@
+use crate::asset_loader::GameAssets;
+use crate::config::DEFAULT_BAG_LOCATION;
+use crate::game_state::GameState;
+use crate::math::deg_to_rad;
+use bevy::pbr::wireframe::WireframePlugin;
 use bevy::prelude::*;
 
 use crate::game_state::GameState;
 use crate::inventory::controller::InventoryControllerPlugin;
+use crate::inventory::gizmo::Gizmo;
+
 use crate::inventory::data_manager::InventoryDataPlugin;
 use crate::inventory::grid::GridDisplayPlugin;
 use crate::inventory::ItemType::{MELEE_WEAPON, NON_WEAPON, RANGED_WEAPON};
@@ -10,12 +17,14 @@ use crate::voxel_renderer::VoxelRendererPlugin;
 mod controller;
 mod data_manager;
 mod grid;
+mod gizmo;
 
 pub struct InventoryPlugin;
 
 impl Plugin for InventoryPlugin {
     fn build(&self, app: &mut App) {
         app.add_systems(OnEnter(GameState::ManagingInventory), setup);
+        app.add_systems(OnExit(GameState::ManagingInventory), save_and_clear_render);
         app.add_plugins((
             VoxelRendererPlugin,
             InventoryControllerPlugin,
@@ -29,53 +38,162 @@ impl Plugin for InventoryPlugin {
     }
 }
 
-#[derive(Component)]
-struct Gizmo;
-
 /// set up a simple 3D scene
-fn setup(mut commands: Commands, assets: Res<AssetServer>, mut inventory: ResMut<Inventory>) {
-    let boomerang = InventoryItem::from((
-        (3, 0, 0),
-        vec![(0, 0, 0), (0, 0, 1), (0, 0, 2), (-1, 0, 0), (-2, 0, 0)],
-        Color::rgba(1.0, 1.0, 1.0, 1.0),
-        RANGED_WEAPON,
-    ));
-    let sword = InventoryItem::from((
-        (5, 0, 2),
-        vec![
-            (0, 0, 0),
-            (0, 0, 1),
-            (0, 0, 2),
-            (1, 0, 0),
-            (-1, 0, 0),
-            (0, 0, -1),
-        ],
-        Color::rgba(0.0, 1.0, 0.0, 1.0),
-        MELEE_WEAPON,
-    ));
-    let heart = InventoryItem::from((
-        (4, 1, 1),
-        vec![
-            (0, 0, 0),
-            (0, 0, -1),
-            (1, 0, 0),
-            (-1, 0, 0),
-            (-1, 0, 1),
-            (1, 0, 1),
-        ],
-        Color::rgba(1.0, 0.0, 0.0, 1.0),
-        NON_WEAPON,
-    ));
+fn setup(
+    mut commands: Commands,
+    assets: Res<AssetServer>,
+    mut inventory: ResMut<Inventory>,
+    game_assets: Res<GameAssets>,
+) {
+    // let boomerang = InventoryItem::from((
+    //     (3, 0, 0),
+    //     vec![(0, 0, 0), (0, 0, 1), (0, 0, 2), (-1, 0, 0), (-2, 0, 0)],
+    //     Color::rgba(1.0, 1.0, 1.0, 1.0),
+    //     RANGED_WEAPON,
+    // ));
+    // let sword = InventoryItem::from((
+    //     (5, 0, 2),
+    //     vec![
+    //         (0, 0, 0),
+    //         (0, 0, 1),
+    //         (0, 0, 2),
+    //         (1, 0, 0),
+    //         (-1, 0, 0),
+    //         (0, 0, -1),
+    //     ],
+    //     Color::rgba(0.0, 1.0, 0.0, 1.0),
+    //     MELEE_WEAPON,
+    // ));
+    // let heart = InventoryItem::from((
+    //     (4, 1, 1),
+    //     vec![
+    //         (0, 0, 0),
+    //         (0, 0, -1),
+    //         (1, 0, 0),
+    //         (-1, 0, 0),
+    //         (-1, 0, 1),
+    //         (1, 0, 1),
+    //     ],
+    //     Color::rgba(1.0, 0.0, 0.0, 1.0),
+    //     NON_WEAPON,
+    // ));
 
+    // commands.spawn(VoxelBullcrap { data: sword });
+    let mut up_transform =
+        Transform::from_translation(DEFAULT_BAG_LOCATION + Vec3::from((0.0, 0.0, 0.0)));
+    up_transform.rotation =
+        Quat::from_euler(EulerRot::XYZ, deg_to_rad(-90.0), deg_to_rad(0.0), 0.0);
+    let mut down_transform =
+        Transform::from_translation(DEFAULT_BAG_LOCATION + Vec3::from((0.0, 0.0, 0.0)));
+    down_transform.rotation =
+        Quat::from_euler(EulerRot::XYZ, deg_to_rad(90.0), deg_to_rad(0.0), 0.0);
+    let mut left_transform =
+        Transform::from_translation(DEFAULT_BAG_LOCATION + Vec3::from((0.0, 0.0, 0.0)));
+    left_transform.rotation = Quat::from_euler(
+        EulerRot::XYZ,
+        deg_to_rad(0.0),
+        deg_to_rad(-90.0),
+        deg_to_rad(90.0),
+    );
+    let mut right_transform =
+        Transform::from_translation(DEFAULT_BAG_LOCATION + Vec3::from((0.0, 0.0, 0.0)));
+    right_transform.rotation = Quat::from_euler(
+        EulerRot::XYZ,
+        deg_to_rad(0.0),
+        deg_to_rad(90.0),
+        deg_to_rad(90.0),
+    );
+
+    let mut forward_transform =
+        Transform::from_translation(DEFAULT_BAG_LOCATION + Vec3::from((0.0, 0.0, 0.0)));
+    forward_transform.rotation = Quat::from_euler(
+        EulerRot::XYZ,
+        deg_to_rad(0.0),
+        deg_to_rad(0.0),
+        deg_to_rad(0.0),
+    );
+    let mut backward_transform =
+        Transform::from_translation(DEFAULT_BAG_LOCATION + Vec3::from((0.0, 0.0, 0.0)));
+    backward_transform.rotation = Quat::from_euler(
+        EulerRot::XYZ,
+        deg_to_rad(0.0),
+        deg_to_rad(180.0),
+        deg_to_rad(0.0),
+    );
+
+    commands
+        .spawn(Gizmo {
+            relative: up_transform,
+        })
+        .insert(PbrBundle {
+            mesh: game_assets.arrow_straight().mesh_handle,
+            material: game_assets.arrow_straight().material_handle,
+            ..default()
+        });
+    commands
+        .spawn(Gizmo {
+            relative: down_transform,
+        })
+        .insert(PbrBundle {
+            mesh: game_assets.arrow_straight().mesh_handle,
+            material: game_assets.arrow_straight().material_handle,
+            ..default()
+        });
+    commands
+        .spawn(Gizmo {
+            relative: left_transform,
+        })
+        .insert(PbrBundle {
+            mesh: game_assets.arrow_straight().mesh_handle,
+            material: game_assets.arrow_straight().material_handle,
+            ..default()
+        });
+    commands
+        .spawn(Gizmo {
+            relative: right_transform,
+        })
+        .insert(PbrBundle {
+            mesh: game_assets.arrow_straight().mesh_handle,
+            material: game_assets.arrow_straight().material_handle,
+            ..default()
+        });
+    commands
+        .spawn(Gizmo {
+            relative: forward_transform,
+        })
+        .insert(PbrBundle {
+            mesh: game_assets.arrow_straight().mesh_handle,
+            material: game_assets.arrow_straight().material_handle,
+            ..default()
+        });
+    commands
+        .spawn(Gizmo {
+            relative: backward_transform,
+        })
+        .insert(PbrBundle {
+            mesh: game_assets.arrow_straight().mesh_handle,
+            material: game_assets.arrow_straight().material_handle,
+            ..default()
+        });
+
+    // Render current inventory data
     for item in &inventory.content {
         commands.spawn(VoxelBullcrap { data: item.clone() });
-        commands
-            .spawn(Gizmo {})
-            .insert(SceneBundle {
-                scene: assets.load("arrow_straight#Scene0"),
-                ..default()
-            })
-            .insert(TransformBundle::from(Transform::from_xyz(0.0, 8.0, 8.0)));
+    }
+}
+
+fn save_and_clear_render(
+    mut commands: Commands,
+    rendered_inventory: Query<(Entity, &VoxelBullcrap)>,
+    mut inventory: ResMut<Inventory>,
+) {
+    inventory.content.clear();
+
+    // Remove render of items
+    for item in rendered_inventory.iter() {
+        inventory.content.push(item.1.data.clone());
+
+        commands.entity(item.0).despawn();
     }
 }
 
@@ -104,6 +222,8 @@ pub struct InventoryItem {
     pub weapon_damage: i32, // how much base attack damage this item does when used as a weapon
     pub weapon_attack_speed: f32, // how much base attack speed this item has when used as a weapon
     pub weapon_is_auto: bool, // whether holding click auto attacks for this weapon
+
+    pub projectile_speed: f32, // how fast the ranged weapon's 'bullets' travel
 
     pub item_type: ItemType,
 }
@@ -168,6 +288,7 @@ impl From<((i32, i32, i32), Vec<(i32, i32, i32)>, Color, ItemType)> for Inventor
             weapon_is_auto: false,
             weapon_attack_speed: 1.0,
             item_type: value.3,
+            projectile_speed: 1.0,
         }
     }
 }

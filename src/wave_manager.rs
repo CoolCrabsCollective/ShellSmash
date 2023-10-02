@@ -10,6 +10,7 @@ use crate::asset_loader::GameAssets;
 use crate::config::SPAWN_ENEMIES;
 use crate::enemy::{Enemy, EnemyBundle};
 use crate::game_state::GameState;
+use crate::player::PlayerControllerState;
 
 pub const ARENA_DIMENSIONS_METERS: [f32; 2] = [24.0, 30.0];
 
@@ -46,6 +47,7 @@ fn spawn_enemies(
     mut asset_server: ResMut<AssetServer>,
     mut start_delay_timer: ResMut<WaveStartDelayTimer>,
     mut spawn_timer: ResMut<SpawnTimer>,
+    player_transform_query: Query<&Transform, With<PlayerControllerState>>,
     game_assets: Res<GameAssets>,
     time: Res<Time>,
 ) {
@@ -58,11 +60,23 @@ fn spawn_enemies(
     }
 
     if spawn_timer.0.tick(time.delta()).just_finished() {
-        let position = Vec3::new(
-            (random::<f32>() - 0.5) * ARENA_DIMENSIONS_METERS[0],
-            1.0,
-            (random::<f32>() - 0.5) * ARENA_DIMENSIONS_METERS[0],
-        );
-        commands.spawn(EnemyBundle::new(position, game_assets));
+        let mut attempts = 0;
+        let mut spawned = false;
+
+        let player_transform = player_transform_query.single();
+
+        while !spawned && attempts < 10 {
+            attempts += 1;
+
+            let position = Vec3::new(
+                (random::<f32>() - 0.5) * ARENA_DIMENSIONS_METERS[0],
+                1.0,
+                (random::<f32>() - 0.5) * ARENA_DIMENSIONS_METERS[0],
+            );
+            if (player_transform.translation - position).length() > 3.0 {
+                commands.spawn(EnemyBundle::new(position, &game_assets));
+                spawned = true;
+            }
+        }
     }
 }
