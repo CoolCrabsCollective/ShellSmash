@@ -116,6 +116,7 @@ fn process_hit(
     mut player: Query<(&Transform, &mut PlayerCombatState, &WeaponHolder)>,
     enemies: Query<(Entity, &Transform), With<Enemy>>,
     buttons: Res<Input<MouseButton>>,
+    touches: Res<Touches>,
     time: Res<Time>,
 ) {
     let mut player = player.single_mut();
@@ -145,6 +146,7 @@ fn process_hit(
 
     if buttons.just_pressed(MouseButton::Left)
         || (buttons.pressed(MouseButton::Left) && current_weapon.weapon_is_auto)
+        || touches.first_pressed_position() != None
     {
         commands.spawn(AudioBundle {
             source: asset_server.load("swing.ogg"),
