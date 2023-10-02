@@ -19,7 +19,7 @@ mod data_manager;
 mod gizmo;
 mod grid;
 mod selection;
-mod ui;
+pub mod ui;
 mod validation;
 mod weapon_selector;
 

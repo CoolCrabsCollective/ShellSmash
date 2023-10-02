@@ -35,7 +35,7 @@ pub struct GameAssets {
 
 impl GameAssets {
     pub fn are_all_assets_loaded(&self) -> bool {
-        self.jelly.is_some()
+        self.jelly.is_some() && self.arrow_straight.is_some()
     }
 
     pub fn jelly(&self) -> LoadedSingleModelScene {
@@ -133,10 +133,6 @@ fn handle_scene_load_event(
                 _ => {}
             }
         }
-    }
-
-    if game_assets.are_all_assets_loaded() && *game_state.get() == GameState::Loading {
-        game_state_updater.set(GameState::FightingInArena);
     }
 }
 
