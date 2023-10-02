@@ -290,7 +290,7 @@ fn player_movement(
             let left_stick_pos = Vec2::new(x, y);
 
             // Example: check if the stick is pushed up
-            if left_stick_pos.length() > 0.2 {
+            if left_stick_pos.length() > 0.5 {
                 current_frame_movement.x = left_stick_pos.x * 6.0;
                 current_frame_movement.z = -left_stick_pos.y * 6.0;
             }
@@ -322,7 +322,7 @@ fn player_movement(
             let right_stick_pos = Vec2::new(x, y);
 
             // Example: check if the stick is pushed up
-            if right_stick_pos.length() > 0.9 {
+            if right_stick_pos.length() > 0.1 {
                 transform.look_to(vec3(right_stick_pos.x, 0.0, right_stick_pos.y), Vec3::Y);
                 return;
             }
