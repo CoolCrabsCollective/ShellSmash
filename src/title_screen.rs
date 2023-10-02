@@ -62,7 +62,7 @@ fn on_enter(mut commands: Commands, asset_server: Res<AssetServer>) {
         })
         .insert(TitleScreenUi)
         .with_children(|parent| {
-            parent.spawn(ImageBundle {
+            /*parent.spawn(ImageBundle {
                 image: UiImage {
                     texture: asset_server.load("radial_background.png"),
                     ..default()
@@ -71,10 +71,11 @@ fn on_enter(mut commands: Commands, asset_server: Res<AssetServer>) {
                     position_type: PositionType::Absolute,
                     height: Val::Px(250.0),
                     width: Val::Px(500.0),
+                    //top: Val::Px(400.0),
                     ..default()
                 },
                 ..default()
-            });
+            });*/
 
             parent
                 .spawn(ButtonBundle {
@@ -82,6 +83,7 @@ fn on_enter(mut commands: Commands, asset_server: Res<AssetServer>) {
                         width: Val::Px(250.0),
                         height: Val::Px(65.0),
                         border: UiRect::all(Val::Px(5.0)),
+                        top: Val::Px(200.0),
                         // horizontally center child text
                         justify_content: JustifyContent::Center,
                         // vertically center child text
@@ -89,7 +91,7 @@ fn on_enter(mut commands: Commands, asset_server: Res<AssetServer>) {
                         ..default()
                     },
                     // border_color: BorderColor(Color::BLACK),
-                    background_color: Color::rgba(0.0, 0.0, 0.0, 0.0).into(),
+                    background_color: Color::rgba(0.0, 0.0, 0.0, 1.0).into(),
                     ..default()
                 })
                 .insert(StartGameButton)
@@ -124,6 +126,26 @@ fn on_enter(mut commands: Commands, asset_server: Res<AssetServer>) {
                 ..default()
             }),));
         });
+
+    commands
+        .spawn(ImageBundle {
+            image: UiImage {
+                texture: asset_server.load("logo_horizontal_big.png"),
+                ..default()
+            },
+            style: Style {
+                position_type: PositionType::Absolute,
+                top: Val::Percent(10.0),
+                height: Val::Percent(35.0),
+                width: Val::Percent(80.0),
+                left: Val::Percent(10.0),
+                justify_content: JustifyContent::Center,
+                align_content: AlignContent::Center,
+                ..default()
+            },
+            ..default()
+        })
+        .insert(TitleScreenUi);
 }
 
 fn start_game_click_handler(
