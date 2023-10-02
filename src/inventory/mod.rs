@@ -19,9 +19,11 @@ mod controller;
 mod data_manager;
 mod gizmo;
 mod grid;
+mod ui;
 mod validation;
 mod weapon_selector;
 
+use crate::inventory::ui::InventoryUIPlugin;
 pub use weapon_selector::WeaponSelectorPlugin;
 
 pub struct InventoryPlugin;
@@ -39,6 +41,7 @@ impl Plugin for InventoryPlugin {
             InventoryDataPlugin,
             GridDisplayPlugin,
             InventoryValidationPlugin,
+            InventoryUIPlugin,
         ))
         .insert_resource(Inventory {
             content: Vec::new(),
@@ -267,6 +270,7 @@ pub enum ItemTypeId {
     Boomerang,
     DavidGun,
     WillSword,
+    MidSword,
     AlexSword,
     Heart,
 }

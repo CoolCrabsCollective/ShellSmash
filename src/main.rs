@@ -13,7 +13,6 @@ mod level_loader;
 mod math;
 mod player;
 mod projectile;
-mod wall;
 mod wave_manager;
 mod world_item;
 

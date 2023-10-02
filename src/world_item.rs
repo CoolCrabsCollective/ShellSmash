@@ -1,14 +1,13 @@
+use bevy::prelude::*;
+use bevy_rapier3d::prelude::Collider;
+
 use crate::collectable::Collectable;
 use crate::game_state::GameState;
-use crate::player::PLAYER_HEIGHT;
-use bevy::math::vec3;
-use bevy::{prelude::*, transform};
-
 use crate::inventory::ItemType::MELEE_WEAPON;
-use crate::inventory::{Inventory, InventoryData, InventoryItem};
+use crate::inventory::{Inventory, InventoryItem};
 use crate::player::combat::PlayerCombatState;
 
-pub const VOXEL_SIZE_IN_WORLD: f32 = 0.1;
+pub const VOXEL_SIZE_IN_WORLD: f32 = 0.2;
 
 #[derive(Component)]
 pub struct AttachedToPlayer(bool);
@@ -45,7 +44,7 @@ impl InventoryItem {
             .id();
     }
 
-    pub fn create_world_entity_but_given_the_freedom_to_pass_your_own_scale_like_it_always_should_have_been__god_bless_america_ok_boomer(
+    pub fn create_world_entity_but_given_the_freedom_to_pass_your_own_transform_and_collider_like_it_always_should_have_been__god_bless_america_ok_boomer(
         &self,
         transform: Transform,
         on_player: bool,
@@ -53,20 +52,26 @@ impl InventoryItem {
         commands: &mut Commands,
         meshes: &mut ResMut<Assets<Mesh>>,
         materials: &mut ResMut<Assets<StandardMaterial>>,
+        collider: Option<Collider>,
     ) -> Entity {
-        return commands
-            .spawn((
-                AttachedToPlayer(on_player),
-                Collectable(collectable),
-                self.clone(),
-            ))
-            .insert(PbrBundle {
-                mesh: meshes.add(self.generate_mesh()),
-                material: materials.add(self.color.clone().into()),
-                transform,
-                ..default()
-            })
-            .id();
+        let mut e_commands = commands.spawn((
+            AttachedToPlayer(on_player),
+            Collectable(collectable),
+            self.clone(),
+        ));
+
+        e_commands.insert(PbrBundle {
+            mesh: meshes.add(self.generate_mesh()),
+            material: materials.add(self.color.clone().into()),
+            transform,
+            ..default()
+        });
+
+        if let Some(collider) = collider {
+            e_commands.insert(collider);
+        }
+
+        return e_commands.id();
     }
 }
 
@@ -79,10 +84,7 @@ impl Plugin for ItemAttachmentPlugin {
             item_attachment_update.run_if(in_state(GameState::FightingInArena)),
         );
 
-        app.add_systems(
-            Update,
-            equip_item_if_nothing_equipped.run_if(in_state(GameState::FightingInArena)),
-        );
+        app.add_systems(OnEnter(GameState::FightingInArena), equip_update);
     }
 }
 
@@ -129,7 +131,7 @@ pub fn item_attachment_update(
     }
 }
 
-fn equip_item_if_nothing_equipped(
+fn equip_update(
     mut commands: Commands,
     mut meshes: ResMut<Assets<Mesh>>,
     mut materials: ResMut<Assets<StandardMaterial>>,
@@ -137,6 +139,25 @@ fn equip_item_if_nothing_equipped(
     inventory_query: Res<Inventory>,
 ) {
     let (mut player_weapon, player_transform, _) = player_query.single_mut();
+
+    if !player_weapon.current_weapon.is_none() {
+        let player_weapon_id = player_weapon.current_weapon.clone().unwrap().1.item_type_id;
+
+        let mut found_item = false;
+
+        for item in &inventory_query.content {
+            if item.item_type_id == player_weapon_id {
+                found_item = true;
+                break;
+            }
+        }
+
+        if !found_item {
+            dbg!("Deleting current weapon because no longer in inventory");
+            player_weapon.current_weapon = None;
+        }
+    }
+
     if player_weapon.current_weapon.is_none() && inventory_query.content.len() > 0 {
         let item = inventory_query.content[0].clone();
         let entity = item.create_world_entity(
