@@ -1,14 +1,15 @@
-use crate::game_state::GameState;
-use bevy::pbr::wireframe::WireframePlugin;
 use bevy::prelude::*;
 
+use crate::game_state::GameState;
 use crate::inventory::controller::InventoryControllerPlugin;
 use crate::inventory::data_manager::InventoryDataPlugin;
+use crate::inventory::grid::GridDisplayPlugin;
 use crate::inventory::ItemType::{MELEE_WEAPON, NON_WEAPON, RANGED_WEAPON};
 use crate::voxel_renderer::VoxelRendererPlugin;
 
 mod controller;
 mod data_manager;
+mod grid;
 
 pub struct InventoryPlugin;
 
@@ -16,10 +17,10 @@ impl Plugin for InventoryPlugin {
     fn build(&self, app: &mut App) {
         app.add_systems(OnEnter(GameState::ManagingInventory), setup);
         app.add_plugins((
-            WireframePlugin,
             VoxelRendererPlugin,
             InventoryControllerPlugin,
             InventoryDataPlugin,
+            GridDisplayPlugin,
         ))
         .insert_resource(Inventory {
             content: Vec::new(),
@@ -32,8 +33,7 @@ impl Plugin for InventoryPlugin {
 struct Gizmo;
 
 /// set up a simple 3D scene
-fn setup(mut commands: Commands, assets: Res<AssetServer>,
-         mut inventory: ResMut<Inventory>,) {
+fn setup(mut commands: Commands, assets: Res<AssetServer>, mut inventory: ResMut<Inventory>) {
     let boomerang = InventoryItem::from((
         (3, 0, 0),
         vec![(0, 0, 0), (0, 0, 1), (0, 0, 2), (-1, 0, 0), (-2, 0, 0)],
