@@ -2,6 +2,7 @@ use std::time::Duration;
 
 use bevy::{log, prelude::*};
 use bevy_rapier3d::prelude::*;
+use queues::{IsQueue, Queue};
 use rand::random;
 use rand::Rng;
 
@@ -37,13 +38,14 @@ pub struct WaveDefinition {
     urchin_count: i32,
     shrimp_count: i32,
 
+    luck: i32,
+
     drop_item_count: i32,
 }
 
 #[derive(Resource)]
 pub struct Wave {
     pub count: i32,
-    pub luck: i32, // better items should drop as luck increases
 
     pub wave_definition: WaveDefinition,
 }
@@ -52,7 +54,6 @@ impl Wave {
     fn new() -> Self {
         Self {
             count: 0,
-            luck: 0,
             wave_definition: DEFINED_WAVES[0].clone(),
         }
     }
@@ -230,7 +231,7 @@ fn spawn_enemies(
         let position = Vec3::new(
             ((rand_x) * ARENA_DIMENSIONS_METERS[0]) * 2.0,
             1.0,
-            ((rand_y) * ARENA_DIMENSIONS_METERS[0]) * 2.0,
+            ((rand_y) * ARENA_DIMENSIONS_METERS[1]) * 2.0,
         );
         if (player_transform.translation - position).length() > 3.0 {
             commands.spawn(EnemyBundle::new(position, &game_assets, enemy_type));
@@ -315,9 +316,12 @@ fn drop_items(
     mut materials: ResMut<Assets<StandardMaterial>>,
     mut current_wave: ResMut<Wave>,
 ) {
-    for i in 0..current_wave.wave_definition.drop_item_count {
-        spawn_random_item(current_wave.luck, commands, &mut meshes, &mut materials);
-    }
+    spawn_random_item(
+        current_wave.wave_definition.luck,
+        commands,
+        &mut meshes,
+        &mut materials,
+    );
 }
 #[derive(Component)]
 struct WaveUI;

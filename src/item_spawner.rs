@@ -1,5 +1,6 @@
 use bevy::prelude::*;
 use bevy::prelude::*;
+use queues::{IsQueue, Queue};
 use rand::{random, Rng};
 
 use crate::inventory::ItemType::{MELEE_WEAPON, NON_WEAPON, RANGED_WEAPON};
@@ -19,7 +20,7 @@ fn setup(
     mut meshes: ResMut<Assets<Mesh>>,
     mut materials: ResMut<Assets<StandardMaterial>>,
 ) {
-    create_better_sword(
+    create_sword(
         &mut commands,
         &mut meshes,
         &mut materials,
@@ -27,26 +28,6 @@ fn setup(
             x: -3.0,
             y: 0.5,
             z: 0.0,
-        },
-    );
-    create_handgun(
-        &mut commands,
-        &mut meshes,
-        &mut materials,
-        Vec3 {
-            x: 5.0,
-            y: 0.5,
-            z: 8.0,
-        },
-    );
-    create_supergun(
-        &mut commands,
-        &mut meshes,
-        &mut materials,
-        Vec3 {
-            x: -5.0,
-            y: 0.5,
-            z: 8.0,
         },
     );
     create_heart(
@@ -212,15 +193,34 @@ pub fn spawn_random_item(
     let mut rng = rand::thread_rng();
     let spawn_id = rng.gen_range(0..20);
 
-    let position = Vec3::new(
-        (random::<f32>() - 0.5) * ARENA_DIMENSIONS_METERS[0],
+    let mut position = Vec3::new(
+        (random::<f32>() - 0.5) * (ARENA_DIMENSIONS_METERS[0] / 3.0),
         0.5,
-        (random::<f32>() - 0.5) * ARENA_DIMENSIONS_METERS[0],
+        (random::<f32>() - 0.5) * (ARENA_DIMENSIONS_METERS[1] / 3.0),
     );
 
     match spawn_id {
-        0 => {
+        0..=2 => {
             create_heart(commands, meshes, materials, position);
+        }
+        _ => {}
+    }
+
+    position = Vec3::new(
+        (random::<f32>() - 0.5) * (ARENA_DIMENSIONS_METERS[0] / 3.0),
+        0.5,
+        (random::<f32>() - 0.5) * (ARENA_DIMENSIONS_METERS[1] / 3.0),
+    );
+
+    match luck {
+        1 => {
+            create_better_sword(commands, meshes, materials, position);
+        }
+        2 => {
+            create_handgun(commands, meshes, materials, position);
+        }
+        3 => {
+            create_supergun(commands, meshes, materials, position);
         }
         _ => {}
     }

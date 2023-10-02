@@ -110,6 +110,9 @@ pub fn setup(
         (0.0 as f32).to_radians(),
     );
 
+    let turn_left = left_transform;
+    let turn_right = right_transform;
+
     commands
         .spawn(Gizmo {
             relative: up_transform,
@@ -169,6 +172,31 @@ pub fn setup(
         .spawn(Gizmo {
             relative: backwards_transform,
             item_dir: ItemDirection::BACKWARDS,
+        })
+        .insert(PbrBundle {
+            mesh: game_assets.arrow_straight().mesh_handle,
+            material: game_assets.arrow_straight().material_handle,
+            ..default()
+        })
+        .insert(NotShadowReceiver);
+
+    // camera rotate arrows
+
+    commands
+        .spawn(Gizmo {
+            relative: left_transform,
+            item_dir: ItemDirection::ROTATE_VIEW_LEFT,
+        })
+        .insert(PbrBundle {
+            mesh: game_assets.arrow_straight().mesh_handle,
+            material: game_assets.arrow_straight().material_handle,
+            ..default()
+        })
+        .insert(NotShadowReceiver);
+    commands
+        .spawn(Gizmo {
+            relative: right_transform,
+            item_dir: ItemDirection::ROTATE_VIEW_RIGHT,
         })
         .insert(PbrBundle {
             mesh: game_assets.arrow_straight().mesh_handle,
@@ -410,6 +438,19 @@ impl InventoryItem {
         let rot_angle = ((if ccw { 90 } else { -90 }) as f32).to_radians();
 
         let rot_mat = Mat3::from_rotation_y(rot_angle);
+        for p in self.local_points.iter_mut() {
+            let vec3 = Vec3::new(p.x as f32, p.y as f32, p.z as f32);
+            let new_p: Vec3 = rot_mat.mul_vec3(vec3);
+            p.x = new_p.x.round() as i32;
+            p.y = new_p.y.round() as i32;
+            p.z = new_p.z.round() as i32;
+        }
+        self.changed = true;
+    }
+    pub fn rotate_x(&mut self, ccw: bool) {
+        let rot_angle = ((if ccw { 90 } else { -90 }) as f32).to_radians();
+
+        let rot_mat = Mat3::from_rotation_x(rot_angle);
         for p in self.local_points.iter_mut() {
             let vec3 = Vec3::new(p.x as f32, p.y as f32, p.z as f32);
             let new_p: Vec3 = rot_mat.mul_vec3(vec3);

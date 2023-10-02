@@ -25,15 +25,15 @@ fn process_inputs(
     for event in keyboard_input_events.iter() {
         if event.state.is_pressed() {
             match event.key_code {
-                Some(KeyCode::V) => {
-                    let new_state = match current_state.get() {
-                        GameState::FightingInArena => GameState::ManagingInventory,
-                        GameState::ManagingInventory => GameState::FightingInArena,
-                        GameState::TitleScreen => GameState::TitleScreen,
-                    };
-                    log::info!("Changing game state to: {new_state:?}");
-                    next_state.set(new_state);
-                }
+                // Some(KeyCode::V) => {
+                //     let new_state = match current_state.get() {
+                //         GameState::FightingInArena => GameState::ManagingInventory,
+                //         GameState::ManagingInventory => GameState::FightingInArena,
+                //         GameState::TitleScreen => GameState::TitleScreen,
+                //     };
+                //     log::info!("Changing game state to: {new_state:?}");
+                //     next_state.set(new_state);
+                // }
                 _ => {}
             }
         }

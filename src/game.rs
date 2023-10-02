@@ -4,6 +4,7 @@ use bevy::audio::VolumeLevel;
 use std::f32::consts::PI;
 
 use crate::collectable::CollectablePlugin;
+use crate::post_processing::PostProcessSettings;
 use crate::projectile::ProjectilePlugin;
 use bevy::math::vec3;
 use bevy::pbr::{CascadeShadowConfigBuilder, DirectionalLightShadowMap};
@@ -112,6 +113,11 @@ fn setup(
                 fov: 10.0f32.to_radians(),
                 ..default()
             }),
+            ..default()
+        })
+        .insert(PostProcessSettings {
+            time: 0.0,
+            enable: 1.0,
             ..default()
         })
         .insert(HolyCam);
