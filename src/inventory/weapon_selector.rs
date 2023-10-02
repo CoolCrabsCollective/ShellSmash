@@ -128,7 +128,7 @@ fn update_next_weapon(
             (entity, new_next_weapon)
         }
         None => {
-            let entity = new_next_weapon.create_world_entity_but_given_the_freedom_to_pass_your_own_scale_like_it_always_should_have_been__god_bless_america(
+            let entity = new_next_weapon.create_world_entity_but_given_the_freedom_to_pass_your_own_scale_like_it_always_should_have_been__god_bless_america_ok_boomer(
                 ui_entity_transform,
                 false,
                 false,

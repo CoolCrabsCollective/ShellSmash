@@ -45,7 +45,7 @@ impl InventoryItem {
             .id();
     }
 
-    pub fn create_world_entity_but_given_the_freedom_to_pass_your_own_scale_like_it_always_should_have_been__god_bless_america(
+    pub fn create_world_entity_but_given_the_freedom_to_pass_your_own_scale_like_it_always_should_have_been__god_bless_america_ok_boomer(
         &self,
         transform: Transform,
         on_player: bool,
