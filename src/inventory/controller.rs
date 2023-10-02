@@ -19,7 +19,9 @@ impl Plugin for InventoryControllerPlugin {
         app.add_systems(Startup, setup);
         app.add_systems(
             Update,
-            update_gizmo_position.run_if(in_state(GameState::ManagingInventory)),
+            update_gizmo_position
+                .after(update_cube_rotation)
+                .run_if(in_state(GameState::ManagingInventory)),
         );
         app.add_systems(
             Update,
@@ -101,7 +103,7 @@ fn update_cube_rotation(
         let vox_query = param_set.p0();
         vox_query.single().translation
     };
-    let mut camera_xz: Vec2 = 8.0 * Vec2::from_angle(deg_to_rad(rotation_anime.start_rotation));
+    let mut camera_xz: Vec2 = 8.0 * Vec2::from_angle(deg_to_rad(rotation_anime.end_rotation));
     let mut camera_y = camera_trans.y;
     if rotation_anime.enabled {
         rotation_anime.anime_time.tick(time.delta());
@@ -182,7 +184,7 @@ pub fn move_item(item: &mut PackedInventoryItem, item_dir: ItemDirection, view_i
     ];
 
     match item_dir {
-        ItemDirection::BACKWARDS => {
+        ItemDirection::LEFT => {
             item.data.translate(
                 trans[if 2 <= view_index {
                     (6 - view_index) % 4
@@ -191,14 +193,14 @@ pub fn move_item(item: &mut PackedInventoryItem, item_dir: ItemDirection, view_i
                 }],
             );
         }
-        ItemDirection::FORWARD => item.data.translate(trans[(4 - view_index) % 4]),
+        ItemDirection::RIGHT => item.data.translate(trans[(4 - view_index) % 4]),
         ItemDirection::UP => {
             item.data.translate(IVec3::from((0, 1, 0)));
         }
         ItemDirection::DOWN => {
             item.data.translate(IVec3::from((0, -1, 0)));
         }
-        ItemDirection::RIGHT => {
+        ItemDirection::BACKWARDS => {
             item.data.translate(
                 trans[if 3 <= view_index {
                     (7 - view_index) % 4
@@ -207,7 +209,7 @@ pub fn move_item(item: &mut PackedInventoryItem, item_dir: ItemDirection, view_i
                 }],
             );
         }
-        ItemDirection::LEFT => {
+        ItemDirection::FORWARD => {
             item.data.translate(
                 trans[if 1 <= view_index {
                     (5 - view_index) % 4
