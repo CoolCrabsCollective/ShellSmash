@@ -2,8 +2,8 @@ use bevy::{input::keyboard::KeyboardInput, pbr::wireframe::Wireframe, prelude::*
 use rand::random;
 
 use crate::{
-    config::INVENTORY_GRID_DIMENSIONS, game_state::GameState, inventory::InventoryData,
-    math::deg_to_rad,
+    config::DEFAULT_BAG_LOCATION, config::INVENTORY_GRID_DIMENSIONS, game_state::GameState,
+    inventory::InventoryData, math::deg_to_rad,
 };
 
 const GRID_HALF_SIZE: [i32; 3] = [
@@ -90,7 +90,7 @@ fn init_voxel_grid(
         .spawn((
             VoxelCoordinateFrame,
             SpatialBundle::from(Transform {
-                translation: Vec3::from((500.0, 0.0, 0.0)),
+                translation: DEFAULT_BAG_LOCATION,
                 ..default()
             }),
         ))

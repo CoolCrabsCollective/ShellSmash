@@ -1,14 +1,18 @@
+use crate::config::DEFAULT_BAG_LOCATION;
 use crate::game_state::GameState;
+use crate::math::deg_to_rad;
 use bevy::pbr::wireframe::WireframePlugin;
 use bevy::prelude::*;
 
 use crate::inventory::controller::InventoryControllerPlugin;
+use crate::inventory::gizmo::Gizmo;
+
 use crate::inventory::data_manager::InventoryDataPlugin;
-use crate::inventory::ItemType::{MELEE_WEAPON, NON_WEAPON, RANGED_WEAPON};
 use crate::voxel_renderer::VoxelRendererPlugin;
 
 mod controller;
 mod data_manager;
+mod gizmo;
 
 pub struct InventoryPlugin;
 
@@ -29,12 +33,8 @@ impl Plugin for InventoryPlugin {
     }
 }
 
-#[derive(Component)]
-struct Gizmo;
-
 /// set up a simple 3D scene
-fn setup(mut commands: Commands, assets: Res<AssetServer>,
-         mut inventory: ResMut<Inventory>,) {
+fn setup(mut commands: Commands, assets: Res<AssetServer>, mut inventory: ResMut<Inventory>) {
     // let boomerang = InventoryItem::from((
     //     (3, 0, 0),
     //     vec![(0, 0, 0), (0, 0, 1), (0, 0, 2), (-1, 0, 0), (-2, 0, 0)],
@@ -68,16 +68,68 @@ fn setup(mut commands: Commands, assets: Res<AssetServer>,
     //     NON_WEAPON,
     // ));
 
+    // commands.spawn(VoxelBullcrap { data: sword });
+    let mut up_transform =
+        Transform::from_translation(DEFAULT_BAG_LOCATION + Vec3::from((0.0, 0.0, 0.0)));
+    up_transform.rotation =
+        Quat::from_euler(EulerRot::XYZ, deg_to_rad(-90.0), deg_to_rad(00.0), 0.0);
+    let mut down_transform =
+        Transform::from_translation(DEFAULT_BAG_LOCATION + Vec3::from((0.0, 0.0, 0.0)));
+    down_transform.rotation =
+        Quat::from_euler(EulerRot::XYZ, deg_to_rad(90.0), deg_to_rad(0.0), 0.0);
+    let mut left_transform =
+        Transform::from_translation(DEFAULT_BAG_LOCATION + Vec3::from((0.0, 0.0, 0.0)));
+    left_transform.rotation = Quat::from_euler(
+        EulerRot::XYZ,
+        deg_to_rad(0.0),
+        deg_to_rad(-90.0),
+        deg_to_rad(90.0),
+    );
+    let mut right_transform =
+        Transform::from_translation(DEFAULT_BAG_LOCATION + Vec3::from((0.0, 0.0, 0.0)));
+    right_transform.rotation = Quat::from_euler(
+        EulerRot::XYZ,
+        deg_to_rad(0.0),
+        deg_to_rad(90.0),
+        deg_to_rad(90.0),
+    );
+
+    commands
+        .spawn(Gizmo {
+            relative: up_transform,
+        })
+        .insert(SceneBundle {
+            scene: assets.load("arrow_straight.glb#Scene0"),
+            ..default()
+        });
+    commands
+        .spawn(Gizmo {
+            relative: down_transform,
+        })
+        .insert(SceneBundle {
+            scene: assets.load("arrow_straight.glb#Scene0"),
+            ..default()
+        });
+    commands
+        .spawn(Gizmo {
+            relative: left_transform,
+        })
+        .insert(SceneBundle {
+            scene: assets.load("arrow_straight.glb#Scene0"),
+            ..default()
+        });
+    commands
+        .spawn(Gizmo {
+            relative: right_transform,
+        })
+        .insert(SceneBundle {
+            scene: assets.load("arrow_straight.glb#Scene0"),
+            ..default()
+        });
+
     // Render current inventory data
     for item in &inventory.content {
         commands.spawn(VoxelBullcrap { data: item.clone() });
-        commands
-            .spawn(Gizmo {})
-            .insert(SceneBundle {
-                scene: assets.load("arrow_straight#Scene0"),
-                ..default()
-            })
-            .insert(TransformBundle::from(Transform::from_xyz(0.0, 8.0, 8.0)));
     }
 }
 

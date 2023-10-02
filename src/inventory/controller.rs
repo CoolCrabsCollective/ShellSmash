@@ -5,6 +5,7 @@ use bevy::prelude::*;
 
 use crate::config::INVENTORY_GRID_DIMENSIONS;
 use crate::game_state::GameState;
+use crate::inventory::gizmo::update_gizmo_position;
 use crate::inventory::{InventoryData, InventoryItem, VoxelBullcrap};
 use crate::math::deg_to_rad;
 use crate::voxel_renderer::VoxelCoordinateFrame;
@@ -13,6 +14,12 @@ pub struct InventoryControllerPlugin;
 
 impl Plugin for InventoryControllerPlugin {
     fn build(&self, app: &mut App) {
+        app.add_systems(
+            Update,
+            update_gizmo_position
+                .after(update_camera_position)
+                .run_if(in_state(GameState::ManagingInventory)),
+        );
         app.add_systems(
             Update,
             update_camera_position.run_if(in_state(GameState::ManagingInventory)),
@@ -133,7 +140,7 @@ fn update_camera_position(
     let mut camera_translation = camera_translation_query.single_mut();
     let mut camera_y = camera_translation.translation.y + change;
     camera_y = camera_y.max(-max_increment).min(max_increment);
-    camera_translation.translation = vox_trans + Vec3::from((0.0, camera_y, 8.0));
+    camera_translation.translation = vox_trans + Vec3::from((0.0, camera_y, -8.0));
     let look_at_my_balls = camera_translation.looking_at(vox_trans, Vec3::Y);
     camera_translation.rotation = look_at_my_balls.rotation;
 }
@@ -158,11 +165,11 @@ fn move_inventory_items(
         IVec3::from((1, 0, 0)),
     ];
     let view_index = state.view_index;
-    if key_codes.just_pressed(KeyCode::W) {
+    if key_codes.just_pressed(KeyCode::S) {
         for mut item in query_items.iter_mut() {
             item.data.translate(trans[(4 - view_index) % 4]);
         }
-    } else if key_codes.just_pressed(KeyCode::A) {
+    } else if key_codes.just_pressed(KeyCode::D) {
         for mut item in query_items.iter_mut() {
             item.data.translate(
                 trans[if 1 <= view_index {
@@ -172,7 +179,7 @@ fn move_inventory_items(
                 }],
             );
         }
-    } else if key_codes.just_pressed(KeyCode::S) {
+    } else if key_codes.just_pressed(KeyCode::W) {
         for mut item in query_items.iter_mut() {
             item.data.translate(
                 trans[if 2 <= view_index {
@@ -182,7 +189,7 @@ fn move_inventory_items(
                 }],
             );
         }
-    } else if key_codes.just_pressed(KeyCode::D) {
+    } else if key_codes.just_pressed(KeyCode::A) {
         for mut item in query_items.iter_mut() {
             item.data.translate(
                 trans[if 3 <= view_index {
