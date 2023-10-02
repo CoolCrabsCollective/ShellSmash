@@ -6,6 +6,9 @@ use bevy_rapier3d::prelude::*;
 use crate::asset_loader::GameAssets;
 use crate::game_state::GameState;
 use crate::player::PlayerControllerState;
+use crate::projectile::Projectile;
+
+pub const ENEMY_COLLIDER_RADIUS: f32 = 0.25;
 
 pub struct EnemyPlugin;
 
@@ -26,13 +29,17 @@ impl Plugin for EnemyPlugin {
             Update,
             move_enemies.run_if(in_state(GameState::FightingInArena)),
         );
+        app.add_systems(
+            Update,
+            detect_enemy_hit.run_if(in_state(GameState::FightingInArena)),
+        );
     }
 }
 
 impl EnemyBundle {
-    pub fn new(position: Vec3, assets: Res<GameAssets>) -> Self {
+    pub fn new(position: Vec3, assets: &Res<GameAssets>) -> Self {
         Self {
-            collider: Collider::ball(0.25),
+            collider: Collider::ball(ENEMY_COLLIDER_RADIUS),
             pbr: PbrBundle {
                 mesh: assets.jelly().mesh_handle,
                 material: assets.jelly().material_handle,
@@ -77,5 +84,23 @@ fn move_enemies(
 
         k_controller.translation = Some(current_frame_movement);
         transform.look_at(player_position, Vec3::Y);
+    }
+}
+
+fn detect_enemy_hit(
+    mut commands: Commands,
+    enemy_controller_output_query: Query<
+        (Entity, &KinematicCharacterControllerOutput),
+        With<Enemy>,
+    >,
+    projectile_entity_query: Query<(Entity, &Projectile)>,
+) {
+    for (enemy_entity, enemy_controller) in &enemy_controller_output_query {
+        for collision in &enemy_controller.collisions {
+            if projectile_entity_query.contains(collision.entity) {
+                commands.entity(enemy_entity).despawn();
+                commands.entity(collision.entity).despawn();
+            }
+        }
     }
 }

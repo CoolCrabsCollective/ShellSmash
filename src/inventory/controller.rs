@@ -3,17 +3,19 @@ use std::time::Duration;
 use bevy::prelude::Projection::Perspective;
 use bevy::prelude::*;
 
-use crate::config::INVENTORY_GRID_DIMENSIONS;
+use crate::config::{DEFAULT_BAG_LOCATION, INVENTORY_GRID_DIMENSIONS};
 use crate::game_state::GameState;
 use crate::inventory::gizmo::update_gizmo_position;
-use crate::inventory::{InventoryData, InventoryItem, VoxelBullcrap};
+use crate::inventory::{InventoryData, InventoryItem, PackedInventoryItem};
 use crate::math::deg_to_rad;
-use crate::voxel_renderer::VoxelCoordinateFrame;
+
+use super::gizmo::highlight_gizmo;
 
 pub struct InventoryControllerPlugin;
 
 impl Plugin for InventoryControllerPlugin {
     fn build(&self, app: &mut App) {
+        app.add_systems(Startup, setup);
         app.add_systems(
             Update,
             update_gizmo_position
@@ -36,10 +38,24 @@ impl Plugin for InventoryControllerPlugin {
             Update,
             update_inventory_data.run_if(in_state(GameState::ManagingInventory)),
         );
+        app.add_systems(Update, highlight_gizmo);
         app.add_systems(OnEnter(GameState::ManagingInventory), set_fov);
         app.insert_resource(InventoryControllerState::new());
         app.insert_resource(CubeRotationAnime::new());
     }
+}
+
+#[derive(Component)]
+pub struct VoxelCoordinateFrame;
+
+fn setup(mut commands: Commands) {
+    commands.spawn((
+        VoxelCoordinateFrame,
+        SpatialBundle::from(Transform {
+            translation: DEFAULT_BAG_LOCATION,
+            ..default()
+        }),
+    ));
 }
 
 #[derive(Resource, Debug)]
@@ -145,7 +161,7 @@ fn update_camera_position(
     camera_translation.rotation = look_at_my_balls.rotation;
 }
 
-pub fn update_inventory_data(query: Query<&VoxelBullcrap>, mut inv: ResMut<InventoryData>) {
+pub fn update_inventory_data(query: Query<&PackedInventoryItem>, mut inv: ResMut<InventoryData>) {
     let mut items: Vec<InventoryItem> = Vec::new();
     for p in query.iter() {
         items.push(p.data.clone())
@@ -153,34 +169,26 @@ pub fn update_inventory_data(query: Query<&VoxelBullcrap>, mut inv: ResMut<Inven
     inv.grid = InventoryData::grid_from_items(items, IVec3::from_array(INVENTORY_GRID_DIMENSIONS))
 }
 
-fn move_inventory_items(
-    state: Res<InventoryControllerState>,
-    key_codes: Res<Input<KeyCode>>,
-    mut query_items: Query<&mut VoxelBullcrap>,
-) {
+#[derive(Debug, Copy, Clone)]
+pub enum ItemDirection {
+    LEFT,
+    RIGHT,
+    UP,
+    DOWN,
+    FORWARD,
+    BACKWARDS,
+}
+
+pub fn move_item(item: &mut PackedInventoryItem, item_dir: ItemDirection, view_index: usize) {
     let trans: Vec<IVec3> = vec![
         IVec3::from((0, 0, -1)),
         IVec3::from((-1, 0, 0)),
         IVec3::from((0, 0, 1)),
         IVec3::from((1, 0, 0)),
     ];
-    let view_index = state.view_index;
-    if key_codes.just_pressed(KeyCode::S) {
-        for mut item in query_items.iter_mut() {
-            item.data.translate(trans[(4 - view_index) % 4]);
-        }
-    } else if key_codes.just_pressed(KeyCode::D) {
-        for mut item in query_items.iter_mut() {
-            item.data.translate(
-                trans[if 1 <= view_index {
-                    (5 - view_index) % 4
-                } else {
-                    1 - view_index
-                }],
-            );
-        }
-    } else if key_codes.just_pressed(KeyCode::W) {
-        for mut item in query_items.iter_mut() {
+
+    match item_dir {
+        ItemDirection::FORWARD => {
             item.data.translate(
                 trans[if 2 <= view_index {
                     (6 - view_index) % 4
@@ -189,8 +197,14 @@ fn move_inventory_items(
                 }],
             );
         }
-    } else if key_codes.just_pressed(KeyCode::A) {
-        for mut item in query_items.iter_mut() {
+        ItemDirection::BACKWARDS => item.data.translate(trans[(4 - view_index) % 4]),
+        ItemDirection::UP => {
+            item.data.translate(IVec3::from((0, 1, 0)));
+        }
+        ItemDirection::DOWN => {
+            item.data.translate(IVec3::from((0, -1, 0)));
+        }
+        ItemDirection::LEFT => {
             item.data.translate(
                 trans[if 3 <= view_index {
                     (7 - view_index) % 4
@@ -199,6 +213,40 @@ fn move_inventory_items(
                 }],
             );
         }
+        ItemDirection::RIGHT => {
+            item.data.translate(
+                trans[if 1 <= view_index {
+                    (5 - view_index) % 4
+                } else {
+                    1 - view_index
+                }],
+            );
+        }
+        _ => {}
+    }
+}
+
+fn move_inventory_items(
+    state: Res<InventoryControllerState>,
+    key_codes: Res<Input<KeyCode>>,
+    mut query_items: Query<&mut PackedInventoryItem>,
+) {
+    if key_codes.just_pressed(KeyCode::S) {
+        for mut item in query_items.iter_mut() {
+            move_item(&mut item, ItemDirection::BACKWARDS, state.view_index);
+        }
+    } else if key_codes.just_pressed(KeyCode::D) {
+        for mut item in query_items.iter_mut() {
+            move_item(&mut item, ItemDirection::RIGHT, state.view_index);
+        }
+    } else if key_codes.just_pressed(KeyCode::W) {
+        for mut item in query_items.iter_mut() {
+            move_item(&mut item, ItemDirection::FORWARD, state.view_index);
+        }
+    } else if key_codes.just_pressed(KeyCode::A) {
+        for mut item in query_items.iter_mut() {
+            move_item(&mut item, ItemDirection::LEFT, state.view_index);
+        }
     } else if key_codes.just_pressed(KeyCode::Q) {
         for mut item in query_items.iter_mut() {
             item.data.rotate(true);
@@ -206,6 +254,14 @@ fn move_inventory_items(
     } else if key_codes.just_pressed(KeyCode::E) {
         for mut item in query_items.iter_mut() {
             item.data.rotate(false);
+        }
+    } else if key_codes.just_pressed(KeyCode::Z) {
+        for mut item in query_items.iter_mut() {
+            move_item(&mut item, ItemDirection::UP, state.view_index);
+        }
+    } else if key_codes.just_pressed(KeyCode::X) {
+        for mut item in query_items.iter_mut() {
+            move_item(&mut item, ItemDirection::DOWN, state.view_index);
         }
     }
 }

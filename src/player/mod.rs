@@ -8,7 +8,7 @@ use bevy::window::PrimaryWindow;
 use bevy::{log, prelude::*};
 use bevy_rapier3d::prelude::*;
 
-use crate::enemy::Enemy;
+use crate::enemy::{Enemy, ENEMY_COLLIDER_RADIUS};
 use crate::game_camera_controller::GameCameraControllerPlugin;
 use crate::game_state::GameState;
 use crate::inventory::ItemType;
@@ -254,7 +254,7 @@ fn player_shooting(
     )>,
     time: Res<Time>,
 ) {
-    let (player_tranform, player_controller_state, player_combat_state, weapon_holder_state) =
+    let (player_transform, player_controller_state, player_combat_state, weapon_holder_state) =
         player_transform_query.single();
 
     if !player_controller_state.is_shoot_pressed {
@@ -270,6 +270,9 @@ fn player_shooting(
     if current_weapon.item_type != ItemType::RANGED_WEAPON {
         return;
     }
+
+    let point_in_front_of_player =
+        player_transform.translation + player_transform.forward().normalize() * 1.0;
 
     //  Timer::from_seconds(PLAYER_SHOOTING_RATE_PERIOD, TimerMode::Repeating)
     if player_controller_state.is_shoot_pressed && weapon_holder_state.current_weapon.is_some() {
@@ -295,12 +298,17 @@ fn player_shooting(
                         .unwrap()
                         .1
                         .clone(),
-                    transform: Transform::from_translation(player_tranform.translation),
+                    transform: Transform::from_translation(Vec3::new(
+                        point_in_front_of_player.x,
+                        ENEMY_COLLIDER_RADIUS,
+                        point_in_front_of_player.z,
+                    )),
                     ..default()
                 },
                 projectile: Projectile {
                     speed: current_weapon.projectile_speed,
-                    direction: player_tranform.forward(),
+                    direction: player_transform.forward(),
+                    source_weapon: current_weapon.clone(),
                 },
                 collider: Collider::cuboid(
                     PLAYER_SHOOTING_PROJECTILE_CUBE_HALF_SIZE,

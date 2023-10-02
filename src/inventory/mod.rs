@@ -1,18 +1,24 @@
-use crate::config::DEFAULT_BAG_LOCATION;
-use crate::game_state::GameState;
-use crate::math::deg_to_rad;
-use bevy::pbr::wireframe::WireframePlugin;
+use bevy::math::vec3;
+use bevy::pbr::NotShadowReceiver;
 use bevy::prelude::*;
+use bevy::transform::components::Transform;
 
+use crate::asset_loader::GameAssets;
+use crate::config::{DEFAULT_BAG_LOCATION, INVENTORY_GRID_DIMENSIONS};
+use crate::game_state::GameState;
 use crate::inventory::controller::InventoryControllerPlugin;
-use crate::inventory::gizmo::Gizmo;
-
+use crate::inventory::controller::ItemDirection;
 use crate::inventory::data_manager::InventoryDataPlugin;
-use crate::voxel_renderer::VoxelRendererPlugin;
+use crate::inventory::gizmo::Gizmo;
+use crate::inventory::grid::GridDisplayPlugin;
+use crate::inventory::validation::InventoryValidationPlugin;
+use crate::math::deg_to_rad;
 
 mod controller;
 mod data_manager;
 mod gizmo;
+mod grid;
+mod validation;
 
 pub struct InventoryPlugin;
 
@@ -20,11 +26,15 @@ impl Plugin for InventoryPlugin {
     fn build(&self, app: &mut App) {
         app.add_systems(OnEnter(GameState::ManagingInventory), setup);
         app.add_systems(OnExit(GameState::ManagingInventory), save_and_clear_render);
+        app.add_systems(
+            Update,
+            update_packed_items.run_if(in_state(GameState::ManagingInventory)),
+        );
         app.add_plugins((
-            WireframePlugin,
-            VoxelRendererPlugin,
             InventoryControllerPlugin,
             InventoryDataPlugin,
+            GridDisplayPlugin,
+            InventoryValidationPlugin,
         ))
         .insert_resource(Inventory {
             content: Vec::new(),
@@ -34,7 +44,14 @@ impl Plugin for InventoryPlugin {
 }
 
 /// set up a simple 3D scene
-fn setup(mut commands: Commands, assets: Res<AssetServer>, mut inventory: ResMut<Inventory>) {
+fn setup(
+    mut commands: Commands,
+    assets: Res<AssetServer>,
+    mut inventory: ResMut<Inventory>,
+    game_assets: Res<GameAssets>,
+    mut meshes: ResMut<Assets<Mesh>>,
+    mut materials: ResMut<Assets<StandardMaterial>>,
+) {
     // let boomerang = InventoryItem::from((
     //     (3, 0, 0),
     //     vec![(0, 0, 0), (0, 0, 1), (0, 0, 2), (-1, 0, 0), (-2, 0, 0)],
@@ -94,17 +111,17 @@ fn setup(mut commands: Commands, assets: Res<AssetServer>, mut inventory: ResMut
         deg_to_rad(90.0),
     );
 
-    let mut forward_transform =
+    let mut backwards_transform =
         Transform::from_translation(DEFAULT_BAG_LOCATION + Vec3::from((0.0, 0.0, 0.0)));
-    forward_transform.rotation = Quat::from_euler(
+    backwards_transform.rotation = Quat::from_euler(
         EulerRot::XYZ,
         deg_to_rad(0.0),
         deg_to_rad(0.0),
         deg_to_rad(0.0),
     );
-    let mut backward_transform =
+    let mut forward_transform =
         Transform::from_translation(DEFAULT_BAG_LOCATION + Vec3::from((0.0, 0.0, 0.0)));
-    backward_transform.rotation = Quat::from_euler(
+    forward_transform.rotation = Quat::from_euler(
         EulerRot::XYZ,
         deg_to_rad(0.0),
         deg_to_rad(180.0),
@@ -114,61 +131,124 @@ fn setup(mut commands: Commands, assets: Res<AssetServer>, mut inventory: ResMut
     commands
         .spawn(Gizmo {
             relative: up_transform,
+            item_dir: ItemDirection::UP,
         })
-        .insert(SceneBundle {
-            scene: assets.load("arrow_straight.glb#Scene0"),
+        .insert(PbrBundle {
+            mesh: game_assets.arrow_straight().mesh_handle,
+            material: game_assets.arrow_straight().material_handle,
             ..default()
-        });
+        })
+        .insert(NotShadowReceiver);
     commands
         .spawn(Gizmo {
             relative: down_transform,
+            item_dir: ItemDirection::DOWN,
         })
-        .insert(SceneBundle {
-            scene: assets.load("arrow_straight.glb#Scene0"),
+        .insert(PbrBundle {
+            mesh: game_assets.arrow_straight().mesh_handle,
+            material: game_assets.arrow_straight().material_handle,
             ..default()
-        });
+        })
+        .insert(NotShadowReceiver);
     commands
         .spawn(Gizmo {
             relative: left_transform,
+            item_dir: ItemDirection::LEFT,
         })
-        .insert(SceneBundle {
-            scene: assets.load("arrow_straight.glb#Scene0"),
+        .insert(PbrBundle {
+            mesh: game_assets.arrow_straight().mesh_handle,
+            material: game_assets.arrow_straight().material_handle,
             ..default()
-        });
+        })
+        .insert(NotShadowReceiver);
     commands
         .spawn(Gizmo {
             relative: right_transform,
+            item_dir: ItemDirection::RIGHT,
         })
-        .insert(SceneBundle {
-            scene: assets.load("arrow_straight.glb#Scene0"),
+        .insert(PbrBundle {
+            mesh: game_assets.arrow_straight().mesh_handle,
+            material: game_assets.arrow_straight().material_handle,
             ..default()
-        });
+        })
+        .insert(NotShadowReceiver);
     commands
         .spawn(Gizmo {
             relative: forward_transform,
+            item_dir: ItemDirection::FORWARD,
         })
-        .insert(SceneBundle {
-            scene: assets.load("arrow_straight.glb#Scene0"),
+        .insert(PbrBundle {
+            mesh: game_assets.arrow_straight().mesh_handle,
+            material: game_assets.arrow_straight().material_handle,
             ..default()
-        });
+        })
+        .insert(NotShadowReceiver);
     commands
         .spawn(Gizmo {
-            relative: backward_transform,
+            relative: backwards_transform,
+            item_dir: ItemDirection::BACKWARDS,
         })
-        .insert(SceneBundle {
-            scene: assets.load("arrow_straight.glb#Scene0"),
+        .insert(PbrBundle {
+            mesh: game_assets.arrow_straight().mesh_handle,
+            material: game_assets.arrow_straight().material_handle,
             ..default()
-        });
+        })
+        .insert(NotShadowReceiver);
 
     // Render current inventory data
     for item in &inventory.content {
-        commands.spawn(VoxelBullcrap { data: item.clone() });
+        commands
+            .spawn(PackedInventoryItem { data: item.clone() })
+            .insert(PbrBundle {
+                mesh: meshes.add(item.generate_mesh()),
+                material: materials.add(item.color.clone().into()),
+                transform: Transform::from_translation(
+                    DEFAULT_BAG_LOCATION + item.location.as_vec3()
+                        - vec3(
+                            (INVENTORY_GRID_DIMENSIONS[0] / 2) as f32,
+                            (INVENTORY_GRID_DIMENSIONS[1] / 2) as f32,
+                            (INVENTORY_GRID_DIMENSIONS[2] / 2) as f32,
+                        ),
+                ),
+                ..default()
+            });
+    }
+}
+
+// updates visual positions of items in packed inventory UI
+fn update_packed_items(
+    mut commands: Commands,
+    mut query: Query<(
+        &mut Transform,
+        &mut Handle<Mesh>,
+        &mut PackedInventoryItem,
+        Entity,
+    )>,
+    mut meshes: ResMut<Assets<Mesh>>,
+) {
+    for mut item in query.iter_mut() {
+        item.0.translation = DEFAULT_BAG_LOCATION + item.2.data.location.as_vec3()
+            - vec3(
+                (INVENTORY_GRID_DIMENSIONS[0] / 2) as f32,
+                (INVENTORY_GRID_DIMENSIONS[1] / 2) as f32,
+                (INVENTORY_GRID_DIMENSIONS[2] / 2) as f32,
+            );
+
+        if !item.2.data.changed {
+            continue;
+        }
+
+        commands.entity(item.3).remove::<Handle<Mesh>>();
+        commands
+            .entity(item.3)
+            .insert(meshes.add(item.2.data.generate_mesh()));
+        item.2.data.changed = false;
     }
 }
 
 fn save_and_clear_render(
     mut commands: Commands,
-    rendered_inventory: Query<(Entity, &VoxelBullcrap)>,
+    rendered_inventory: Query<(Entity, &PackedInventoryItem)>,
     mut inventory: ResMut<Inventory>,
 ) {
     inventory.content.clear();
@@ -182,7 +262,7 @@ fn save_and_clear_render(
 }
 
 #[derive(Component, Clone, Debug)]
-pub struct VoxelBullcrap {
+pub struct PackedInventoryItem {
     pub data: InventoryItem,
 }
 #[derive(Clone, Debug, PartialEq)]
@@ -197,6 +277,7 @@ pub struct InventoryItem {
     pub location: IVec3, // grid location
     pub original_points: Vec<IVec3>,
     pub local_points: Vec<IVec3>, // relative coordinate, center is the first point
+    pub changed: bool,
     pub color: Color,
 
     pub hp_gain: i32,            // how much HP this item gives you for having it
@@ -250,6 +331,7 @@ impl InventoryItem {
             p.y = new_p.y as i32;
             p.z = new_p.z as i32;
         }
+        self.changed = true;
     }
 
     #[allow(dead_code)]
@@ -273,6 +355,7 @@ impl From<((i32, i32, i32), Vec<(i32, i32, i32)>, Color, ItemType)> for Inventor
             weapon_attack_speed: 1.0,
             item_type: value.3,
             projectile_speed: 1.0,
+            changed: false,
         }
     }
 }
