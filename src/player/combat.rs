@@ -118,6 +118,8 @@ fn process_hit(
     buttons: Res<Input<MouseButton>>,
     touches: Res<Touches>,
     time: Res<Time>,
+    gamepads: Res<Gamepads>,
+    gamepad_buttons: Res<Input<GamepadButton>>,
 ) {
     let mut player = player.single_mut();
 
@@ -144,9 +146,31 @@ fn process_hit(
         1.9
     };
 
+    let mut gamepad_hit = false;
+
+    for gamepad in gamepads.iter() {
+        if gamepad_buttons.pressed(GamepadButton {
+            gamepad,
+            button_type: GamepadButtonType::South,
+        }) || gamepad_buttons.pressed(GamepadButton {
+            gamepad,
+            button_type: GamepadButtonType::RightTrigger,
+        }) || gamepad_buttons.pressed(GamepadButton {
+            gamepad,
+            button_type: GamepadButtonType::RightTrigger2,
+        }) || gamepad_buttons.pressed(GamepadButton {
+            gamepad,
+            button_type: GamepadButtonType::RightThumb,
+        }) {
+            gamepad_hit = true;
+            break;
+        }
+    }
+
     if buttons.just_pressed(MouseButton::Left)
         || (buttons.pressed(MouseButton::Left) && current_weapon.weapon_is_auto)
         || touches.first_pressed_position() != None
+        || gamepad_hit
     {
         commands.spawn(AudioBundle {
             source: asset_server.load("swing.ogg"),

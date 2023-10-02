@@ -184,11 +184,13 @@ impl PlayerControllerState {
 }
 
 fn process_inputs(
+    gamepads: Res<Gamepads>,
     mut keyboard_input_events: EventReader<KeyboardInput>,
     mut mouse_input_events: EventReader<MouseButtonInput>,
     touches: Res<Touches>,
     mouse: Res<Input<MouseButton>>,
     mut state: Query<&mut PlayerControllerState>,
+    buttons: Res<Input<GamepadButton>>,
 ) {
     let mut state = state.single_mut();
     for event in keyboard_input_events.iter() {
@@ -211,6 +213,24 @@ fn process_inputs(
 
     state.is_shoot_pressed =
         mouse.pressed(MouseButton::Left) || touches.first_pressed_position() != None;
+
+    for gamepad in gamepads.iter() {
+        if buttons.pressed(GamepadButton {
+            gamepad,
+            button_type: GamepadButtonType::South,
+        }) || buttons.pressed(GamepadButton {
+            gamepad,
+            button_type: GamepadButtonType::RightTrigger,
+        }) || buttons.pressed(GamepadButton {
+            gamepad,
+            button_type: GamepadButtonType::RightTrigger2,
+        }) || buttons.pressed(GamepadButton {
+            gamepad,
+            button_type: GamepadButtonType::RightThumb,
+        }) {
+            state.is_shoot_pressed |= true;
+        }
+    }
 }
 
 fn player_movement(
@@ -268,9 +288,9 @@ fn player_movement(
             let left_stick_pos = Vec2::new(x, y);
 
             // Example: check if the stick is pushed up
-            if left_stick_pos.length() > 0.9 {
+            if left_stick_pos.length() > 0.2 {
                 current_frame_movement.x = left_stick_pos.x * 6.0;
-                current_frame_movement.y = left_stick_pos.y * 6.0;
+                current_frame_movement.z = -left_stick_pos.y * 6.0;
             }
         }
     }

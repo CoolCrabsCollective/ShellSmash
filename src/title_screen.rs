@@ -161,6 +161,8 @@ fn start_game_click_handler(
     mut text_query: Query<&mut Text>,
     mut next_state: ResMut<NextState<GameState>>,
     game_assets: Res<GameAssets>,
+    gamepads: Res<Gamepads>,
+    buttons: Res<Input<GamepadButton>>,
 ) {
     if !game_assets.are_all_assets_loaded() {
         return;
@@ -179,6 +181,15 @@ fn start_game_click_handler(
         }
 
         if *interaction == Interaction::Pressed {
+            next_state.set(GameState::FightingInArena);
+        }
+    }
+
+    for gamepad in gamepads.iter() {
+        if buttons.pressed(GamepadButton {
+            gamepad,
+            button_type: GamepadButtonType::Start,
+        }) {
             next_state.set(GameState::FightingInArena);
         }
     }

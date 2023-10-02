@@ -186,6 +186,8 @@ fn validation_button(
     >,
     mut text_query: Query<&mut Text>,
     mut next_state: ResMut<NextState<GameState>>,
+    buttons: Res<Input<GamepadButton>>,
+    gamepads: Res<Gamepads>,
 ) {
     for (interaction, mut color, mut border_color, children) in &mut interaction_query {
         match *interaction {
@@ -199,6 +201,15 @@ fn validation_button(
             Interaction::None => {
                 *color = NORMAL_BUTTON.into();
             }
+        }
+    }
+
+    for gamepad in gamepads.iter() {
+        if buttons.pressed(GamepadButton {
+            gamepad,
+            button_type: GamepadButtonType::Start,
+        }) {
+            next_state.set(GameState::FightingInArena);
         }
     }
 }
@@ -216,6 +227,8 @@ fn select_next_button(
     mut text_query: Query<&mut Text>,
     query_items: Query<Entity, With<PackedInventoryItem>>,
     mut selected: ResMut<SelectedItem>,
+    buttons: Res<Input<GamepadButton>>,
+    gamepads: Res<Gamepads>,
 ) {
     for (interaction, mut color, mut border_color, children) in &mut interaction_query {
         match *interaction {
@@ -232,6 +245,16 @@ fn select_next_button(
                 *color = NORMAL_BUTTON.into();
                 return;
             }
+        }
+    }
+
+    for gamepad in gamepads.iter() {
+        if buttons.pressed(GamepadButton {
+            gamepad,
+            button_type: GamepadButtonType::Start,
+        }) {
+            selection::select_next(query_items, selected);
+            return;
         }
     }
 }
