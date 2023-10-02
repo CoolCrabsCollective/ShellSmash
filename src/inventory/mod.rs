@@ -25,6 +25,7 @@ mod weapon_selector;
 
 use crate::inventory::selection::{SelectedItem, SelectionPlugin};
 use crate::inventory::ui::InventoryUIPlugin;
+use crate::inventory::ItemType::NON_WEAPON;
 pub use weapon_selector::WeaponSelectorPlugin;
 
 pub struct InventoryPlugin;
@@ -340,7 +341,9 @@ pub enum ItemType {
 #[derive(Copy, Clone, Debug, PartialEq, Eq, Hash)]
 pub enum ItemTypeId {
     Boomerang,
-    DavidGun,
+    AlexBoomerang,
+    HandGun,
+    SuperGun,
     WillSword,
     MidSword,
     AlexSword,
@@ -374,6 +377,16 @@ pub struct InventoryItem {
 #[derive(Resource)]
 pub struct Inventory {
     pub content: Vec<InventoryItem>,
+}
+
+impl Inventory {
+    pub fn first_weapon(&self) -> Option<&InventoryItem> {
+        return self
+            .content
+            .iter()
+            .filter(|i| i.item_type != NON_WEAPON)
+            .next();
+    }
 }
 
 #[derive(Debug)]

@@ -40,7 +40,7 @@ fn handle_gltf_load_event(
                 LoadState::Loaded => {
                     if let Some(scene) = assets.get(handle) {
                         for (name, node_handle) in &scene.named_nodes {
-                            if name.to_lowercase().contains("plane")
+                            if name.to_lowercase().contains("terrain")
                                 || name.to_lowercase().contains("wall")
                             {
                                 log::info!("Generating collider from level object: {name:?}");
