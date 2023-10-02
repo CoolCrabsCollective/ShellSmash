@@ -1,15 +1,13 @@
-use crate::collectable::Collectable;
-use crate::game_state::GameState;
-use crate::player::PLAYER_HEIGHT;
-use bevy::math::vec3;
-use bevy::{prelude::*, transform};
+use bevy::prelude::*;
 use bevy_rapier3d::prelude::Collider;
 
+use crate::collectable::Collectable;
+use crate::game_state::GameState;
 use crate::inventory::ItemType::MELEE_WEAPON;
-use crate::inventory::{Inventory, InventoryData, InventoryItem};
+use crate::inventory::{Inventory, InventoryItem};
 use crate::player::combat::PlayerCombatState;
 
-pub const VOXEL_SIZE_IN_WORLD: f32 = 0.1;
+pub const VOXEL_SIZE_IN_WORLD: f32 = 0.2;
 
 #[derive(Component)]
 pub struct AttachedToPlayer(bool);

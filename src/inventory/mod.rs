@@ -13,15 +13,18 @@ use crate::inventory::data_manager::InventoryDataPlugin;
 use crate::inventory::gizmo::Gizmo;
 use crate::inventory::grid::GridDisplayPlugin;
 use crate::inventory::validation::InventoryValidationPlugin;
-use crate::math::deg_to_rad;
 
 mod controller;
 mod data_manager;
 mod gizmo;
 mod grid;
+mod selection;
+mod ui;
 mod validation;
 mod weapon_selector;
 
+use crate::inventory::selection::{SelectedItem, SelectionPlugin};
+use crate::inventory::ui::InventoryUIPlugin;
 pub use weapon_selector::WeaponSelectorPlugin;
 
 pub struct InventoryPlugin;
@@ -39,6 +42,8 @@ impl Plugin for InventoryPlugin {
             InventoryDataPlugin,
             GridDisplayPlugin,
             InventoryValidationPlugin,
+            InventoryUIPlugin,
+            SelectionPlugin,
         ))
         .insert_resource(Inventory {
             content: Vec::new(),
@@ -48,54 +53,63 @@ impl Plugin for InventoryPlugin {
 }
 
 /// set up a simple 3D scene
-fn setup(
+pub fn setup(
     mut commands: Commands,
     assets: Res<AssetServer>,
     mut inventory: ResMut<Inventory>,
     game_assets: Res<GameAssets>,
     mut meshes: ResMut<Assets<Mesh>>,
     mut materials: ResMut<Assets<StandardMaterial>>,
+    mut selection: ResMut<SelectedItem>,
 ) {
     let mut up_transform =
         Transform::from_translation(DEFAULT_BAG_LOCATION + Vec3::from((0.0, 0.0, 0.0)));
-    up_transform.rotation =
-        Quat::from_euler(EulerRot::XYZ, deg_to_rad(-90.0), deg_to_rad(0.0), 0.0);
+    up_transform.rotation = Quat::from_euler(
+        EulerRot::XYZ,
+        (-90.0 as f32).to_radians(),
+        (0.0 as f32).to_radians(),
+        0.0,
+    );
     let mut down_transform =
         Transform::from_translation(DEFAULT_BAG_LOCATION + Vec3::from((0.0, 0.0, 0.0)));
-    down_transform.rotation =
-        Quat::from_euler(EulerRot::XYZ, deg_to_rad(90.0), deg_to_rad(0.0), 0.0);
+    down_transform.rotation = Quat::from_euler(
+        EulerRot::XYZ,
+        (90.0 as f32).to_radians(),
+        (0.0 as f32).to_radians(),
+        0.0,
+    );
     let mut left_transform =
         Transform::from_translation(DEFAULT_BAG_LOCATION + Vec3::from((0.0, 0.0, 0.0)));
     left_transform.rotation = Quat::from_euler(
         EulerRot::XYZ,
-        deg_to_rad(-90.0),
-        deg_to_rad(-90.0),
-        deg_to_rad(00.0),
+        (0.0 as f32).to_radians(),
+        (-90.0 as f32).to_radians(),
+        (90.0 as f32).to_radians(),
     );
     let mut right_transform =
         Transform::from_translation(DEFAULT_BAG_LOCATION + Vec3::from((0.0, 0.0, 0.0)));
     right_transform.rotation = Quat::from_euler(
         EulerRot::XYZ,
-        deg_to_rad(0.0),
-        deg_to_rad(90.0),
-        deg_to_rad(90.0),
+        (0.0 as f32).to_radians(),
+        (90.0 as f32).to_radians(),
+        (90.0 as f32).to_radians(),
     );
 
     let mut backwards_transform =
         Transform::from_translation(DEFAULT_BAG_LOCATION + Vec3::from((0.0, 0.0, 0.0)));
     backwards_transform.rotation = Quat::from_euler(
         EulerRot::XYZ,
-        deg_to_rad(0.0),
-        deg_to_rad(0.0),
-        deg_to_rad(0.0),
+        (0.0 as f32).to_radians(),
+        (0.0 as f32).to_radians(),
+        (0.0 as f32).to_radians(),
     );
     let mut forward_transform =
         Transform::from_translation(DEFAULT_BAG_LOCATION + Vec3::from((0.0, 0.0, 0.0)));
     forward_transform.rotation = Quat::from_euler(
         EulerRot::XYZ,
-        deg_to_rad(0.0),
-        deg_to_rad(180.0),
-        deg_to_rad(0.0),
+        (0.0 as f32).to_radians(),
+        (180.0 as f32).to_radians(),
+        (0.0 as f32).to_radians(),
     );
 
     commands
@@ -204,7 +218,7 @@ fn setup(
             ..default()
         })
         .insert(NotShadowReceiver);
-    left_transform.rotate_x(deg_to_rad(180.0));
+    left_transform.rotate_x(180.0f32.to_radians());
     left_transform.translation = Vec3::from((0.0, 0.0, -0.2));
     commands
         .spawn(Gizmo {
@@ -218,8 +232,9 @@ fn setup(
         })
         .insert(NotShadowReceiver);
 
-    up_transform.translation = Vec3::from((0.0, 0.0, 0.0));
-    up_transform.rotate_x(deg_to_rad(180.0));
+    up_transform.translation = Vec3::from((0.0, 0.0, 0.1));
+    up_transform.rotate_z(90.0f32.to_radians());
+    up_transform.rotate_y(90.0f32.to_radians());
     commands
         .spawn(Gizmo {
             relative: up_transform,
@@ -231,24 +246,46 @@ fn setup(
             ..default()
         })
         .insert(NotShadowReceiver);
+    down_transform.translation = Vec3::from((0.0, 0.0, -0.1));
+    down_transform.rotate_z(270.0f32.to_radians());
+    down_transform.rotate_y(90.0f32.to_radians());
+    commands
+        .spawn(Gizmo {
+            relative: down_transform,
+            item_dir: ItemDirection::PITCH_BACKWARDS,
+        })
+        .insert(PbrBundle {
+            mesh: game_assets.arrow_rotated().mesh_handle,
+            material: game_assets.arrow_rotated().material_handle,
+            ..default()
+        })
+        .insert(NotShadowReceiver);
     // Render current inventory data
+
+    let mut id = None;
+
     for item in &inventory.content {
-        commands
-            .spawn(PackedInventoryItem { data: item.clone() })
-            .insert(PbrBundle {
-                mesh: meshes.add(item.generate_mesh()),
-                material: materials.add(item.color.clone().into()),
-                transform: Transform::from_translation(
-                    DEFAULT_BAG_LOCATION + item.location.as_vec3()
-                        - vec3(
-                            (INVENTORY_GRID_DIMENSIONS[0] / 2) as f32,
-                            (INVENTORY_GRID_DIMENSIONS[1] / 2) as f32,
-                            (INVENTORY_GRID_DIMENSIONS[2] / 2) as f32,
-                        ),
-                ),
-                ..default()
-            });
+        id = Some(
+            commands
+                .spawn(PackedInventoryItem { data: item.clone() })
+                .insert(PbrBundle {
+                    mesh: meshes.add(item.generate_mesh()),
+                    material: materials.add(item.color.clone().into()),
+                    transform: Transform::from_translation(
+                        DEFAULT_BAG_LOCATION + item.location.as_vec3()
+                            - vec3(
+                                (INVENTORY_GRID_DIMENSIONS[0] / 2) as f32,
+                                (INVENTORY_GRID_DIMENSIONS[1] / 2) as f32,
+                                (INVENTORY_GRID_DIMENSIONS[2] / 2) as f32,
+                            ),
+                    ),
+                    ..default()
+                })
+                .id(),
+        );
     }
+
+    selection.selected_entity = id;
 }
 
 // updates visual positions of items in packed inventory UI
@@ -299,6 +336,7 @@ pub enum ItemTypeId {
     Boomerang,
     DavidGun,
     WillSword,
+    MidSword,
     AlexSword,
     Heart,
 }
