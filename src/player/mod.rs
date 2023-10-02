@@ -19,10 +19,11 @@ use crate::enemy::{Enemy, ENEMY_COLLIDER_RADIUS};
 use crate::game::HolyCam;
 use crate::game_camera_controller::GameCameraControllerPlugin;
 use crate::game_state::GameState;
-use crate::inventory::ItemType;
+use crate::inventory::{Inventory, ItemType};
 use crate::player::combat::PlayerCombatState;
 use crate::player::combat::{PlayerCombatPlugin, PLAYER_INVICIBILITY_COOLDOWN};
 use crate::projectile::{Projectile, ProjectileBundle};
+use crate::wave_manager::{Wave, WaveState};
 use crate::world_item::WeaponHolder;
 
 use self::combat::BASE_ATTACK_COOLDOWN;
@@ -430,12 +431,19 @@ fn tick_death_timer(
     mut next_game_state: ResMut<NextState<GameState>>,
     mut commands: Commands,
     enemy_query: Query<Entity, With<Enemy>>,
+    mut wave: ResMut<Wave>,
+    mut next_wave_state: ResMut<NextState<WaveState>>,
+    mut inventory: ResMut<Inventory>,
 ) {
     if death_timer.0.tick(time.delta()).just_finished() {
         for enemy in &enemy_query {
             commands.entity(enemy).despawn();
         }
         death_timer.0.reset();
-        next_game_state.set(GameState::ManagingInventory);
+        next_game_state.set(GameState::TitleScreen);
+        wave.count = 0;
+        wave.luck = 0;
+        next_wave_state.set(WaveState::WAVE_END);
+        inventory.content = Vec::new();
     }
 }
