@@ -108,7 +108,7 @@ fn setup(
     mut materials: ResMut<Assets<StandardMaterial>>,
 ) {
     // create_boomerang(commands, meshes, materials);
-    create_sword(
+    create_better_sword(
         &mut commands,
         &mut meshes,
         &mut materials,
@@ -196,6 +196,32 @@ fn create_sword(
         ItemTypeId::WillSword,
     ));
 
+    sword.create_world_entity(location, false, true, commands, meshes, materials);
+}
+
+fn create_better_sword(
+    commands: &mut Commands,
+    meshes: &mut ResMut<Assets<Mesh>>,
+    materials: &mut ResMut<Assets<StandardMaterial>>,
+    location: Vec3,
+) {
+    let sword = InventoryItem::from((
+        (0, 0, 0),
+        vec![
+            (0, 0, 0),
+            (0, 0, 1),
+            (0, 0, 2),
+            (0, 0, 3),
+            (0, 0, 4),
+            (0, 0, 5),
+            (1, 0, 0),
+            (-1, 0, 0),
+            (0, 0, -1),
+        ],
+        Color::rgba(0.5, 0.5, 0.5, 1.0),
+        MELEE_WEAPON,
+        ItemTypeId::MidSword,
+    ));
     sword.create_world_entity(location, false, true, commands, meshes, materials);
 }
 
