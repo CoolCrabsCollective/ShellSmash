@@ -35,10 +35,11 @@ impl Plugin for InventoryUIPlugin {
 }
 
 fn setup(mut commands: Commands) {
-    commands.spawn(Camera2dBundle {
-        camera: Camera { ..default() },
-        ..default()
-    });
+    // spawned in title screen now
+    // commands.spawn(Camera2dBundle {
+    //     camera: Camera { ..default() },
+    //     ..default()
+    // });
 }
 
 fn build_ui(mut commands: Commands, asset_server: Res<AssetServer>, inventory: Res<Inventory>) {
