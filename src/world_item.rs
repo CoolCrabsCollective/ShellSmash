@@ -2,7 +2,7 @@ use crate::collectable::Collectable;
 use crate::game_state::GameState;
 use crate::player::PLAYER_HEIGHT;
 use bevy::math::vec3;
-use bevy::prelude::*;
+use bevy::{prelude::*, transform};
 
 use crate::inventory::ItemType::MELEE_WEAPON;
 use crate::inventory::{Inventory, InventoryData, InventoryItem};
@@ -42,6 +42,30 @@ impl InventoryItem {
             .insert(TransformBundle::from(
                 Transform::from_translation(location).with_scale(Vec3::splat(VOXEL_SIZE_IN_WORLD)),
             ))
+            .id();
+    }
+
+    pub fn create_world_entity_but_given_the_freedom_to_pass_your_own_scale_like_it_always_should_have_been__god_bless_america(
+        &self,
+        transform: Transform,
+        on_player: bool,
+        collectable: bool,
+        commands: &mut Commands,
+        meshes: &mut ResMut<Assets<Mesh>>,
+        materials: &mut ResMut<Assets<StandardMaterial>>,
+    ) -> Entity {
+        return commands
+            .spawn((
+                AttachedToPlayer(on_player),
+                Collectable(collectable),
+                self.clone(),
+            ))
+            .insert(PbrBundle {
+                mesh: meshes.add(self.generate_mesh()),
+                material: materials.add(self.color.clone().into()),
+                transform,
+                ..default()
+            })
             .id();
     }
 }

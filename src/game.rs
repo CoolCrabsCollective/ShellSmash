@@ -1,6 +1,7 @@
 use std::f32::consts::PI;
 
 use crate::collectable::CollectablePlugin;
+use crate::inventory::WeaponSelectorPlugin;
 use crate::projectile::ProjectilePlugin;
 use bevy::math::vec3;
 use bevy::pbr::{CascadeShadowConfigBuilder, DirectionalLightShadowMap};
@@ -37,6 +38,7 @@ impl Plugin for GamePlugin {
             ItemAttachmentPlugin,
             CollectablePlugin,
             ProjectilePlugin,
+            WeaponSelectorPlugin,
         ))
         .add_systems(Update, debug_render_toggle)
         .insert_resource(AmbientLight {

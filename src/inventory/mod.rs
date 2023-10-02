@@ -2,6 +2,7 @@ use bevy::math::vec3;
 use bevy::pbr::NotShadowReceiver;
 use bevy::prelude::*;
 use bevy::transform::components::Transform;
+use bevy::utils::HashSet;
 
 use crate::asset_loader::GameAssets;
 use crate::config::{DEFAULT_BAG_LOCATION, INVENTORY_GRID_DIMENSIONS};
@@ -19,6 +20,9 @@ mod data_manager;
 mod gizmo;
 mod grid;
 mod validation;
+mod weapon_selector;
+
+pub use weapon_selector::WeaponSelectorPlugin;
 
 pub struct InventoryPlugin;
 
@@ -30,6 +34,7 @@ impl Plugin for InventoryPlugin {
             Update,
             update_packed_items.run_if(in_state(GameState::ManagingInventory)),
         );
+        app.add_systems(Update, make_sure_no_weapon_duplicates);
         app.add_plugins((
             InventoryControllerPlugin,
             InventoryDataPlugin,
@@ -265,6 +270,7 @@ fn save_and_clear_render(
 pub struct PackedInventoryItem {
     pub data: InventoryItem,
 }
+
 #[derive(Clone, Debug, PartialEq)]
 pub enum ItemType {
     MELEE_WEAPON,
@@ -272,7 +278,16 @@ pub enum ItemType {
     NON_WEAPON,
 }
 
-#[derive(Clone, Debug, Component)]
+#[derive(Copy, Clone, Debug, PartialEq, Eq, Hash)]
+pub enum ItemTypeId {
+    Boomerang,
+    DavidGun,
+    WillSword,
+    AlexSword,
+    Heart,
+}
+
+#[derive(Clone, Debug, Component, PartialEq)]
 pub struct InventoryItem {
     pub location: IVec3, // grid location
     pub original_points: Vec<IVec3>,
@@ -291,6 +306,7 @@ pub struct InventoryItem {
     pub projectile_speed: f32, // how fast the ranged weapon's 'bullets' travel
 
     pub item_type: ItemType,
+    pub item_type_id: ItemTypeId,
 }
 
 // inventory of what the user owns currently
@@ -340,8 +356,24 @@ impl InventoryItem {
     }
 }
 
-impl From<((i32, i32, i32), Vec<(i32, i32, i32)>, Color, ItemType)> for InventoryItem {
-    fn from(value: ((i32, i32, i32), Vec<(i32, i32, i32)>, Color, ItemType)) -> Self {
+impl
+    From<(
+        (i32, i32, i32),
+        Vec<(i32, i32, i32)>,
+        Color,
+        ItemType,
+        ItemTypeId,
+    )> for InventoryItem
+{
+    fn from(
+        value: (
+            (i32, i32, i32),
+            Vec<(i32, i32, i32)>,
+            Color,
+            ItemType,
+            ItemTypeId,
+        ),
+    ) -> Self {
         InventoryItem {
             location: value.0.into(),
             local_points: value.1.iter().map(|tup| (*tup).into()).collect(),
@@ -356,6 +388,7 @@ impl From<((i32, i32, i32), Vec<(i32, i32, i32)>, Color, ItemType)> for Inventor
             item_type: value.3,
             projectile_speed: 1.0,
             changed: false,
+            item_type_id: value.4,
         }
     }
 }
@@ -394,5 +427,22 @@ impl InventoryData {
             item_grid.push(rows);
         }
         item_grid
+    }
+}
+
+fn make_sure_no_weapon_duplicates(inventory: Res<Inventory>) {
+    let mut type_id_set: HashSet<ItemTypeId> = HashSet::new();
+
+    for item in &inventory.content {
+        if item.item_type == ItemType::NON_WEAPON {
+            continue;
+        }
+
+        assert!(
+            !type_id_set.contains(&item.item_type_id),
+            "Not allowed two non-weapons with the same item type id in the inventory, fuck you"
+        );
+
+        type_id_set.insert(item.item_type_id);
     }
 }
