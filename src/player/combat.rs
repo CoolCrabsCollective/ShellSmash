@@ -70,6 +70,10 @@ impl PlayerCombatState {
     }
 
     pub fn compute_from_inventory(&mut self, inv: &Res<Inventory>) {
+        self.max_hp = 3;
+        self.attack_speed = 1.0;
+        self.damage = 1;
+
         for item in &inv.content {
             self.max_hp += item.hp_gain;
             self.attack_speed *= item.attack_speed_gain;

@@ -464,7 +464,7 @@ impl
             color: value.2,
             hp_gain: 0,
             attack_damage_gain: 0,
-            attack_speed_gain: 0.0,
+            attack_speed_gain: 1.0,
             weapon_damage: 1,
             weapon_is_auto: false,
             weapon_attack_speed: 1.0,
