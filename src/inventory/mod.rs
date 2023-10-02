@@ -56,40 +56,6 @@ fn setup(
     mut meshes: ResMut<Assets<Mesh>>,
     mut materials: ResMut<Assets<StandardMaterial>>,
 ) {
-    // let boomerang = InventoryItem::from((
-    //     (3, 0, 0),
-    //     vec![(0, 0, 0), (0, 0, 1), (0, 0, 2), (-1, 0, 0), (-2, 0, 0)],
-    //     Color::rgba(1.0, 1.0, 1.0, 1.0),
-    //     RANGED_WEAPON,
-    // ));
-    // let sword = InventoryItem::from((
-    //     (5, 0, 2),
-    //     vec![
-    //         (0, 0, 0),
-    //         (0, 0, 1),
-    //         (0, 0, 2),
-    //         (1, 0, 0),
-    //         (-1, 0, 0),
-    //         (0, 0, -1),
-    //     ],
-    //     Color::rgba(0.0, 1.0, 0.0, 1.0),
-    //     MELEE_WEAPON,
-    // ));
-    // let heart = InventoryItem::from((
-    //     (4, 1, 1),
-    //     vec![
-    //         (0, 0, 0),
-    //         (0, 0, -1),
-    //         (1, 0, 0),
-    //         (-1, 0, 0),
-    //         (-1, 0, 1),
-    //         (1, 0, 1),
-    //     ],
-    //     Color::rgba(1.0, 0.0, 0.0, 1.0),
-    //     NON_WEAPON,
-    // ));
-
-    // commands.spawn(VoxelBullcrap { data: sword });
     let mut up_transform =
         Transform::from_translation(DEFAULT_BAG_LOCATION + Vec3::from((0.0, 0.0, 0.0)));
     up_transform.rotation =
@@ -102,9 +68,9 @@ fn setup(
         Transform::from_translation(DEFAULT_BAG_LOCATION + Vec3::from((0.0, 0.0, 0.0)));
     left_transform.rotation = Quat::from_euler(
         EulerRot::XYZ,
-        deg_to_rad(0.0),
         deg_to_rad(-90.0),
-        deg_to_rad(90.0),
+        deg_to_rad(-90.0),
+        deg_to_rad(00.0),
     );
     let mut right_transform =
         Transform::from_translation(DEFAULT_BAG_LOCATION + Vec3::from((0.0, 0.0, 0.0)));
@@ -199,6 +165,72 @@ fn setup(
         })
         .insert(NotShadowReceiver);
 
+    // This is shit but x is relative forward
+    // y is relative right, z is relative up to camera
+
+    backwards_transform.translation = Vec3::from((0.0, 0.1, 0.0));
+    commands
+        .spawn(Gizmo {
+            relative: backwards_transform,
+            item_dir: ItemDirection::YAW_RIGHT,
+        })
+        .insert(PbrBundle {
+            mesh: game_assets.arrow_rotated().mesh_handle,
+            material: game_assets.arrow_rotated().material_handle,
+            ..default()
+        })
+        .insert(NotShadowReceiver);
+    forward_transform.translation = Vec3::from((0.0, -0.1, 0.0));
+    commands
+        .spawn(Gizmo {
+            relative: forward_transform,
+            item_dir: ItemDirection::YAW_LEFT,
+        })
+        .insert(PbrBundle {
+            mesh: game_assets.arrow_rotated().mesh_handle,
+            material: game_assets.arrow_rotated().material_handle,
+            ..default()
+        })
+        .insert(NotShadowReceiver);
+    right_transform.translation = Vec3::from((0.0, 0.0, 0.2));
+    commands
+        .spawn(Gizmo {
+            relative: right_transform,
+            item_dir: ItemDirection::ROLL_LEFT,
+        })
+        .insert(PbrBundle {
+            mesh: game_assets.arrow_rotated().mesh_handle,
+            material: game_assets.arrow_rotated().material_handle,
+            ..default()
+        })
+        .insert(NotShadowReceiver);
+    left_transform.rotate_x(deg_to_rad(180.0));
+    left_transform.translation = Vec3::from((0.0, 0.0, -0.2));
+    commands
+        .spawn(Gizmo {
+            relative: left_transform,
+            item_dir: ItemDirection::ROLL_RIGHT,
+        })
+        .insert(PbrBundle {
+            mesh: game_assets.arrow_rotated().mesh_handle,
+            material: game_assets.arrow_rotated().material_handle,
+            ..default()
+        })
+        .insert(NotShadowReceiver);
+
+    up_transform.translation = Vec3::from((0.0, 0.0, 0.0));
+    up_transform.rotate_x(deg_to_rad(180.0));
+    commands
+        .spawn(Gizmo {
+            relative: up_transform,
+            item_dir: ItemDirection::PITCH_FORWARD,
+        })
+        .insert(PbrBundle {
+            mesh: game_assets.arrow_rotated().mesh_handle,
+            material: game_assets.arrow_rotated().material_handle,
+            ..default()
+        })
+        .insert(NotShadowReceiver);
     // Render current inventory data
     for item in &inventory.content {
         commands

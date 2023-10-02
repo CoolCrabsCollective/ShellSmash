@@ -174,6 +174,12 @@ pub enum ItemDirection {
     DOWN,
     FORWARD,
     BACKWARDS,
+    YAW_LEFT,
+    YAW_RIGHT,
+    PITCH_FORWARD,
+    PITCH_BACKWARDS,
+    ROLL_LEFT,
+    ROLL_RIGHT,
 }
 
 pub fn move_item(item: &mut PackedInventoryItem, item_dir: ItemDirection, view_index: usize) {
