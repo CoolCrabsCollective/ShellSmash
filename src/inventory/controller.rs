@@ -2,6 +2,7 @@ use std::time::Duration;
 
 use bevy::prelude::Projection::Perspective;
 use bevy::prelude::*;
+use bevy::render::camera;
 
 use crate::config::{DEFAULT_BAG_LOCATION, INVENTORY_GRID_DIMENSIONS};
 use crate::game::HolyCam;
@@ -20,12 +21,8 @@ impl Plugin for InventoryControllerPlugin {
         app.add_systems(
             Update,
             update_gizmo_position
-                .after(update_camera_position)
+                .after(update_cube_rotation)
                 .run_if(in_state(GameState::ManagingInventory)),
-        );
-        app.add_systems(
-            Update,
-            update_camera_position.run_if(in_state(GameState::ManagingInventory)),
         );
         app.add_systems(
             Update,
@@ -94,8 +91,21 @@ fn update_cube_rotation(
     time: Res<Time>,
     mut rotation_anime: ResMut<CubeRotationAnime>,
     mut state: ResMut<InventoryControllerState>,
-    mut query: Query<&mut Transform, With<VoxelCoordinateFrame>>,
+    mut param_set: ParamSet<(
+        Query<&Transform, With<VoxelCoordinateFrame>>,
+        Query<&mut Transform, With<Camera>>,
+    )>,
 ) {
+    let camera_trans = {
+        let camera_query = param_set.p1();
+        camera_query.single().translation
+    };
+    let vox_trans = {
+        let vox_query = param_set.p0();
+        vox_query.single().translation
+    };
+    let mut camera_xz: Vec2 = 8.0 * Vec2::from_angle(deg_to_rad(rotation_anime.end_rotation));
+    let mut camera_y = camera_trans.y;
     if rotation_anime.enabled {
         rotation_anime.anime_time.tick(time.delta());
         rotation_anime.enabled = !rotation_anime.anime_time.finished();
@@ -103,11 +113,8 @@ fn update_cube_rotation(
         let parameterized_progress = 1.0 / (1.0 + f32::exp(-12.0 * (progress - 0.5)));
         let rotation_angle = rotation_anime.end_rotation - rotation_anime.start_rotation;
 
-        let mut vox = query.single_mut();
-        let quat = Quat::from_rotation_y(deg_to_rad(
-            rotation_anime.start_rotation + parameterized_progress * rotation_angle,
-        ));
-        vox.rotation = quat;
+        let angle = rotation_anime.start_rotation + parameterized_progress * rotation_angle;
+        camera_xz = 8.0 * Vec2::from_angle(deg_to_rad(angle));
     } else {
         let mut start_anime: bool = false;
         let mut rotation_change = 0.0;
@@ -131,35 +138,24 @@ fn update_cube_rotation(
             rotation_anime.end_rotation = rotation_anime.start_rotation + rotation_change;
             rotation_anime.anime_time.reset();
         }
-    }
-}
 
-fn update_camera_position(
-    key_codes: Res<Input<KeyCode>>,
-    mut param_set: ParamSet<(
-        Query<&Transform, With<VoxelCoordinateFrame>>,
-        Query<&mut Transform, With<HolyCam>>,
-    )>,
-) {
-    let increment = 2.0;
-    let max_increment = 10.0;
-    let mut change = 0.0;
-    if key_codes.just_pressed(KeyCode::Up) {
-        change = change + increment;
-    } else if key_codes.just_pressed(KeyCode::Down) {
-        change = change - increment;
+        let increment = 2.0;
+        let max_increment = 10.0;
+        let mut change = 0.0;
+        if key_codes.just_pressed(KeyCode::Up) {
+            change = change + increment;
+        } else if key_codes.just_pressed(KeyCode::Down) {
+            change = change - increment;
+        }
+
+        camera_y = camera_trans.y + change;
+        camera_y = camera_y.max(-max_increment).min(max_increment);
     }
-    let vox_trans = {
-        let vox_trans_query = param_set.p0();
-        vox_trans_query.single().translation
-    };
-    let mut camera_translation_query = param_set.p1();
-    let mut camera_translation = camera_translation_query.single_mut();
-    let mut camera_y = camera_translation.translation.y + change;
-    camera_y = camera_y.max(-max_increment).min(max_increment);
-    camera_translation.translation = vox_trans + Vec3::from((0.0, camera_y, -8.0));
-    let look_at_my_balls = camera_translation.looking_at(vox_trans, Vec3::Y);
-    camera_translation.rotation = look_at_my_balls.rotation;
+    let mut camera_query = param_set.p1();
+    let mut camera_transform = camera_query.single_mut();
+    camera_transform.translation = vox_trans + Vec3::from((camera_xz.x, camera_y, camera_xz.y));
+    let look_at_my_balls = camera_transform.looking_at(vox_trans, Vec3::Y);
+    camera_transform.rotation = look_at_my_balls.rotation;
 }
 
 pub fn update_inventory_data(query: Query<&PackedInventoryItem>, mut inv: ResMut<InventoryData>) {
@@ -189,7 +185,7 @@ pub fn move_item(item: &mut PackedInventoryItem, item_dir: ItemDirection, view_i
     ];
 
     match item_dir {
-        ItemDirection::FORWARD => {
+        ItemDirection::LEFT => {
             item.data.translate(
                 trans[if 2 <= view_index {
                     (6 - view_index) % 4
@@ -198,14 +194,14 @@ pub fn move_item(item: &mut PackedInventoryItem, item_dir: ItemDirection, view_i
                 }],
             );
         }
-        ItemDirection::BACKWARDS => item.data.translate(trans[(4 - view_index) % 4]),
+        ItemDirection::RIGHT => item.data.translate(trans[(4 - view_index) % 4]),
         ItemDirection::UP => {
             item.data.translate(IVec3::from((0, 1, 0)));
         }
         ItemDirection::DOWN => {
             item.data.translate(IVec3::from((0, -1, 0)));
         }
-        ItemDirection::LEFT => {
+        ItemDirection::BACKWARDS => {
             item.data.translate(
                 trans[if 3 <= view_index {
                     (7 - view_index) % 4
@@ -214,7 +210,7 @@ pub fn move_item(item: &mut PackedInventoryItem, item_dir: ItemDirection, view_i
                 }],
             );
         }
-        ItemDirection::RIGHT => {
+        ItemDirection::FORWARD => {
             item.data.translate(
                 trans[if 1 <= view_index {
                     (5 - view_index) % 4
