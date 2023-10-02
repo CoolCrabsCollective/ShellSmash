@@ -273,6 +273,18 @@ fn move_inventory_items(
                 item.1.data.rotate_y(false);
             }
         }
+    } else if key_codes.just_pressed(KeyCode::R) {
+        for mut item in query_items.iter_mut() {
+            if Some(item.0) == selected.selected_entity {
+                item.1.data.rotate_z(true);
+            }
+        }
+    } else if key_codes.just_pressed(KeyCode::F) {
+        for mut item in query_items.iter_mut() {
+            if Some(item.0) == selected.selected_entity {
+                item.1.data.rotate_z(false);
+            }
+        }
     } else if key_codes.just_pressed(KeyCode::Z) {
         for mut item in query_items.iter_mut() {
             if Some(item.0) == selected.selected_entity {
