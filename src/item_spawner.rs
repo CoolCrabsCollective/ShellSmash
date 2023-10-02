@@ -61,7 +61,7 @@ fn create_alex_boomerang_copyrighted_you_need_permissions_to_use(
     gun.create_world_entity(location, false, true, commands, meshes, materials);
 }
 
-fn create_sword(
+pub fn create_sword(
     commands: &mut Commands,
     meshes: &mut ResMut<Assets<Mesh>>,
     materials: &mut ResMut<Assets<StandardMaterial>>,
@@ -160,7 +160,7 @@ fn create_supergun(
     gun.create_world_entity(location, false, true, commands, meshes, materials);
 }
 
-fn create_heart(
+pub fn create_heart(
     commands: &mut Commands,
     meshes: &mut ResMut<Assets<Mesh>>,
     materials: &mut ResMut<Assets<StandardMaterial>>,
