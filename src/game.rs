@@ -1,6 +1,7 @@
 use std::f32::consts::PI;
 
 use crate::collectable::CollectablePlugin;
+use crate::post_processing::PostProcessSettings;
 use crate::projectile::ProjectilePlugin;
 use bevy::math::vec3;
 use bevy::pbr::{CascadeShadowConfigBuilder, DirectionalLightShadowMap};
@@ -99,6 +100,10 @@ fn setup(
                 fov: 10.0f32.to_radians(),
                 ..default()
             }),
+            ..default()
+        })
+        .insert(PostProcessSettings {
+            intensity: 0.02,
             ..default()
         })
         .insert(HolyCam);
