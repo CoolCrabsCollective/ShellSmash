@@ -1,7 +1,7 @@
 use crate::game_state::GameState;
+use crate::inventory::InventoryItem;
 use crate::player::PlayerControllerState;
 use bevy::prelude::*;
-use crate::inventory::{InventoryItem};
 
 pub struct CollectablePlugin;
 
@@ -29,7 +29,7 @@ fn detect_items(
     player_trans: Query<&Transform, With<PlayerControllerState>>,
     mut item_collected_event_writer: EventWriter<ItemCollectEvent>,
 ) {
-    let detect_range = 0.5;
+    let detect_range = 2.0;
     let current_location = player_trans.single().translation;
 
     for item in items.iter() {

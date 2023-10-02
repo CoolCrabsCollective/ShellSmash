@@ -1,12 +1,11 @@
+use crate::enemy::Enemy;
 use crate::game_state::GameState;
-use bevy::app::{App, Plugin};
-use bevy::prelude::{
-    dbg, in_state, Component, Input, IntoSystemConfigs, KeyCode, MouseButton, Query, Res, Update,
-};
+use bevy::prelude::*;
 use bevy::time::Time;
 use bevy_rapier3d::na::clamp;
 
 use crate::inventory::Inventory;
+use crate::world_item::WeaponHolder;
 
 pub const BASE_ATTACK_COOLDOWN: f32 = 0.5;
 
@@ -25,9 +24,9 @@ impl Plugin for PlayerCombatPlugin {
 
 #[derive(Component, Clone)]
 pub struct PlayerCombatState {
-    pub auto_attack_on: bool,
     pub damage: i32,
     pub attack_speed: f32,
+    pub current_weapon_attack_speed: f32,
     pub current_hp: i32,
     pub max_hp: i32,
     pub last_attack: f32,
@@ -36,9 +35,9 @@ pub struct PlayerCombatState {
 impl PlayerCombatState {
     pub fn new() -> Self {
         Self {
-            auto_attack_on: false,
             damage: 1,
             attack_speed: 1.0,
+            current_weapon_attack_speed: 1.0,
             current_hp: 5,
             max_hp: 5,
             last_attack: -10000.0,
@@ -54,7 +53,8 @@ impl PlayerCombatState {
     }
 
     pub fn get_weapon_angle(&self, time: &Res<Time>) -> f32 {
-        let anim_duration = BASE_ATTACK_COOLDOWN / self.attack_speed;
+        let anim_duration =
+            BASE_ATTACK_COOLDOWN / (self.attack_speed * self.current_weapon_attack_speed);
         let anim_progress = 1.0
             - clamp(
                 ((self.last_attack + anim_duration) - time.elapsed_seconds()) / anim_duration,
@@ -73,19 +73,44 @@ impl PlayerCombatState {
 }
 
 fn process_hit(
-    mut player: Query<&mut PlayerCombatState>,
+    mut commands: Commands,
+    mut player: Query<(&Transform, &mut PlayerCombatState, &WeaponHolder)>,
+    enemies: Query<(Entity, &Transform), With<Enemy>>,
     buttons: Res<Input<MouseButton>>,
     time: Res<Time>,
 ) {
     let mut player = player.single_mut();
 
-    if player.last_attack + BASE_ATTACK_COOLDOWN / player.attack_speed > time.elapsed_seconds() {
+    if player.2.current_weapon.is_none() {
+        return;
+    }
+
+    let current_weapon = player.2.current_weapon.clone().unwrap().1;
+
+    if player.1.last_attack
+        + BASE_ATTACK_COOLDOWN / (player.1.attack_speed * current_weapon.weapon_attack_speed)
+        > time.elapsed_seconds()
+    {
         return; // too recent to attack again
     }
 
+    let distance_to_kill = 1.9;
+
     if buttons.just_pressed(MouseButton::Left)
-        || (buttons.pressed(MouseButton::Left) && player.auto_attack_on)
+        || (buttons.pressed(MouseButton::Left) && current_weapon.weapon_is_auto)
     {
-        player.last_attack = time.elapsed_seconds();
+        for enemy in enemies.iter() {
+            if enemy
+                .1
+                .translation
+                .distance_squared(player.0.translation + player.0.forward() * 1.0)
+                < distance_to_kill * distance_to_kill
+            {
+                commands.entity(enemy.0).despawn();
+            }
+        }
+
+        player.1.last_attack = time.elapsed_seconds();
+        player.1.current_weapon_attack_speed = current_weapon.weapon_attack_speed;
     }
 }
