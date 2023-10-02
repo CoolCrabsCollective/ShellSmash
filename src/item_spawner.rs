@@ -204,12 +204,13 @@ fn create_heart(
     heart.create_world_entity(location, false, true, commands, meshes, materials);
 }
 pub fn spawn_random_item(
+    luck: i32,
     mut commands: &mut Commands,
     mut meshes: &mut ResMut<Assets<Mesh>>,
     mut materials: &mut ResMut<Assets<StandardMaterial>>,
 ) {
     let mut rng = rand::thread_rng();
-    let spawn_id = rng.gen_range(0..4);
+    let spawn_id = rng.gen_range(0..20);
 
     let position = Vec3::new(
         (random::<f32>() - 0.5) * ARENA_DIMENSIONS_METERS[0],
