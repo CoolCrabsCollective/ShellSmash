@@ -20,8 +20,8 @@ use crate::game::HolyCam;
 use crate::game_camera_controller::GameCameraControllerPlugin;
 use crate::game_state::GameState;
 use crate::inventory::ItemType;
-use crate::player::combat::PlayerCombatPlugin;
 use crate::player::combat::PlayerCombatState;
+use crate::player::combat::{PlayerCombatPlugin, PLAYER_INVICIBILITY_COOLDOWN};
 use crate::projectile::{Projectile, ProjectileBundle};
 use crate::world_item::WeaponHolder;
 
@@ -397,15 +397,30 @@ fn detect_player_hit(
 }
 
 fn handle_player_hit(
+    mut player_state: Query<&mut PlayerCombatState>,
     mut player_hit_event_reader: EventReader<PlayerHitEvent>,
     mut next_player_state: ResMut<NextState<PlayerState>>,
+    time: Res<Time>,
 ) {
-    let mut _player_hit = false;
+    let mut state = player_state.single_mut();
+
+    if state.last_hit + PLAYER_INVICIBILITY_COOLDOWN > time.elapsed_seconds() {
+        return;
+    }
+
     for player_hit_event in &mut player_hit_event_reader {
         log::info!("Player hit by enemy: {:?}", player_hit_event.0);
-        _player_hit = true;
-        next_player_state.set(PlayerState::Dying);
-        break;
+
+        state.current_hp -= 1;
+        state.last_hit = time.elapsed_seconds();
+        state.last_heal = time.elapsed_seconds();
+
+        if state.current_hp == 0 {
+            next_player_state.set(PlayerState::Dying);
+            break;
+        } else {
+            break;
+        }
     }
 }
 

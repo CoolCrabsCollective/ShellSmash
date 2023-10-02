@@ -17,6 +17,8 @@ pub const BASE_ATTACK_COOLDOWN: f32 = 0.5;
 // how long it takes to regen 1 heart
 pub const PLAYER_HEAL_COOLDOWN: f32 = 5.0;
 
+pub const PLAYER_INVICIBILITY_COOLDOWN: f32 = 2.0;
+
 pub struct PlayerCombatPlugin;
 
 impl Plugin for PlayerCombatPlugin {
@@ -43,6 +45,7 @@ pub struct PlayerCombatState {
     pub max_hp: i32,
     pub last_attack: f32,
     pub last_heal: f32,
+    pub last_hit: f32,
 }
 
 fn player_heal(mut player: Query<&mut PlayerCombatState>, time: Res<Time>) {
@@ -70,6 +73,7 @@ impl PlayerCombatState {
             max_hp: 3,
             last_attack: -10000.0,
             last_heal: -10000.0,
+            last_hit: -10000.0,
         }
     }
 
