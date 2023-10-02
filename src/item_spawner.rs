@@ -158,7 +158,7 @@ fn create_supergun(
     location: Vec3,
 ) {
     let mut gun = InventoryItem::from((
-        (0, 0, 0),
+        (0, 1, 0),
         vec![
             (0, 0, 0),
             (0, 0, 1),
