@@ -1,3 +1,4 @@
+use bevy::pbr::NotShadowReceiver;
 use bevy::prelude::*;
 use bevy::transform::components::Transform;
 
@@ -131,7 +132,8 @@ fn setup(
             mesh: game_assets.arrow_straight().mesh_handle,
             material: game_assets.arrow_straight().material_handle,
             ..default()
-        });
+        })
+        .insert(NotShadowReceiver);
     commands
         .spawn(Gizmo {
             relative: down_transform,
@@ -140,7 +142,8 @@ fn setup(
             mesh: game_assets.arrow_straight().mesh_handle,
             material: game_assets.arrow_straight().material_handle,
             ..default()
-        });
+        })
+        .insert(NotShadowReceiver);
     commands
         .spawn(Gizmo {
             relative: left_transform,
@@ -149,7 +152,8 @@ fn setup(
             mesh: game_assets.arrow_straight().mesh_handle,
             material: game_assets.arrow_straight().material_handle,
             ..default()
-        });
+        })
+        .insert(NotShadowReceiver);
     commands
         .spawn(Gizmo {
             relative: right_transform,
@@ -158,7 +162,8 @@ fn setup(
             mesh: game_assets.arrow_straight().mesh_handle,
             material: game_assets.arrow_straight().material_handle,
             ..default()
-        });
+        })
+        .insert(NotShadowReceiver);
     commands
         .spawn(Gizmo {
             relative: forward_transform,
@@ -167,7 +172,8 @@ fn setup(
             mesh: game_assets.arrow_straight().mesh_handle,
             material: game_assets.arrow_straight().material_handle,
             ..default()
-        });
+        })
+        .insert(NotShadowReceiver);
     commands
         .spawn(Gizmo {
             relative: backward_transform,
@@ -176,7 +182,8 @@ fn setup(
             mesh: game_assets.arrow_straight().mesh_handle,
             material: game_assets.arrow_straight().material_handle,
             ..default()
-        });
+        })
+        .insert(NotShadowReceiver);
 
     // Render current inventory data
     for item in &inventory.content {
