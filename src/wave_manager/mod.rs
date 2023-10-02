@@ -15,7 +15,7 @@ use crate::enemy::{Enemy, EnemyBundle, EnemyType};
 use crate::game_state::GameState;
 use crate::item_spawner::spawn_random_item;
 use crate::player::PlayerControllerState;
-use crate::wave_manager::waves::DEFINED_WAVES;
+use crate::wave_manager::waves::{wave_generation, DEFINED_WAVES};
 
 pub const ARENA_DIMENSIONS_METERS: [f32; 2] = [24.0, 30.0];
 
@@ -240,16 +240,18 @@ fn prepare_next_wave(
     if current_wave.count < (DEFINED_WAVES.len() as i32) {
         // Wave count is within defined waves
         current_wave.wave_definition = DEFINED_WAVES[current_wave.count as usize].clone();
-
-        // set delay before next wave
-        start_delay_timer.0.set_duration(Duration::from_secs_f32(
-            current_wave.wave_definition.start_delay,
-        ));
-
-        spawn_timer.0.set_duration(Duration::from_secs_f32(
-            current_wave.wave_definition.spawn_rate,
-        ))
+    } else {
+        current_wave.wave_definition = wave_generation(current_wave.count);
     }
+
+    // set delay before next wave
+    start_delay_timer.0.set_duration(Duration::from_secs_f32(
+        current_wave.wave_definition.start_delay,
+    ));
+
+    spawn_timer.0.set_duration(Duration::from_secs_f32(
+        current_wave.wave_definition.spawn_rate,
+    ));
 
     next_state.set(WaveState::WAVE_START);
 }
