@@ -2,7 +2,6 @@ use std::time::Duration;
 
 use bevy::prelude::Projection::Perspective;
 use bevy::prelude::*;
-use bevy::render::camera;
 
 use super::gizmo::highlight_gizmo;
 use crate::config::{DEFAULT_BAG_LOCATION, INVENTORY_GRID_DIMENSIONS};
