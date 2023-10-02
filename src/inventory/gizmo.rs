@@ -50,7 +50,6 @@ pub fn highlight_gizmo(
             Ray3d::from_screenspace(position, camera, camera_pos).unwrap()
         };
 
-        dbg!(cursor_pos);
         let mut gizmo_query = param_set.p1();
         for (trans, gizmo, mesh) in gizmo_query.iter_mut() {
             dbg!(mesh);
