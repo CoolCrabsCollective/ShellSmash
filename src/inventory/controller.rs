@@ -262,13 +262,13 @@ fn move_inventory_items(
     } else if key_codes.just_pressed(KeyCode::Q) {
         for mut item in query_items.iter_mut() {
             if Some(item.0) == selected.selected_entity {
-                item.1.data.rotate(true);
+                item.1.data.rotate_y(true);
             }
         }
     } else if key_codes.just_pressed(KeyCode::E) {
         for mut item in query_items.iter_mut() {
             if Some(item.0) == selected.selected_entity {
-                item.1.data.rotate(false);
+                item.1.data.rotate_y(false);
             }
         }
     } else if key_codes.just_pressed(KeyCode::Z) {
