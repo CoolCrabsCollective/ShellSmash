@@ -115,27 +115,34 @@ pub fn highlight_gizmo(
         match optional_intersection {
             Some(g) => {
                 for mut item in query_items.iter_mut() {
-                    match g.item_dir {
-                        ItemDirection::UP
-                        | ItemDirection::LEFT
-                        | ItemDirection::DOWN
-                        | ItemDirection::RIGHT
-                        | ItemDirection::FORWARD
-                        | ItemDirection::BACKWARDS => {
-                            if Some(item.0) == selected.selected_entity {
+                    if Some(item.0) == selected.selected_entity {
+                        match g.item_dir {
+                            ItemDirection::UP
+                            | ItemDirection::LEFT
+                            | ItemDirection::DOWN
+                            | ItemDirection::RIGHT
+                            | ItemDirection::FORWARD
+                            | ItemDirection::BACKWARDS => {
                                 move_item(&mut item.1, g.item_dir, state.view_index)
                             }
+                            ItemDirection::YAW_LEFT => {
+                                item.1.data.rotate_y(true);
+                            }
+                            ItemDirection::YAW_RIGHT => {
+                                item.1.data.rotate_y(false);
+                            }
+                            ItemDirection::PITCH_BACKWARDS => {
+                                item.1.data.rotate_z(false);
+                            }
+                            ItemDirection::PITCH_FORWARD => {
+                                item.1.data.rotate_z(true);
+                            }
+                            _ => {}
                         }
-                        ItemDirection::YAW_LEFT
-                        | ItemDirection::YAW_RIGHT
-                        | ItemDirection::ROLL_LEFT
-                        | ItemDirection::ROLL_RIGHT
-                        | ItemDirection::PITCH_BACKWARDS
-                        | ItemDirection::PITCH_FORWARD => {}
                     }
                 }
             }
-            _ => {}
-        };
+            None => {}
+        }
     }
 }
