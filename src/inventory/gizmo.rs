@@ -139,14 +139,22 @@ pub fn highlight_gizmo(
                                 item.1.data.rotate_y(false);
                             }
                             ItemDirection::PITCH_BACKWARDS => {
-                                if state.view_index % 2 == 0 {
+                                if state.view_index == 3 {
+                                    item.1.data.rotate_x(false);
+                                } else if (state.view_index == 2) {
+                                    item.1.data.rotate_z(true);
+                                } else if state.view_index % 2 == 0 {
                                     item.1.data.rotate_z(false);
                                 } else {
                                     item.1.data.rotate_x(true);
                                 }
                             }
                             ItemDirection::PITCH_FORWARD => {
-                                if state.view_index % 2 == 0 {
+                                if state.view_index == 3 {
+                                    item.1.data.rotate_x(true);
+                                } else if (state.view_index == 2) {
+                                    item.1.data.rotate_z(false);
+                                } else if state.view_index % 2 == 0 {
                                     item.1.data.rotate_z(true);
                                 } else {
                                     item.1.data.rotate_x(false);
