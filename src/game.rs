@@ -1,6 +1,10 @@
+use bevy::audio::PlaybackMode::Loop;
+use bevy::audio::Volume::Relative;
+use bevy::audio::VolumeLevel;
 use std::f32::consts::PI;
 
 use crate::collectable::CollectablePlugin;
+use crate::post_processing::PostProcessSettings;
 use crate::projectile::ProjectilePlugin;
 use bevy::math::vec3;
 use bevy::pbr::{CascadeShadowConfigBuilder, DirectionalLightShadowMap};
@@ -63,11 +67,21 @@ fn debug_render_toggle(mut context: ResMut<DebugRenderContext>, keys: Res<Input<
 /// set up a simple 3D scene
 fn setup(
     mut commands: Commands,
-    asset_server: ResMut<AssetServer>,
+    mut asset_server: ResMut<AssetServer>,
     mut meshes: ResMut<Assets<Mesh>>,
     mut materials: ResMut<Assets<StandardMaterial>>,
 ) {
     load_level("map.glb#Scene0", &mut commands, &asset_server);
+
+    commands.spawn(AudioBundle {
+        source: asset_server.load("song.ogg"),
+        settings: PlaybackSettings {
+            mode: Loop,
+            volume: Relative(VolumeLevel::new(0.1f32)),
+            ..default()
+        },
+        ..default()
+    });
 
     commands.spawn(DirectionalLightBundle {
         directional_light: DirectionalLight {
@@ -99,6 +113,11 @@ fn setup(
                 fov: 10.0f32.to_radians(),
                 ..default()
             }),
+            ..default()
+        })
+        .insert(PostProcessSettings {
+            time: 0.0,
+            enable: 1.0,
             ..default()
         })
         .insert(HolyCam);

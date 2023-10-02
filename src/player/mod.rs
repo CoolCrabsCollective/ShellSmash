@@ -1,12 +1,18 @@
 pub(crate) mod combat;
 
+use bevy::audio::PlaybackMode::Despawn;
+use bevy::audio::Volume::Relative;
+use bevy::audio::VolumeLevel;
 use bevy::input::keyboard::KeyboardInput;
 use bevy::input::mouse::MouseButtonInput;
 use bevy::input::ButtonState;
 use bevy::math::vec3;
+use bevy::ui::AlignItems::Default;
 use bevy::window::PrimaryWindow;
 use bevy::{log, prelude::*};
 use bevy_rapier3d::prelude::*;
+use queues::queue;
+use queues::{IsQueue, Queue};
 
 use crate::config::{
     COLLISION_GROUP_ENEMIES, COLLISION_GROUP_PLAYER, COLLISION_GROUP_PROJECTILES,
@@ -16,10 +22,11 @@ use crate::enemy::{Enemy, ENEMY_COLLIDER_RADIUS};
 use crate::game::HolyCam;
 use crate::game_camera_controller::GameCameraControllerPlugin;
 use crate::game_state::GameState;
-use crate::inventory::ItemType;
-use crate::player::combat::PlayerCombatPlugin;
+use crate::inventory::{Inventory, ItemType};
 use crate::player::combat::PlayerCombatState;
+use crate::player::combat::{PlayerCombatPlugin, PLAYER_INVICIBILITY_COOLDOWN};
 use crate::projectile::{Projectile, ProjectileBundle};
+use crate::wave_manager::{Wave, WaveState};
 use crate::world_item::WeaponHolder;
 
 use self::combat::BASE_ATTACK_COOLDOWN;
@@ -259,6 +266,7 @@ fn player_movement(
 
 fn player_shooting(
     mut commands: Commands,
+    mut asset_server: ResMut<AssetServer>,
     mut shooting_state: ResMut<PlayerShootingState>,
     player_transform_query: Query<(
         &Transform,
@@ -298,6 +306,15 @@ fn player_shooting(
                 .tick(time.delta())
                 .just_finished()
         {
+            commands.spawn(AudioBundle {
+                source: asset_server.load("shoot.ogg"),
+                settings: PlaybackSettings {
+                    mode: Despawn,
+                    volume: Relative(VolumeLevel::new(1.0f32)),
+                    ..default()
+                },
+                ..default()
+            });
             commands.spawn(ProjectileBundle {
                 pbr: PbrBundle {
                     mesh: shooting_state
@@ -325,9 +342,9 @@ fn player_shooting(
                     source_weapon: current_weapon.clone(),
                 },
                 collider: Collider::cuboid(
-                    PLAYER_SHOOTING_PROJECTILE_CUBE_HALF_SIZE,
-                    PLAYER_SHOOTING_PROJECTILE_CUBE_HALF_SIZE,
-                    PLAYER_SHOOTING_PROJECTILE_CUBE_HALF_SIZE,
+                    PLAYER_SHOOTING_PROJECTILE_CUBE_HALF_SIZE * 2.0,
+                    PLAYER_SHOOTING_PROJECTILE_CUBE_HALF_SIZE * 2.0,
+                    PLAYER_SHOOTING_PROJECTILE_CUBE_HALF_SIZE * 2.0,
                 ),
                 collision_groups: CollisionGroups {
                     memberships: COLLISION_GROUP_PROJECTILES,
@@ -384,15 +401,30 @@ fn detect_player_hit(
 }
 
 fn handle_player_hit(
+    mut player_state: Query<&mut PlayerCombatState>,
     mut player_hit_event_reader: EventReader<PlayerHitEvent>,
     mut next_player_state: ResMut<NextState<PlayerState>>,
+    time: Res<Time>,
 ) {
-    let mut _player_hit = false;
+    let mut state = player_state.single_mut();
+
+    if state.last_hit + PLAYER_INVICIBILITY_COOLDOWN > time.elapsed_seconds() {
+        return;
+    }
+
     for player_hit_event in &mut player_hit_event_reader {
         log::info!("Player hit by enemy: {:?}", player_hit_event.0);
-        _player_hit = true;
-        next_player_state.set(PlayerState::Dying);
-        break;
+
+        state.current_hp -= 1;
+        state.last_hit = time.elapsed_seconds();
+        state.last_heal = time.elapsed_seconds();
+
+        if state.current_hp == 0 {
+            next_player_state.set(PlayerState::Dying);
+            break;
+        } else {
+            break;
+        }
     }
 }
 
@@ -402,12 +434,19 @@ fn tick_death_timer(
     mut next_game_state: ResMut<NextState<GameState>>,
     mut commands: Commands,
     enemy_query: Query<Entity, With<Enemy>>,
+    mut wave: ResMut<Wave>,
+    mut next_wave_state: ResMut<NextState<WaveState>>,
+    mut inventory: ResMut<Inventory>,
 ) {
     if death_timer.0.tick(time.delta()).just_finished() {
         for enemy in &enemy_query {
             commands.entity(enemy).despawn();
         }
         death_timer.0.reset();
-        next_game_state.set(GameState::ManagingInventory);
+        next_game_state.set(GameState::TitleScreen);
+        wave.count = 0;
+        wave.luck = queue![];
+        next_wave_state.set(WaveState::WAVE_END);
+        inventory.content = Vec::new();
     }
 }

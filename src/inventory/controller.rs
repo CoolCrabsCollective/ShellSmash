@@ -180,6 +180,8 @@ pub enum ItemDirection {
     PITCH_BACKWARDS,
     ROLL_LEFT,
     ROLL_RIGHT,
+    ROTATE_VIEW_LEFT,
+    ROTATE_VIEW_RIGHT,
 }
 
 pub fn move_item(item: &mut PackedInventoryItem, item_dir: ItemDirection, view_index: usize) {

@@ -21,7 +21,7 @@ pub const ARENA_DIMENSIONS_METERS: [f32; 2] = [24.0, 30.0];
 pub struct WaveManagerPlugin;
 
 #[derive(Debug, Clone, Default, Eq, PartialEq, Hash, States)]
-enum WaveState {
+pub enum WaveState {
     #[default]
     WAVE_START,
     ACTIVE_WAVE_SPAWNING,
@@ -44,11 +44,11 @@ pub struct WaveDefinition {
 }
 
 #[derive(Resource)]
-struct Wave {
-    count: i32,
-    luck: Queue<i32>, // better items should drop as luck increases
+pub struct Wave {
+    pub count: i32,
+    pub luck: Queue<i32>, // better items should drop as luck increases
 
-    wave_definition: WaveDefinition,
+    pub wave_definition: WaveDefinition,
 }
 
 impl Wave {
@@ -95,6 +95,16 @@ impl Plugin for WaveManagerPlugin {
                 .run_if(in_state(GameState::FightingInArena))
                 .run_if(in_state(WaveState::WAVE_END)),
         );
+
+        app.add_systems(
+            OnEnter(GameState::FightingInArena),
+            show_ui.run_if(in_state(WaveState::ACTIVE_WAVE)),
+        );
+        app.add_systems(
+            OnEnter(GameState::FightingInArena),
+            show_ui.run_if(in_state(WaveState::ACTIVE_WAVE_SPAWNING)),
+        );
+        app.add_systems(OnExit(GameState::FightingInArena), hide_ui);
 
         app.insert_resource(Wave::new());
 
@@ -235,6 +245,50 @@ fn spawn_enemies(
     }
 }
 
+fn hide_ui(mut commands: Commands, wave_ui_query: Query<Entity, With<WaveUI>>) {
+    // println!("Hiding Wave UI");
+    for e in wave_ui_query.iter() {
+        commands.entity(e).despawn();
+    }
+}
+
+fn show_ui(mut commands: Commands, asset_server: Res<AssetServer>, current_wave: Res<Wave>) {
+    // println!("Showing Wave UI");
+    commands
+        .spawn(NodeBundle {
+            style: Style {
+                top: Val::Percent(0.0),
+                left: Val::Percent(0.0),
+                width: Val::Percent(100.0),
+                height: Val::Percent(100.0),
+                align_items: AlignItems::Center,
+                justify_content: JustifyContent::Center,
+                ..default()
+            },
+            ..default()
+        })
+        .insert(WaveUI)
+        .with_children(|parent| {
+            parent.spawn(
+                (TextBundle::from_section(
+                    format!("Wave {:?}", current_wave.count + 1),
+                    TextStyle {
+                        font: asset_server.load("fonts/FiraSans-Bold.ttf"),
+                        font_size: 48.0,
+                        color: Color::BLACK,
+                    },
+                )
+                .with_text_alignment(TextAlignment::Center)
+                .with_style(Style {
+                    position_type: PositionType::Absolute,
+                    bottom: Val::Px(5.0),
+                    right: Val::Px(15.0),
+                    ..default()
+                })),
+            );
+        });
+}
+
 fn check_for_wave_end(
     enemy_entity_query: Query<Entity, With<Enemy>>,
     mut current_wave: ResMut<Wave>,
@@ -264,14 +318,12 @@ fn drop_items(
     mut materials: ResMut<Assets<StandardMaterial>>,
     mut current_wave: ResMut<Wave>,
 ) {
-    for i in 0..current_wave.wave_definition.drop_item_count {
-        spawn_random_item(
-            &mut current_wave.luck,
-            commands,
-            &mut meshes,
-            &mut materials,
-        );
-    }
+    spawn_random_item(
+        &mut current_wave.luck,
+        commands,
+        &mut meshes,
+        &mut materials,
+    );
 }
 #[derive(Component)]
 struct WaveUI;

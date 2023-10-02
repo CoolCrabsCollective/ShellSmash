@@ -139,7 +139,7 @@ fn create_supergun(
     location: Vec3,
 ) {
     let mut gun = InventoryItem::from((
-        (0, 0, 0),
+        (0, 1, 0),
         vec![
             (0, 0, 0),
             (0, 0, 1),
@@ -200,24 +200,25 @@ pub fn spawn_random_item(
     );
 
     match spawn_id {
-        0 => {
+        0..=4 => {
             create_heart(commands, meshes, materials, position);
         }
-        1..=19 => match luck.peek() {
-            Ok(1) => {
-                create_better_sword(commands, meshes, materials, position);
-                let _ = luck.remove();
-            }
-            Ok(2) => {
-                create_handgun(commands, meshes, materials, position);
-                let _ = luck.remove();
-            }
-            Ok(3) => {
-                create_supergun(commands, meshes, materials, position);
-                let _ = luck.remove();
-            }
-            _ => {}
-        },
+        _ => {}
+    }
+
+    match luck.peek() {
+        Ok(1) => {
+            create_better_sword(commands, meshes, materials, position);
+            let _ = luck.remove();
+        }
+        Ok(2) => {
+            create_handgun(commands, meshes, materials, position);
+            let _ = luck.remove();
+        }
+        Ok(3) => {
+            create_supergun(commands, meshes, materials, position);
+            let _ = luck.remove();
+        }
         _ => {}
     }
 }
