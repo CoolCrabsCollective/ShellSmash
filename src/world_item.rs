@@ -79,10 +79,7 @@ impl Plugin for ItemAttachmentPlugin {
             item_attachment_update.run_if(in_state(GameState::FightingInArena)),
         );
 
-        app.add_systems(
-            Update,
-            equip_item_if_nothing_equipped.run_if(in_state(GameState::FightingInArena)),
-        );
+        app.add_systems(OnEnter(GameState::FightingInArena), equip_update);
     }
 }
 
@@ -129,7 +126,7 @@ pub fn item_attachment_update(
     }
 }
 
-fn equip_item_if_nothing_equipped(
+fn equip_update(
     mut commands: Commands,
     mut meshes: ResMut<Assets<Mesh>>,
     mut materials: ResMut<Assets<StandardMaterial>>,
@@ -137,6 +134,25 @@ fn equip_item_if_nothing_equipped(
     inventory_query: Res<Inventory>,
 ) {
     let (mut player_weapon, player_transform, _) = player_query.single_mut();
+
+    if !player_weapon.current_weapon.is_none() {
+        let player_weapon_id = player_weapon.current_weapon.clone().unwrap().1.item_type_id;
+
+        let mut found_item = false;
+
+        for item in &inventory_query.content {
+            if item.item_type_id == player_weapon_id {
+                found_item = true;
+                break;
+            }
+        }
+
+        if !found_item {
+            dbg!("Deleting current weapon because no longer in inventory");
+            player_weapon.current_weapon = None;
+        }
+    }
+
     if player_weapon.current_weapon.is_none() && inventory_query.content.len() > 0 {
         let item = inventory_query.content[0].clone();
         let entity = item.create_world_entity(
