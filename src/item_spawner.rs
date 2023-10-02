@@ -194,22 +194,22 @@ pub fn spawn_random_item(
     let spawn_id = rng.gen_range(0..20);
 
     let mut position = Vec3::new(
-        (random::<f32>() - 0.5) * (ARENA_DIMENSIONS_METERS[0] / 3.0),
+        (random::<f32>() - 0.5) * (ARENA_DIMENSIONS_METERS[0] / 2.0),
         0.5,
-        (random::<f32>() - 0.5) * (ARENA_DIMENSIONS_METERS[1] / 3.0),
+        (random::<f32>() - 0.5) * (ARENA_DIMENSIONS_METERS[1] / 2.0),
     );
 
     match spawn_id {
-        0..=2 => {
+        0..=6 => {
             create_heart(commands, meshes, materials, position);
         }
         _ => {}
     }
 
     position = Vec3::new(
-        (random::<f32>() - 0.5) * (ARENA_DIMENSIONS_METERS[0] / 3.0),
+        (random::<f32>() - 0.5) * (ARENA_DIMENSIONS_METERS[0] / 2.0),
         0.5,
-        (random::<f32>() - 0.5) * (ARENA_DIMENSIONS_METERS[1] / 3.0),
+        (random::<f32>() - 0.5) * (ARENA_DIMENSIONS_METERS[1] / 2.0),
     );
 
     match luck {

@@ -18,7 +18,7 @@ use crate::config::{
     COLLISION_GROUP_ENEMIES, COLLISION_GROUP_PLAYER, COLLISION_GROUP_PROJECTILES,
     COLLISION_GROUP_TERRAIN, COLLISION_GROUP_WALLS,
 };
-use crate::enemy::{Enemy, ENEMY_COLLIDER_RADIUS};
+use crate::enemy::{Enemy, EnemyType, ENEMY_COLLIDER_RADIUS};
 use crate::game::HolyCam;
 use crate::game_camera_controller::GameCameraControllerPlugin;
 use crate::game_state::GameState;
@@ -57,7 +57,7 @@ pub struct PlayerControllerState {
 }
 
 #[derive(Event)]
-pub struct PlayerHitEvent(Entity);
+pub struct PlayerHitEvent(Enemy);
 
 #[derive(Resource)]
 struct DeathTimer(Timer);
@@ -396,12 +396,12 @@ fn vertical_vel_reset(
 
 fn detect_player_hit(
     player_controller_output_query: Query<(&Transform, &Collider), With<PlayerControllerState>>,
-    enemy_entity_query: Query<(Entity, &Transform, &Collider), With<Enemy>>,
+    enemy_entity_query: Query<(Entity, &Transform, &Collider, &Enemy), With<Enemy>>,
     mut player_hit_event_writer: EventWriter<PlayerHitEvent>,
 ) {
     let (player_transform, player_collider) = player_controller_output_query.single();
 
-    for (enemy_entity, enemy_transform, enemy_collider) in &enemy_entity_query {
+    for (enemy_entity, enemy_transform, enemy_collider, enemy) in &enemy_entity_query {
         let total_radius = player_collider.as_capsule().unwrap().radius() * 1.2
             + enemy_collider.as_ball().unwrap().radius() * 1.5;
 
@@ -410,7 +410,7 @@ fn detect_player_hit(
         //     total_radius
         // );
         if (player_transform.translation - enemy_transform.translation).length() < total_radius {
-            player_hit_event_writer.send(PlayerHitEvent(enemy_entity));
+            player_hit_event_writer.send(PlayerHitEvent((*enemy).clone()));
         }
     }
 
@@ -436,9 +436,19 @@ fn handle_player_hit(
     }
 
     for player_hit_event in &mut player_hit_event_reader {
-        log::info!("Player hit by enemy: {:?}", player_hit_event.0);
+        // log::info!("Player hit by enemy: {:?}", player_hit_event.0);
 
-        state.current_hp -= 1;
+        match player_hit_event.0.enemy_type {
+            EnemyType::Jellyfish => {
+                state.current_hp -= 1;
+            }
+            EnemyType::Urchin => {
+                state.current_hp -= 2;
+            }
+            EnemyType::Shrimp => {
+                state.current_hp -= 3;
+            }
+        }
         state.last_hit = time.elapsed_seconds();
         state.last_heal = time.elapsed_seconds();
 

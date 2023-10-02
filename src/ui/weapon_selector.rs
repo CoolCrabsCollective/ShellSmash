@@ -1,3 +1,4 @@
+use bevy::input::keyboard::KeyboardInput;
 use bevy::{log, prelude::*, window::PrimaryWindow};
 
 use crate::inventory::{Inventory, InventoryItem};
@@ -29,6 +30,12 @@ impl Plugin for WeaponSelectorPlugin {
         app.add_systems(
             Update,
             highlight_item_on_hover
+                .run_if(in_state(GameState::FightingInArena))
+                .after(update_next_weapon),
+        );
+        app.add_systems(
+            Update,
+            switch_weapon_on_tab
                 .run_if(in_state(GameState::FightingInArena))
                 .after(update_next_weapon),
         );
@@ -173,6 +180,49 @@ fn query_next_weapon(
     }
 
     Some(inventory.content[next_weapon_index].clone())
+}
+
+fn switch_weapon_on_tab(
+    mut commands: Commands,
+    mut meshes: ResMut<Assets<Mesh>>,
+    mut materials: ResMut<Assets<StandardMaterial>>,
+    mut keyboard_input_events: EventReader<KeyboardInput>,
+    mut player_query: Query<(Entity, &mut WeaponHolder, &PlayerCombatState)>,
+    mut transform_query: Query<&mut Transform>,
+    inventory: Res<Inventory>,
+) {
+    for event in keyboard_input_events.iter() {
+        match event.key_code {
+            Some(KeyCode::Tab) => {
+                if event.state.is_pressed() {
+                    let (player_entity, mut player_weapon, _) = player_query.single_mut();
+
+                    if let Some(next_weapon) = query_next_weapon(&player_weapon, &inventory) {
+                        let player_transform = transform_query.get(player_entity).unwrap();
+
+                        // despawn current weapon
+                        if let Some((entity, _)) = player_weapon.current_weapon {
+                            commands.entity(entity).despawn();
+                        }
+
+                        let entity = next_weapon.create_world_entity(
+                            player_transform.translation,
+                            true,
+                            false,
+                            &mut commands,
+                            &mut meshes,
+                            &mut materials,
+                        );
+
+                        player_weapon.current_weapon = Some((entity, next_weapon));
+
+                        log::info!("Switching to next weapon");
+                    }
+                }
+            }
+            _ => {}
+        }
+    }
 }
 
 fn highlight_item_on_hover(

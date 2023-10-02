@@ -28,9 +28,9 @@ pub enum EnemyType {
     Shrimp,
 }
 
-#[derive(Component)]
+#[derive(Component, Clone)]
 pub struct Enemy {
-    enemy_type: EnemyType,
+    pub enemy_type: EnemyType,
 }
 
 impl Plugin for EnemyPlugin {

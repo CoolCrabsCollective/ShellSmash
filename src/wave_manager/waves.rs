@@ -4,7 +4,7 @@ use rand::Rng;
 pub(crate) const DEFINED_WAVES: [WaveDefinition; 5] = [
     WaveDefinition {
         // name: ("Beginning"),
-        start_delay: 2.0,
+        start_delay: 5.0,
         spawn_rate: 0.0,
 
         jellyfish_count: 5,
