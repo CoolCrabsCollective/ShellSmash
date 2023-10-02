@@ -1,23 +1,23 @@
+use std::f32::consts::PI;
+
 use bevy::audio::PlaybackMode::Loop;
 use bevy::audio::Volume::Relative;
 use bevy::audio::VolumeLevel;
-use std::f32::consts::PI;
-
-use crate::collectable::CollectablePlugin;
-use crate::post_processing::PostProcessSettings;
-use crate::projectile::ProjectilePlugin;
 use bevy::math::vec3;
 use bevy::pbr::{CascadeShadowConfigBuilder, DirectionalLightShadowMap};
 use bevy::prelude::Projection::Perspective;
 use bevy::prelude::*;
 use bevy_rapier3d::prelude::*;
 
+use crate::collectable::CollectablePlugin;
 use crate::debug_camera_controller::DebugCameraControllerPlugin;
 use crate::enemy::EnemyPlugin;
 use crate::game_state::GameState;
 use crate::item_spawner::ItemSpawner;
 use crate::level_loader::{load_level, LevelLoaderPlugin};
 use crate::player::PlayerPlugin;
+use crate::post_processing::PostProcessSettings;
+use crate::projectile::ProjectilePlugin;
 use crate::ui::health_bar::HealthBarPlugin;
 use crate::ui::weapon_selector::WeaponSelectorPlugin;
 use crate::wave_manager::WaveManagerPlugin;
