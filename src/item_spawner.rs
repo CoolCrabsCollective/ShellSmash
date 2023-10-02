@@ -200,7 +200,7 @@ pub fn spawn_random_item(
     );
 
     match spawn_id {
-        0..=2 => {
+        0..=6 => {
             create_heart(commands, meshes, materials, position);
         }
         _ => {}
