@@ -72,7 +72,7 @@ fn setup(mut commands: Commands, assets: Res<AssetServer>, mut inventory: ResMut
     let mut up_transform =
         Transform::from_translation(DEFAULT_BAG_LOCATION + Vec3::from((0.0, 0.0, 0.0)));
     up_transform.rotation =
-        Quat::from_euler(EulerRot::XYZ, deg_to_rad(-90.0), deg_to_rad(00.0), 0.0);
+        Quat::from_euler(EulerRot::XYZ, deg_to_rad(-90.0), deg_to_rad(0.0), 0.0);
     let mut down_transform =
         Transform::from_translation(DEFAULT_BAG_LOCATION + Vec3::from((0.0, 0.0, 0.0)));
     down_transform.rotation =
@@ -93,6 +93,24 @@ fn setup(mut commands: Commands, assets: Res<AssetServer>, mut inventory: ResMut
         deg_to_rad(90.0),
         deg_to_rad(90.0),
     );
+
+    let mut forward_transform =
+        Transform::from_translation(DEFAULT_BAG_LOCATION + Vec3::from((0.0, 0.0, 0.0)));
+    forward_transform.rotation = Quat::from_euler(
+        EulerRot::XYZ,
+        deg_to_rad(0.0),
+        deg_to_rad(0.0),
+        deg_to_rad(0.0),
+    );
+    let mut backward_transform =
+        Transform::from_translation(DEFAULT_BAG_LOCATION + Vec3::from((0.0, 0.0, 0.0)));
+    backward_transform.rotation = Quat::from_euler(
+        EulerRot::XYZ,
+        deg_to_rad(0.0),
+        deg_to_rad(180.0),
+        deg_to_rad(0.0),
+    );
+
     for item in &inventory.content {
         commands.spawn(VoxelBullcrap { data: item.clone() });
     }
@@ -124,6 +142,22 @@ fn setup(mut commands: Commands, assets: Res<AssetServer>, mut inventory: ResMut
     commands
         .spawn(Gizmo {
             relative: right_transform,
+        })
+        .insert(SceneBundle {
+            scene: assets.load("arrow_straight.glb#Scene0"),
+            ..default()
+        });
+    commands
+        .spawn(Gizmo {
+            relative: forward_transform,
+        })
+        .insert(SceneBundle {
+            scene: assets.load("arrow_straight.glb#Scene0"),
+            ..default()
+        });
+    commands
+        .spawn(Gizmo {
+            relative: backward_transform,
         })
         .insert(SceneBundle {
             scene: assets.load("arrow_straight.glb#Scene0"),
