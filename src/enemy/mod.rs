@@ -57,12 +57,14 @@ impl EnemyBundle {
                 mesh: match enemy_type {
                     EnemyType::Jellyfish => assets.jelly(),
                     EnemyType::Urchin => assets.urchin(),
+                    EnemyType::Shrimp => assets.shrimp(),
                     _ => assets.urchin(),
                 }
                 .mesh_handle,
                 material: match enemy_type {
                     EnemyType::Jellyfish => assets.jelly(),
                     EnemyType::Urchin => assets.urchin(),
+                    EnemyType::Shrimp => assets.shrimp(),
                     _ => assets.urchin(),
                 }
                 .material_handle,
