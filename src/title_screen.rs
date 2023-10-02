@@ -107,6 +107,22 @@ fn on_enter(mut commands: Commands, asset_server: Res<AssetServer>) {
                         .insert(StartGameButtonText)
                         .insert(TitleScreenUi);
                 });
+
+            parent.spawn((TextBundle::from_section(
+                "Made in Rust!",
+                TextStyle {
+                    font: asset_server.load("fonts/FiraSans-Bold.ttf"),
+                    font_size: 48.0,
+                    color: Color::ORANGE_RED,
+                },
+            )
+            .with_text_alignment(TextAlignment::Center)
+            .with_style(Style {
+                position_type: PositionType::Absolute,
+                bottom: Val::Px(5.0),
+                right: Val::Px(15.0),
+                ..default()
+            }),));
         });
 }
 
