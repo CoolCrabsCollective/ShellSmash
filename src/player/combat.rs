@@ -9,6 +9,7 @@ use bevy_rapier3d::na::clamp;
 
 use crate::inventory::Inventory;
 use crate::inventory::ItemType::MELEE_WEAPON;
+use crate::inventory::ItemTypeId::WillSword;
 use crate::player::PlayerState;
 use crate::world_item::WeaponHolder;
 
@@ -136,7 +137,11 @@ fn process_hit(
         return; // too recent to attack again
     }
 
-    let distance_to_kill = 1.9;
+    let distance_to_kill = if current_weapon.item_type_id == WillSword {
+        1.3
+    } else {
+        1.9
+    };
 
     if buttons.just_pressed(MouseButton::Left)
         || (buttons.pressed(MouseButton::Left) && current_weapon.weapon_is_auto)
