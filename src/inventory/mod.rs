@@ -340,7 +340,9 @@ pub enum ItemType {
 #[derive(Copy, Clone, Debug, PartialEq, Eq, Hash)]
 pub enum ItemTypeId {
     Boomerang,
-    DavidGun,
+    AlexBoomerang,
+    HandGun,
+    SuperGun,
     WillSword,
     MidSword,
     AlexSword,
