@@ -31,6 +31,7 @@ fn setup(
                 emissive: Color::WHITE,
                 alpha_mode: AlphaMode::Blend,
                 unlit: true,
+                cull_mode: None,
                 ..default()
             }),
             transform: Transform::from_translation(Vec3::new(500.0, -0.5 + 0.01, 0.0)),
@@ -45,6 +46,7 @@ fn setup(
                 base_color_texture: Some(texture_handle_selected.clone()),
                 alpha_mode: AlphaMode::Blend,
                 unlit: true,
+                cull_mode: None,
                 ..default()
             }),
             transform: Transform::from_translation(Vec3::new(500.0, 0.5 + 0.01, 0.0)),
@@ -59,6 +61,7 @@ fn setup(
                 base_color_texture: Some(texture_handle_selected.clone()),
                 alpha_mode: AlphaMode::Blend,
                 unlit: true,
+                cull_mode: None,
                 ..default()
             }),
             transform: Transform::from_translation(Vec3::new(500.0, -0.5 + 0.01, 0.0)),
@@ -73,6 +76,7 @@ fn setup(
                 base_color_texture: Some(texture_handle_selected.clone()),
                 alpha_mode: AlphaMode::Blend,
                 unlit: true,
+                cull_mode: None,
                 ..default()
             }),
             transform: Transform::from_translation(Vec3::new(500.0, -0.5, 3.5)),
@@ -87,6 +91,7 @@ fn setup(
                 base_color_texture: Some(texture_handle_selected.clone()),
                 alpha_mode: AlphaMode::Blend,
                 unlit: true,
+                cull_mode: None,
                 ..default()
             }),
             transform: Transform::from_translation(Vec3::new(500.0, -0.5, -3.5)),
@@ -101,6 +106,7 @@ fn setup(
                 base_color_texture: Some(texture_handle_selected.clone()),
                 alpha_mode: AlphaMode::Blend,
                 unlit: true,
+                cull_mode: None,
                 ..default()
             }),
             transform: Transform::from_translation(Vec3::new(503.5, -0.5, 0.0))
@@ -116,6 +122,7 @@ fn setup(
                 base_color_texture: Some(texture_handle_selected.clone()),
                 alpha_mode: AlphaMode::Blend,
                 unlit: true,
+                cull_mode: None,
                 ..default()
             }),
             transform: Transform::from_translation(Vec3::new(496.5, -0.5, 0.0))
