@@ -25,7 +25,7 @@ mod player;
 mod projectile;
 mod title_screen;
 mod ui;
-mod wave_manager;
+pub mod wave_manager;
 mod world_item;
 
 fn main() {

@@ -20,7 +20,7 @@ pub const ARENA_DIMENSIONS_METERS: [f32; 2] = [24.0, 30.0];
 pub struct WaveManagerPlugin;
 
 #[derive(Debug, Clone, Default, Eq, PartialEq, Hash, States)]
-enum WaveState {
+pub enum WaveState {
     #[default]
     WAVE_START,
     ACTIVE_WAVE_SPAWNING,
@@ -41,11 +41,11 @@ pub struct WaveDefinition {
 }
 
 #[derive(Resource)]
-struct Wave {
-    count: i32,
-    luck: i32, // better items should drop as luck increases
+pub struct Wave {
+    pub count: i32,
+    pub luck: i32, // better items should drop as luck increases
 
-    wave_definition: WaveDefinition,
+    pub wave_definition: WaveDefinition,
 }
 
 impl Wave {
