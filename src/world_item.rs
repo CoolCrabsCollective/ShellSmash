@@ -3,6 +3,7 @@ use crate::game_state::GameState;
 use crate::player::PLAYER_HEIGHT;
 use bevy::math::vec3;
 use bevy::{prelude::*, transform};
+use bevy_rapier3d::prelude::Collider;
 
 use crate::inventory::ItemType::MELEE_WEAPON;
 use crate::inventory::{Inventory, InventoryData, InventoryItem};
@@ -45,7 +46,7 @@ impl InventoryItem {
             .id();
     }
 
-    pub fn create_world_entity_but_given_the_freedom_to_pass_your_own_scale_like_it_always_should_have_been__god_bless_america_ok_boomer(
+    pub fn create_world_entity_but_given_the_freedom_to_pass_your_own_transform_and_collider_like_it_always_should_have_been__god_bless_america_ok_boomer(
         &self,
         transform: Transform,
         on_player: bool,
@@ -53,20 +54,26 @@ impl InventoryItem {
         commands: &mut Commands,
         meshes: &mut ResMut<Assets<Mesh>>,
         materials: &mut ResMut<Assets<StandardMaterial>>,
+        collider: Option<Collider>,
     ) -> Entity {
-        return commands
-            .spawn((
-                AttachedToPlayer(on_player),
-                Collectable(collectable),
-                self.clone(),
-            ))
-            .insert(PbrBundle {
-                mesh: meshes.add(self.generate_mesh()),
-                material: materials.add(self.color.clone().into()),
-                transform,
-                ..default()
-            })
-            .id();
+        let mut e_commands = commands.spawn((
+            AttachedToPlayer(on_player),
+            Collectable(collectable),
+            self.clone(),
+        ));
+
+        e_commands.insert(PbrBundle {
+            mesh: meshes.add(self.generate_mesh()),
+            material: materials.add(self.color.clone().into()),
+            transform,
+            ..default()
+        });
+
+        if let Some(collider) = collider {
+            e_commands.insert(collider);
+        }
+
+        return e_commands.id();
     }
 }
 
