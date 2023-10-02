@@ -33,6 +33,10 @@ impl Plugin for EnemyPlugin {
             Update,
             detect_enemy_hit.run_if(in_state(GameState::FightingInArena)),
         );
+        app.add_systems(
+            Update,
+            remove_lost_enemies.run_if(in_state(GameState::FightingInArena)),
+        );
     }
 }
 
@@ -101,6 +105,17 @@ fn detect_enemy_hit(
                 commands.entity(enemy_entity).despawn();
                 commands.entity(collision.entity).despawn();
             }
+        }
+    }
+}
+
+fn remove_lost_enemies(
+    mut commands: Commands,
+    enemy_entity_query: Query<(Entity, &Transform), With<Enemy>>,
+) {
+    for enemy in enemy_entity_query.iter() {
+        if enemy.1.translation.y < -5.0 {
+            commands.entity(enemy.0).despawn();
         }
     }
 }
