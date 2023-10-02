@@ -181,14 +181,12 @@ fn spawn_enemies(
     }
 
     if spawn_timer.0.tick(time.delta()).just_finished() {
-        let mut attempts = 0;
-        let mut spawned = false;
-
         let player_transform = player_transform_query.single();
 
         let mut enemy_type = EnemyType::Jellyfish;
         let mut enemy_count = &mut current_wave.wave_definition.jellyfish_count;
 
+        let mut attempts = 0;
         let mut selected = false;
         while !selected && attempts < 10 {
             attempts += 1;
@@ -218,20 +216,19 @@ fn spawn_enemies(
 
         attempts = 0;
 
-        while !spawned && attempts < 10 && selected {
-            attempts += 1;
+        // Spawn enemy
+        let rand_x = random::<f32>() - 0.5;
+        let rand_y = random::<f32>() - 0.5;
 
-            let position = Vec3::new(
-                (random::<f32>() - 0.5) * ARENA_DIMENSIONS_METERS[0],
-                1.0,
-                (random::<f32>() - 0.5) * ARENA_DIMENSIONS_METERS[0],
-            );
-            if (player_transform.translation - position).length() > 3.0 {
-                commands.spawn(EnemyBundle::new(position, &game_assets, enemy_type));
-                spawned = true;
+        let position = Vec3::new(
+            ((rand_x) * ARENA_DIMENSIONS_METERS[0]) * 2.0,
+            1.0,
+            ((rand_y) * ARENA_DIMENSIONS_METERS[0]) * 2.0,
+        );
+        if (player_transform.translation - position).length() > 3.0 {
+            commands.spawn(EnemyBundle::new(position, &game_assets, enemy_type));
 
-                *enemy_count -= 1;
-            }
+            *enemy_count -= 1;
         }
 
         spawn_timer.0.reset();
