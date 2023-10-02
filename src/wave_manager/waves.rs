@@ -9,7 +9,7 @@ pub(crate) const DEFINED_WAVES: [WaveDefinition; 2] = [
         enemy_count: 5,
         shrimp_count: 0,
 
-        drop_item_count: 1,
+        drop_item_count: 10,
     },
     WaveDefinition {
         // name: ("Gamer Mode"),
@@ -19,6 +19,6 @@ pub(crate) const DEFINED_WAVES: [WaveDefinition; 2] = [
         enemy_count: 10,
         shrimp_count: 0,
 
-        drop_item_count: 0,
+        drop_item_count: 10,
     },
 ];
