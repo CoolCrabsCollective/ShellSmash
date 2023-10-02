@@ -29,7 +29,6 @@ pub struct InventoryPlugin;
 impl Plugin for InventoryPlugin {
     fn build(&self, app: &mut App) {
         app.add_systems(OnEnter(GameState::ManagingInventory), setup);
-        app.add_systems(OnExit(GameState::ManagingInventory), save_and_clear_render);
         app.add_systems(
             Update,
             update_packed_items.run_if(in_state(GameState::ManagingInventory)),
@@ -248,21 +247,6 @@ fn update_packed_items(
             .entity(item.3)
             .insert(meshes.add(item.2.data.generate_mesh()));
         item.2.data.changed = false;
-    }
-}
-
-fn save_and_clear_render(
-    mut commands: Commands,
-    rendered_inventory: Query<(Entity, &PackedInventoryItem)>,
-    mut inventory: ResMut<Inventory>,
-) {
-    inventory.content.clear();
-
-    // Remove render of items
-    for item in rendered_inventory.iter() {
-        inventory.content.push(item.1.data.clone());
-
-        commands.entity(item.0).despawn();
     }
 }
 
