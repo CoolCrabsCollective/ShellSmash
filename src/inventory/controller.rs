@@ -210,6 +210,14 @@ fn move_inventory_items(
         for mut item in query_items.iter_mut() {
             item.data.rotate(false);
         }
+    } else if key_codes.just_pressed(KeyCode::Z) {
+        for mut item in query_items.iter_mut() {
+            item.data.translate(IVec3::from((0, 1, 0)));
+        }
+    } else if key_codes.just_pressed(KeyCode::X) {
+        for mut item in query_items.iter_mut() {
+            item.data.translate(IVec3::from((0, -1, 0)));
+        }
     }
 }
 
