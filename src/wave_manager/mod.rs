@@ -225,7 +225,7 @@ fn drop_items(
     mut current_wave: ResMut<Wave>,
 ) {
     for i in 0..current_wave.wave_definition.drop_item_count {
-        spawn_random_item(commands, &mut meshes, &mut materials);
+        spawn_random_item(current_wave.luck, commands, &mut meshes, &mut materials);
     }
 }
 
