@@ -251,11 +251,11 @@ fn move_inventory_items(
         }
     } else if key_codes.just_pressed(KeyCode::Q) {
         for mut item in query_items.iter_mut() {
-            item.data.rotate(true);
+            item.data.rotate_y(true);
         }
     } else if key_codes.just_pressed(KeyCode::E) {
         for mut item in query_items.iter_mut() {
-            item.data.rotate(false);
+            item.data.rotate_y(false);
         }
     } else if key_codes.just_pressed(KeyCode::Z) {
         for mut item in query_items.iter_mut() {
