@@ -26,7 +26,15 @@ impl Plugin for InventoryValidationPlugin {
         app.add_systems(OnExit(GameState::ManagingInventory), save_and_clear_render);
         app.add_systems(OnEnter(GameState::ManagingInventory), build_ui);
         app.add_systems(OnExit(GameState::ManagingInventory), clean);
+        app.add_systems(Startup, setup);
     }
+}
+
+fn setup(mut commands: Commands) {
+    commands.spawn(Camera2dBundle {
+        camera: Camera { ..default() },
+        ..default()
+    });
 }
 
 fn update_background(mut color: ResMut<ClearColor>, query: Query<&PackedInventoryItem>) {
@@ -124,10 +132,6 @@ fn save_and_clear_render(
 }
 
 fn build_ui(mut commands: Commands, asset_server: Res<AssetServer>) {
-    commands.spawn(Camera2dBundle {
-        camera: Camera { ..default() },
-        ..default()
-    });
     commands
         .spawn(NodeBundle {
             style: Style {
