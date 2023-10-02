@@ -15,6 +15,7 @@ pub struct InventoryPlugin;
 impl Plugin for InventoryPlugin {
     fn build(&self, app: &mut App) {
         app.add_systems(OnEnter(GameState::ManagingInventory), setup);
+        app.add_systems(OnExit(GameState::ManagingInventory), save_and_clear_render);
         app.add_plugins((
             WireframePlugin,
             VoxelRendererPlugin,
@@ -34,39 +35,40 @@ struct Gizmo;
 /// set up a simple 3D scene
 fn setup(mut commands: Commands, assets: Res<AssetServer>,
          mut inventory: ResMut<Inventory>,) {
-    let boomerang = InventoryItem::from((
-        (3, 0, 0),
-        vec![(0, 0, 0), (0, 0, 1), (0, 0, 2), (-1, 0, 0), (-2, 0, 0)],
-        Color::rgba(1.0, 1.0, 1.0, 1.0),
-        RANGED_WEAPON,
-    ));
-    let sword = InventoryItem::from((
-        (5, 0, 2),
-        vec![
-            (0, 0, 0),
-            (0, 0, 1),
-            (0, 0, 2),
-            (1, 0, 0),
-            (-1, 0, 0),
-            (0, 0, -1),
-        ],
-        Color::rgba(0.0, 1.0, 0.0, 1.0),
-        MELEE_WEAPON,
-    ));
-    let heart = InventoryItem::from((
-        (4, 1, 1),
-        vec![
-            (0, 0, 0),
-            (0, 0, -1),
-            (1, 0, 0),
-            (-1, 0, 0),
-            (-1, 0, 1),
-            (1, 0, 1),
-        ],
-        Color::rgba(1.0, 0.0, 0.0, 1.0),
-        NON_WEAPON,
-    ));
+    // let boomerang = InventoryItem::from((
+    //     (3, 0, 0),
+    //     vec![(0, 0, 0), (0, 0, 1), (0, 0, 2), (-1, 0, 0), (-2, 0, 0)],
+    //     Color::rgba(1.0, 1.0, 1.0, 1.0),
+    //     RANGED_WEAPON,
+    // ));
+    // let sword = InventoryItem::from((
+    //     (5, 0, 2),
+    //     vec![
+    //         (0, 0, 0),
+    //         (0, 0, 1),
+    //         (0, 0, 2),
+    //         (1, 0, 0),
+    //         (-1, 0, 0),
+    //         (0, 0, -1),
+    //     ],
+    //     Color::rgba(0.0, 1.0, 0.0, 1.0),
+    //     MELEE_WEAPON,
+    // ));
+    // let heart = InventoryItem::from((
+    //     (4, 1, 1),
+    //     vec![
+    //         (0, 0, 0),
+    //         (0, 0, -1),
+    //         (1, 0, 0),
+    //         (-1, 0, 0),
+    //         (-1, 0, 1),
+    //         (1, 0, 1),
+    //     ],
+    //     Color::rgba(1.0, 0.0, 0.0, 1.0),
+    //     NON_WEAPON,
+    // ));
 
+    // Render current inventory data
     for item in &inventory.content {
         commands.spawn(VoxelBullcrap { data: item.clone() });
         commands
@@ -76,6 +78,19 @@ fn setup(mut commands: Commands, assets: Res<AssetServer>,
                 ..default()
             })
             .insert(TransformBundle::from(Transform::from_xyz(0.0, 8.0, 8.0)));
+    }
+}
+
+fn save_and_clear_render(mut commands: Commands,
+                  rendered_inventory: Query<(Entity, &VoxelBullcrap)>,
+                  mut inventory: ResMut<Inventory>,) {
+    inventory.content.clear();
+
+    // Remove render of items
+    for item in rendered_inventory.iter() {
+        inventory.content.push(item.1.data.clone());
+
+        commands.entity(item.0).despawn();
     }
 }
 
