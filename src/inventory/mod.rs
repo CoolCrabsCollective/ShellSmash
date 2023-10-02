@@ -19,10 +19,12 @@ mod controller;
 mod data_manager;
 mod gizmo;
 mod grid;
+mod selection;
 mod ui;
 mod validation;
 mod weapon_selector;
 
+use crate::inventory::selection::{SelectedItem, SelectionPlugin};
 use crate::inventory::ui::InventoryUIPlugin;
 pub use weapon_selector::WeaponSelectorPlugin;
 
@@ -42,6 +44,7 @@ impl Plugin for InventoryPlugin {
             GridDisplayPlugin,
             InventoryValidationPlugin,
             InventoryUIPlugin,
+            SelectionPlugin,
         ))
         .insert_resource(Inventory {
             content: Vec::new(),
@@ -51,48 +54,15 @@ impl Plugin for InventoryPlugin {
 }
 
 /// set up a simple 3D scene
-fn setup(
+pub fn setup(
     mut commands: Commands,
     assets: Res<AssetServer>,
     mut inventory: ResMut<Inventory>,
     game_assets: Res<GameAssets>,
     mut meshes: ResMut<Assets<Mesh>>,
     mut materials: ResMut<Assets<StandardMaterial>>,
+    mut selection: ResMut<SelectedItem>,
 ) {
-    // let boomerang = InventoryItem::from((
-    //     (3, 0, 0),
-    //     vec![(0, 0, 0), (0, 0, 1), (0, 0, 2), (-1, 0, 0), (-2, 0, 0)],
-    //     Color::rgba(1.0, 1.0, 1.0, 1.0),
-    //     RANGED_WEAPON,
-    // ));
-    // let sword = InventoryItem::from((
-    //     (5, 0, 2),
-    //     vec![
-    //         (0, 0, 0),
-    //         (0, 0, 1),
-    //         (0, 0, 2),
-    //         (1, 0, 0),
-    //         (-1, 0, 0),
-    //         (0, 0, -1),
-    //     ],
-    //     Color::rgba(0.0, 1.0, 0.0, 1.0),
-    //     MELEE_WEAPON,
-    // ));
-    // let heart = InventoryItem::from((
-    //     (4, 1, 1),
-    //     vec![
-    //         (0, 0, 0),
-    //         (0, 0, -1),
-    //         (1, 0, 0),
-    //         (-1, 0, 0),
-    //         (-1, 0, 1),
-    //         (1, 0, 1),
-    //     ],
-    //     Color::rgba(1.0, 0.0, 0.0, 1.0),
-    //     NON_WEAPON,
-    // ));
-
-    // commands.spawn(VoxelBullcrap { data: sword });
     let mut up_transform =
         Transform::from_translation(DEFAULT_BAG_LOCATION + Vec3::from((0.0, 0.0, 0.0)));
     up_transform.rotation =
@@ -203,23 +173,31 @@ fn setup(
         .insert(NotShadowReceiver);
 
     // Render current inventory data
+
+    let mut id = None;
+
     for item in &inventory.content {
-        commands
-            .spawn(PackedInventoryItem { data: item.clone() })
-            .insert(PbrBundle {
-                mesh: meshes.add(item.generate_mesh()),
-                material: materials.add(item.color.clone().into()),
-                transform: Transform::from_translation(
-                    DEFAULT_BAG_LOCATION + item.location.as_vec3()
-                        - vec3(
-                            (INVENTORY_GRID_DIMENSIONS[0] / 2) as f32,
-                            (INVENTORY_GRID_DIMENSIONS[1] / 2) as f32,
-                            (INVENTORY_GRID_DIMENSIONS[2] / 2) as f32,
-                        ),
-                ),
-                ..default()
-            });
+        id = Some(
+            commands
+                .spawn(PackedInventoryItem { data: item.clone() })
+                .insert(PbrBundle {
+                    mesh: meshes.add(item.generate_mesh()),
+                    material: materials.add(item.color.clone().into()),
+                    transform: Transform::from_translation(
+                        DEFAULT_BAG_LOCATION + item.location.as_vec3()
+                            - vec3(
+                                (INVENTORY_GRID_DIMENSIONS[0] / 2) as f32,
+                                (INVENTORY_GRID_DIMENSIONS[1] / 2) as f32,
+                                (INVENTORY_GRID_DIMENSIONS[2] / 2) as f32,
+                            ),
+                    ),
+                    ..default()
+                })
+                .id(),
+        );
     }
+
+    selection.selected_entity = id;
 }
 
 // updates visual positions of items in packed inventory UI
