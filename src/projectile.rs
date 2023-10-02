@@ -1,5 +1,5 @@
 use bevy::prelude::*;
-use bevy_rapier3d::prelude::Collider;
+use bevy_rapier3d::prelude::{Collider, CollisionGroups};
 
 use crate::{
     game_state::GameState, inventory::InventoryItem, wave_manager::ARENA_DIMENSIONS_METERS,
@@ -19,6 +19,7 @@ pub struct ProjectileBundle {
     pub pbr: PbrBundle,
     pub projectile: Projectile,
     pub collider: Collider,
+    pub collision_groups: CollisionGroups,
 }
 
 impl Plugin for ProjectilePlugin {
