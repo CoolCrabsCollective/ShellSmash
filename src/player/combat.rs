@@ -7,7 +7,6 @@ use bevy::time::Time;
 use bevy_rapier3d::na::clamp;
 
 use crate::inventory::Inventory;
-use crate::player::PlayerState;
 
 pub const BASE_ATTACK_COOLDOWN: f32 = 0.5;
 
@@ -45,16 +44,17 @@ impl PlayerCombatState {
             last_attack: -10000.0,
         }
     }
+
     pub fn compute_from_inventory(&mut self, inv: &Res<Inventory>) {
         for item in &inv.content {
             self.max_hp += item.hp_gain;
-            self.attack_speed += item.attack_speed_gain;
+            self.attack_speed *= item.attack_speed_gain;
             self.damage += item.attack_damage_gain;
         }
     }
 
     pub fn get_weapon_angle(&self, time: &Res<Time>) -> f32 {
-        let anim_duration = BASE_ATTACK_COOLDOWN * self.attack_speed;
+        let anim_duration = BASE_ATTACK_COOLDOWN / self.attack_speed;
         let anim_progress = 1.0
             - clamp(
                 ((self.last_attack + anim_duration) - time.elapsed_seconds()) / anim_duration,
@@ -79,7 +79,7 @@ fn process_hit(
 ) {
     let mut player = player.single_mut();
 
-    if player.last_attack + BASE_ATTACK_COOLDOWN * player.attack_speed > time.elapsed_seconds() {
+    if player.last_attack + BASE_ATTACK_COOLDOWN / player.attack_speed > time.elapsed_seconds() {
         return; // too recent to attack again
     }
 

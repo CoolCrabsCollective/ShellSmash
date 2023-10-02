@@ -72,7 +72,7 @@ fn setup(mut commands: Commands, assets: Res<AssetServer>, mut inventory: ResMut
     let mut up_transform =
         Transform::from_translation(DEFAULT_BAG_LOCATION + Vec3::from((0.0, 0.0, 0.0)));
     up_transform.rotation =
-        Quat::from_euler(EulerRot::XYZ, deg_to_rad(-90.0), deg_to_rad(00.0), 0.0);
+        Quat::from_euler(EulerRot::XYZ, deg_to_rad(-90.0), deg_to_rad(0.0), 0.0);
     let mut down_transform =
         Transform::from_translation(DEFAULT_BAG_LOCATION + Vec3::from((0.0, 0.0, 0.0)));
     down_transform.rotation =
@@ -92,6 +92,23 @@ fn setup(mut commands: Commands, assets: Res<AssetServer>, mut inventory: ResMut
         deg_to_rad(0.0),
         deg_to_rad(90.0),
         deg_to_rad(90.0),
+    );
+
+    let mut forward_transform =
+        Transform::from_translation(DEFAULT_BAG_LOCATION + Vec3::from((0.0, 0.0, 0.0)));
+    forward_transform.rotation = Quat::from_euler(
+        EulerRot::XYZ,
+        deg_to_rad(0.0),
+        deg_to_rad(0.0),
+        deg_to_rad(0.0),
+    );
+    let mut backward_transform =
+        Transform::from_translation(DEFAULT_BAG_LOCATION + Vec3::from((0.0, 0.0, 0.0)));
+    backward_transform.rotation = Quat::from_euler(
+        EulerRot::XYZ,
+        deg_to_rad(0.0),
+        deg_to_rad(180.0),
+        deg_to_rad(0.0),
     );
 
     commands
@@ -126,6 +143,22 @@ fn setup(mut commands: Commands, assets: Res<AssetServer>, mut inventory: ResMut
             scene: assets.load("arrow_straight.glb#Scene0"),
             ..default()
         });
+    commands
+        .spawn(Gizmo {
+            relative: forward_transform,
+        })
+        .insert(SceneBundle {
+            scene: assets.load("arrow_straight.glb#Scene0"),
+            ..default()
+        });
+    commands
+        .spawn(Gizmo {
+            relative: backward_transform,
+        })
+        .insert(SceneBundle {
+            scene: assets.load("arrow_straight.glb#Scene0"),
+            ..default()
+        });
 
     // Render current inventory data
     for item in &inventory.content {
@@ -133,9 +166,11 @@ fn setup(mut commands: Commands, assets: Res<AssetServer>, mut inventory: ResMut
     }
 }
 
-fn save_and_clear_render(mut commands: Commands,
-                  rendered_inventory: Query<(Entity, &VoxelBullcrap)>,
-                  mut inventory: ResMut<Inventory>,) {
+fn save_and_clear_render(
+    mut commands: Commands,
+    rendered_inventory: Query<(Entity, &VoxelBullcrap)>,
+    mut inventory: ResMut<Inventory>,
+) {
     inventory.content.clear();
 
     // Remove render of items
@@ -171,6 +206,8 @@ pub struct InventoryItem {
     pub weapon_damage: i32, // how much base attack damage this item does when used as a weapon
     pub weapon_attack_speed: f32, // how much base attack speed this item has when used as a weapon
     pub weapon_is_auto: bool, // whether holding click auto attacks for this weapon
+
+    pub projectile_speed: f32, // how fast the ranged weapon's 'bullets' travel
 
     pub item_type: ItemType,
 }
@@ -235,6 +272,7 @@ impl From<((i32, i32, i32), Vec<(i32, i32, i32)>, Color, ItemType)> for Inventor
             weapon_is_auto: false,
             weapon_attack_speed: 1.0,
             item_type: value.3,
+            projectile_speed: 1.0,
         }
     }
 }

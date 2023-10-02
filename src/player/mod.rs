@@ -1,6 +1,8 @@
 pub(crate) mod combat;
 
 use bevy::input::keyboard::KeyboardInput;
+use bevy::input::mouse::MouseButtonInput;
+use bevy::input::ButtonState;
 use bevy::math::vec3;
 use bevy::window::PrimaryWindow;
 use bevy::{log, prelude::*};
@@ -9,11 +11,17 @@ use bevy_rapier3d::prelude::*;
 use crate::enemy::Enemy;
 use crate::game_camera_controller::GameCameraControllerPlugin;
 use crate::game_state::GameState;
-use crate::player::combat::{PlayerCombatPlugin, PlayerCombatState};
+use crate::inventory::ItemType;
+use crate::player::combat::PlayerCombatPlugin;
+use crate::player::combat::PlayerCombatState;
+use crate::projectile::{Projectile, ProjectileBundle};
 use crate::world_item::WeaponHolder;
+
+use self::combat::BASE_ATTACK_COOLDOWN;
 
 pub const PLAYER_HEIGHT: f32 = 0.6;
 pub const PLAYER_WIDTH: f32 = 0.5;
+pub const PLAYER_SHOOTING_PROJECTILE_CUBE_HALF_SIZE: f32 = 0.1;
 
 pub struct PlayerPlugin;
 
@@ -31,6 +39,8 @@ pub struct PlayerControllerState {
     is_left_pressed: bool,
     is_right_pressed: bool,
 
+    is_shoot_pressed: bool,
+
     pub velocity: Vec3,
 }
 
@@ -40,14 +50,26 @@ pub struct PlayerHitEvent(Entity);
 #[derive(Resource)]
 struct DeathTimer(Timer);
 
+#[derive(Resource)]
+struct PlayerShootingState {
+    rate_limiter: Option<Timer>,
+    mesh_material_handle: Option<(Handle<Mesh>, Handle<StandardMaterial>)>,
+}
+
 impl Plugin for PlayerPlugin {
     fn build(&self, app: &mut App) {
-        app.add_systems(Startup, spawn_player);
+        app.add_systems(Startup, setup);
         app.add_systems(OnEnter(GameState::FightingInArena), set_player_active);
         app.add_systems(Update, process_inputs);
         app.add_systems(
             Update,
             player_movement.run_if(
+                in_state(GameState::FightingInArena).and_then(in_state(PlayerState::Fighting)),
+            ),
+        );
+        app.add_systems(
+            Update,
+            player_shooting.run_if(
                 in_state(GameState::FightingInArena).and_then(in_state(PlayerState::Fighting)),
             ),
         );
@@ -73,17 +95,22 @@ impl Plugin for PlayerPlugin {
         app.add_event::<PlayerHitEvent>();
         app.insert_resource(DeathTimer(Timer::from_seconds(2.0, TimerMode::Once)));
         app.add_plugins((GameCameraControllerPlugin, PlayerCombatPlugin));
+        app.insert_resource(PlayerShootingState {
+            rate_limiter: None,
+            mesh_material_handle: None,
+        });
     }
 }
 
-fn spawn_player(
+fn setup(
     mut commands: Commands,
     asset_server: ResMut<AssetServer>,
+    mut shooting_state: ResMut<PlayerShootingState>,
     mut meshes: ResMut<Assets<Mesh>>,
     mut materials: ResMut<Assets<StandardMaterial>>,
 ) {
     commands
-        .spawn(Collider::capsule_y(0.3, 0.25))
+        .spawn(Collider::capsule_y(0.3, 0.5))
         .insert(SceneBundle {
             scene: asset_server.load("hermit.glb#Scene0"),
             ..default()
@@ -105,6 +132,15 @@ fn spawn_player(
             current_weapon: None,
         })
         .insert(TransformBundle::from(Transform::from_xyz(2.0, 1.0, 0.0)));
+
+    shooting_state.mesh_material_handle = Some((
+        meshes.add(Mesh::from(shape::Box::new(
+            PLAYER_SHOOTING_PROJECTILE_CUBE_HALF_SIZE * 2.0,
+            PLAYER_SHOOTING_PROJECTILE_CUBE_HALF_SIZE * 2.0,
+            PLAYER_SHOOTING_PROJECTILE_CUBE_HALF_SIZE * 2.0,
+        ))),
+        materials.add(Color::rgb(0.05, 0.4, 0.9).into()),
+    ));
 }
 
 fn set_player_active(mut next_state: ResMut<NextState<PlayerState>>) {
@@ -119,6 +155,8 @@ impl PlayerControllerState {
             is_left_pressed: false,
             is_right_pressed: false,
 
+            is_shoot_pressed: false,
+
             velocity: vec3(0.0, 0.0, 0.0),
         }
     }
@@ -126,6 +164,7 @@ impl PlayerControllerState {
 
 fn process_inputs(
     mut keyboard_input_events: EventReader<KeyboardInput>,
+    mut mouse_input_events: EventReader<MouseButtonInput>,
     mut state: Query<&mut PlayerControllerState>,
 ) {
     let mut state = state.single_mut();
@@ -142,6 +181,15 @@ fn process_inputs(
             }
             Some(KeyCode::D) => {
                 state.is_right_pressed = event.state.is_pressed();
+            }
+            _ => {}
+        }
+    }
+
+    for event in mouse_input_events.iter() {
+        match event.button {
+            MouseButton::Left => {
+                state.is_shoot_pressed = event.state == ButtonState::Pressed;
             }
             _ => {}
         }
@@ -192,6 +240,85 @@ fn player_movement(
             let pos = ray.get_point(distance);
             transform.look_at(pos, Vec3::Y);
         }
+    }
+}
+
+fn player_shooting(
+    mut commands: Commands,
+    mut shooting_state: ResMut<PlayerShootingState>,
+    player_transform_query: Query<(
+        &Transform,
+        &PlayerControllerState,
+        &PlayerCombatState,
+        &WeaponHolder,
+    )>,
+    time: Res<Time>,
+) {
+    let (player_tranform, player_controller_state, player_combat_state, weapon_holder_state) =
+        player_transform_query.single();
+
+    if !player_controller_state.is_shoot_pressed {
+        return;
+    }
+
+    if weapon_holder_state.current_weapon.is_none() {
+        return;
+    }
+
+    let (_, current_weapon) = weapon_holder_state.current_weapon.as_ref().unwrap();
+
+    if current_weapon.item_type != ItemType::RANGED_WEAPON {
+        return;
+    }
+
+    //  Timer::from_seconds(PLAYER_SHOOTING_RATE_PERIOD, TimerMode::Repeating)
+    if player_controller_state.is_shoot_pressed && weapon_holder_state.current_weapon.is_some() {
+        if shooting_state.rate_limiter.is_none()
+            || shooting_state
+                .rate_limiter
+                .as_mut()
+                .unwrap()
+                .tick(time.delta())
+                .just_finished()
+        {
+            commands.spawn(ProjectileBundle {
+                pbr: PbrBundle {
+                    mesh: shooting_state
+                        .mesh_material_handle
+                        .as_ref()
+                        .unwrap()
+                        .0
+                        .clone(),
+                    material: shooting_state
+                        .mesh_material_handle
+                        .as_ref()
+                        .unwrap()
+                        .1
+                        .clone(),
+                    transform: Transform::from_translation(player_tranform.translation),
+                    ..default()
+                },
+                projectile: Projectile {
+                    speed: current_weapon.projectile_speed,
+                    direction: player_tranform.forward(),
+                },
+                collider: Collider::cuboid(
+                    PLAYER_SHOOTING_PROJECTILE_CUBE_HALF_SIZE,
+                    PLAYER_SHOOTING_PROJECTILE_CUBE_HALF_SIZE,
+                    PLAYER_SHOOTING_PROJECTILE_CUBE_HALF_SIZE,
+                ),
+            });
+        }
+
+        if shooting_state.rate_limiter.is_none() {
+            shooting_state.rate_limiter = Some(Timer::from_seconds(
+                BASE_ATTACK_COOLDOWN
+                    / (player_combat_state.attack_speed * current_weapon.weapon_attack_speed),
+                TimerMode::Repeating,
+            ))
+        }
+    } else {
+        shooting_state.rate_limiter = None;
     }
 }
 
