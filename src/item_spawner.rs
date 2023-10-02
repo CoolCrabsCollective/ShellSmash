@@ -105,8 +105,26 @@ fn setup(
     mut materials: ResMut<Assets<StandardMaterial>>,
 ) {
     // create_boomerang(commands, meshes, materials);
-    create_sword(&mut commands, &mut meshes, &mut materials, Vec3{x: 0.0, y: 0.5, z: 0.0});
-    create_sword(&mut commands, &mut meshes, &mut materials, Vec3{x: 10.0, y: 0.5, z: 0.0});
+    create_sword(
+        &mut commands,
+        &mut meshes,
+        &mut materials,
+        Vec3 {
+            x: 0.0,
+            y: 0.5,
+            z: 0.0,
+        },
+    );
+    create_david_gun(
+        &mut commands,
+        &mut meshes,
+        &mut materials,
+        Vec3 {
+            x: 5.0,
+            y: 0.5,
+            z: 8.0,
+        },
+    );
 }
 
 // fn create_boomerang(
@@ -135,6 +153,24 @@ fn setup(
 //     );
 // }
 
+fn create_david_gun(
+    commands: &mut Commands,
+    meshes: &mut ResMut<Assets<Mesh>>,
+    materials: &mut ResMut<Assets<StandardMaterial>>,
+    location: Vec3,
+) {
+    let mut gun = InventoryItem::from((
+        (1, 0, 3),
+        vec![(0, 0, 0), (0, 0, 1), (0, 0, 2), (-1, 0, 2), (-2, 0, 2)],
+        Color::rgba(1.0, 1.0, 1.0, 1.0),
+        RANGED_WEAPON,
+    ));
+    gun.weapon_attack_speed = 10.0;
+    gun.projectile_speed = 30.0;
+
+    gun.create_world_entity(location, false, true, commands, meshes, materials);
+}
+
 fn create_sword(
     commands: &mut Commands,
     meshes: &mut ResMut<Assets<Mesh>>,
@@ -155,13 +191,7 @@ fn create_sword(
         MELEE_WEAPON,
     ));
 
-    sword.create_world_entity(location,
-                              false,
-                              true,
-                              commands,
-                              meshes,
-                              materials,
-    );
+    sword.create_world_entity(location, false, true, commands, meshes, materials);
 }
 
 fn monitor_spawns() {}
