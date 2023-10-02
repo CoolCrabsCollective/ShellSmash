@@ -178,7 +178,7 @@ fn create_better_sword(
     materials: &mut ResMut<Assets<StandardMaterial>>,
     location: Vec3,
 ) {
-    let sword = InventoryItem::from((
+    let mut sword = InventoryItem::from((
         (0, 0, 0),
         vec![
             (0, 0, 0),
@@ -195,6 +195,8 @@ fn create_better_sword(
         MELEE_WEAPON,
         ItemTypeId::MidSword,
     ));
+    sword.weapon_attack_speed = 2.0;
+    sword.weapon_is_auto = true;
     sword.create_world_entity(location, false, true, commands, meshes, materials);
 }
 

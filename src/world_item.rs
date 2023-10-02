@@ -6,6 +6,7 @@ use crate::game_state::GameState;
 use crate::inventory::ItemType::MELEE_WEAPON;
 use crate::inventory::{Inventory, InventoryItem};
 use crate::player::combat::PlayerCombatState;
+use crate::player::PlayerState;
 
 pub const VOXEL_SIZE_IN_WORLD: f32 = 0.2;
 
@@ -81,7 +82,9 @@ impl Plugin for ItemAttachmentPlugin {
     fn build(&self, app: &mut App) {
         app.add_systems(
             Update,
-            item_attachment_update.run_if(in_state(GameState::FightingInArena)),
+            item_attachment_update.run_if(
+                in_state(GameState::FightingInArena).and_then(in_state(PlayerState::Fighting)),
+            ),
         );
 
         app.add_systems(OnEnter(GameState::FightingInArena), equip_update);
