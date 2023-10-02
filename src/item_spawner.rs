@@ -86,9 +86,9 @@ fn spawn_debug_items(
             },
         on_player,
         false,
-        commands,
-        meshes,
-        materials,
+        &mut commands,
+        &mut meshes,
+        &mut materials,
     );
 
     if on_player {
@@ -97,44 +97,46 @@ fn spawn_debug_items(
 }
 
 fn setup(
-    commands: Commands,
-    meshes: ResMut<Assets<Mesh>>,
-    materials: ResMut<Assets<StandardMaterial>>,
+    mut commands: Commands,
+    mut meshes: ResMut<Assets<Mesh>>,
+    mut materials: ResMut<Assets<StandardMaterial>>,
 ) {
     // create_boomerang(commands, meshes, materials);
-    create_sword(commands, meshes, materials);
+    create_sword(&mut commands, &mut meshes, &mut materials, Vec3{x: 0.0, y: 0.5, z: 0.0});
+    create_sword(&mut commands, &mut meshes, &mut materials, Vec3{x: 10.0, y: 0.5, z: 0.0});
 }
 
-fn create_boomerang(
-    commands: Commands,
-    meshes: ResMut<Assets<Mesh>>,
-    materials: ResMut<Assets<StandardMaterial>>,
-) {
-    let boomerang = InventoryItem::from((
-        (1, 3, 3),
-        vec![(0, 0, 0), (0, 0, 1), (0, 0, 2), (-1, 0, 0), (-2, 0, 0)],
-        Color::rgba(1.0, 1.0, 1.0, 1.0),
-        RANGED_WEAPON,
-    ));
-
-    boomerang.create_world_entity(
-        Vec3 {
-            x: 0.0,
-            y: 0.5,
-            z: 0.0,
-        },
-        false,
-        true,
-        commands,
-        meshes,
-        materials,
-    );
-}
+// fn create_boomerang(
+//     mut commands: Commands,
+//     mut meshes: ResMut<Assets<Mesh>>,
+//     mut materials: ResMut<Assets<StandardMaterial>>,
+// ) {
+//     let boomerang = InventoryItem::from((
+//         (1, 3, 3),
+//         vec![(0, 0, 0), (0, 0, 1), (0, 0, 2), (-1, 0, 0), (-2, 0, 0)],
+//         Color::rgba(1.0, 1.0, 1.0, 1.0),
+//         RANGED_WEAPON,
+//     ));
+//
+//     boomerang.create_world_entity(
+//         Vec3 {
+//             x: 0.0,
+//             y: 0.5,
+//             z: 0.0,
+//         },
+//         false,
+//         true,
+//         commands,
+//         meshes,
+//         materials,
+//     );
+// }
 
 fn create_sword(
-    commands: Commands,
-    meshes: ResMut<Assets<Mesh>>,
-    materials: ResMut<Assets<StandardMaterial>>,
+    commands: &mut Commands,
+    meshes: &mut ResMut<Assets<Mesh>>,
+    materials: &mut ResMut<Assets<StandardMaterial>>,
+    location: Vec3,
 ) {
     let sword = InventoryItem::from((
                                             (5, 0, 2),
@@ -150,17 +152,12 @@ fn create_sword(
                                             MELEE_WEAPON,
                                         ));
 
-    sword.create_world_entity(
-        Vec3 {
-            x: 10.0,
-            y: 0.5,
-            z: 0.0,
-        },
-        false,
-        true,
-        commands,
-        meshes,
-        materials,
+    sword.create_world_entity(location,
+                              false,
+                              true,
+                              commands,
+                              meshes,
+                              materials,
     );
 }
 

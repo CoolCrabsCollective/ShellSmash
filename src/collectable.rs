@@ -1,6 +1,5 @@
 use crate::game_state::GameState;
 use crate::player::PlayerControllerState;
-use bevy::log;
 use bevy::prelude::*;
 use crate::inventory::{InventoryItem};
 
