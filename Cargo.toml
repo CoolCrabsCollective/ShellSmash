@@ -8,8 +8,8 @@ edition = "2021"
 [dependencies]
 bevy = "0.11.3"
 rand = "0.8.5"
-io.github.alexichepura.bevy_garage = "0.7.0"
 bevy_rapier3d = "0.22.0"
+bevy_mod_raycast = "0.13.1"
 
 [profile.dev]
 opt-level = 1

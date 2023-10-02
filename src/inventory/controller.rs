@@ -10,6 +10,8 @@ use crate::inventory::{InventoryData, InventoryItem, VoxelBullcrap};
 use crate::math::deg_to_rad;
 use crate::voxel_renderer::VoxelCoordinateFrame;
 
+use super::gizmo::highlight_gizmo;
+
 pub struct InventoryControllerPlugin;
 
 impl Plugin for InventoryControllerPlugin {
@@ -36,6 +38,7 @@ impl Plugin for InventoryControllerPlugin {
             Update,
             update_inventory_data.run_if(in_state(GameState::ManagingInventory)),
         );
+        app.add_systems(Update, highlight_gizmo);
         app.add_systems(OnEnter(GameState::ManagingInventory), set_fov);
         app.insert_resource(InventoryControllerState::new());
         app.insert_resource(CubeRotationAnime::new());
