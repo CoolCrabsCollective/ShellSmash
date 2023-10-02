@@ -1,3 +1,4 @@
+use crate::game::HolyCam;
 use bevy::input::keyboard::KeyboardInput;
 use bevy::input::mouse::MouseMotion;
 use bevy::math::Vec3;
@@ -175,7 +176,7 @@ fn update_state(mut state: ResMut<CameraControllerState>, time: Res<Time>) {
 }
 
 fn set_camera(
-    mut camera_transform_query: Query<&mut Transform, With<Camera>>,
+    mut camera_transform_query: Query<&mut Transform, With<HolyCam>>,
     mut state: ResMut<CameraControllerState>,
 ) {
     let mut camera_transform = camera_transform_query.single_mut();

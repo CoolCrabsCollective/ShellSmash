@@ -1,20 +1,24 @@
+use bevy::math::vec3;
 use bevy::pbr::NotShadowReceiver;
 use bevy::prelude::*;
 use bevy::transform::components::Transform;
 
 use crate::asset_loader::GameAssets;
-use crate::config::DEFAULT_BAG_LOCATION;
+use crate::config::{DEFAULT_BAG_LOCATION, INVENTORY_GRID_DIMENSIONS};
 use crate::game_state::GameState;
 use crate::inventory::controller::InventoryControllerPlugin;
+use crate::inventory::controller::ItemDirection;
 use crate::inventory::data_manager::InventoryDataPlugin;
 use crate::inventory::gizmo::Gizmo;
 use crate::inventory::grid::GridDisplayPlugin;
+use crate::inventory::validation::InventoryValidationPlugin;
 use crate::math::deg_to_rad;
 
 mod controller;
 mod data_manager;
 mod gizmo;
 mod grid;
+mod validation;
 
 pub struct InventoryPlugin;
 
@@ -27,10 +31,10 @@ impl Plugin for InventoryPlugin {
             update_packed_items.run_if(in_state(GameState::ManagingInventory)),
         );
         app.add_plugins((
-            //VoxelRendererPlugin,
             InventoryControllerPlugin,
             InventoryDataPlugin,
             GridDisplayPlugin,
+            InventoryValidationPlugin,
         ))
         .insert_resource(Inventory {
             content: Vec::new(),
@@ -107,17 +111,17 @@ fn setup(
         deg_to_rad(90.0),
     );
 
-    let mut forward_transform =
+    let mut backwards_transform =
         Transform::from_translation(DEFAULT_BAG_LOCATION + Vec3::from((0.0, 0.0, 0.0)));
-    forward_transform.rotation = Quat::from_euler(
+    backwards_transform.rotation = Quat::from_euler(
         EulerRot::XYZ,
         deg_to_rad(0.0),
         deg_to_rad(0.0),
         deg_to_rad(0.0),
     );
-    let mut backward_transform =
+    let mut forward_transform =
         Transform::from_translation(DEFAULT_BAG_LOCATION + Vec3::from((0.0, 0.0, 0.0)));
-    backward_transform.rotation = Quat::from_euler(
+    forward_transform.rotation = Quat::from_euler(
         EulerRot::XYZ,
         deg_to_rad(0.0),
         deg_to_rad(180.0),
@@ -127,6 +131,7 @@ fn setup(
     commands
         .spawn(Gizmo {
             relative: up_transform,
+            item_dir: ItemDirection::UP,
         })
         .insert(PbrBundle {
             mesh: game_assets.arrow_straight().mesh_handle,
@@ -137,6 +142,7 @@ fn setup(
     commands
         .spawn(Gizmo {
             relative: down_transform,
+            item_dir: ItemDirection::DOWN,
         })
         .insert(PbrBundle {
             mesh: game_assets.arrow_straight().mesh_handle,
@@ -147,6 +153,7 @@ fn setup(
     commands
         .spawn(Gizmo {
             relative: left_transform,
+            item_dir: ItemDirection::LEFT,
         })
         .insert(PbrBundle {
             mesh: game_assets.arrow_straight().mesh_handle,
@@ -157,6 +164,7 @@ fn setup(
     commands
         .spawn(Gizmo {
             relative: right_transform,
+            item_dir: ItemDirection::RIGHT,
         })
         .insert(PbrBundle {
             mesh: game_assets.arrow_straight().mesh_handle,
@@ -167,6 +175,7 @@ fn setup(
     commands
         .spawn(Gizmo {
             relative: forward_transform,
+            item_dir: ItemDirection::FORWARD,
         })
         .insert(PbrBundle {
             mesh: game_assets.arrow_straight().mesh_handle,
@@ -176,7 +185,8 @@ fn setup(
         .insert(NotShadowReceiver);
     commands
         .spawn(Gizmo {
-            relative: backward_transform,
+            relative: backwards_transform,
+            item_dir: ItemDirection::BACKWARDS,
         })
         .insert(PbrBundle {
             mesh: game_assets.arrow_straight().mesh_handle,
@@ -193,7 +203,12 @@ fn setup(
                 mesh: meshes.add(item.generate_mesh()),
                 material: materials.add(item.color.clone().into()),
                 transform: Transform::from_translation(
-                    DEFAULT_BAG_LOCATION + item.location.as_vec3(),
+                    DEFAULT_BAG_LOCATION + item.location.as_vec3()
+                        - vec3(
+                            (INVENTORY_GRID_DIMENSIONS[0] / 2) as f32,
+                            (INVENTORY_GRID_DIMENSIONS[1] / 2) as f32,
+                            (INVENTORY_GRID_DIMENSIONS[2] / 2) as f32,
+                        ),
                 ),
                 ..default()
             });
@@ -212,7 +227,12 @@ fn update_packed_items(
     mut meshes: ResMut<Assets<Mesh>>,
 ) {
     for mut item in query.iter_mut() {
-        item.0.translation = DEFAULT_BAG_LOCATION + item.2.data.location.as_vec3();
+        item.0.translation = DEFAULT_BAG_LOCATION + item.2.data.location.as_vec3()
+            - vec3(
+                (INVENTORY_GRID_DIMENSIONS[0] / 2) as f32,
+                (INVENTORY_GRID_DIMENSIONS[1] / 2) as f32,
+                (INVENTORY_GRID_DIMENSIONS[2] / 2) as f32,
+            );
 
         if !item.2.data.changed {
             continue;

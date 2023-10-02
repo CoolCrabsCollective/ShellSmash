@@ -19,6 +19,9 @@ use crate::world_item::ItemAttachmentPlugin;
 
 pub struct GamePlugin;
 
+#[derive(Component)]
+pub struct HolyCam;
+
 impl Plugin for GamePlugin {
     fn build(&self, app: &mut App) {
         app.add_systems(Startup, setup);
@@ -81,14 +84,20 @@ fn setup(
         ..default()
     });
     // camera
-    commands.spawn(Camera3dBundle {
-        transform: get_camera_position(),
-        projection: Perspective(PerspectiveProjection {
-            fov: 10.0f32.to_radians(),
+    commands
+        .spawn(Camera3dBundle {
+            camera: Camera {
+                order: 70,
+                ..default()
+            },
+            transform: get_camera_position(),
+            projection: Perspective(PerspectiveProjection {
+                fov: 10.0f32.to_radians(),
+                ..default()
+            }),
             ..default()
-        }),
-        ..default()
-    });
+        })
+        .insert(HolyCam);
 
     // commands.spawn(SceneBundle {
     //     scene: asset_server.load("enemy.glb#Scene0"),
