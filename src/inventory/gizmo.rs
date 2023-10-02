@@ -1,16 +1,13 @@
-use crate::game::HolyCam;
-use crate::inventory::controller::move_item;
-use crate::inventory::controller::ItemDirection;
-use bevy::input::mouse::MouseButtonInput;
 use bevy::prelude::*;
-use bevy::render::camera;
 use bevy::window::PrimaryWindow;
 use bevy_mod_raycast::ray_intersection_over_mesh;
 use bevy_mod_raycast::Ray3d;
 
+use crate::game::HolyCam;
+use crate::inventory::controller::move_item;
 use crate::inventory::controller::CubeRotationAnime;
-
 use crate::inventory::controller::InventoryControllerState;
+use crate::inventory::controller::ItemDirection;
 use crate::inventory::selection::SelectedItem;
 
 use super::PackedInventoryItem;
@@ -41,10 +38,31 @@ pub fn update_gizmo_position(
     };
     for (mut transform, gizmo) in gizmo_pos_query.iter_mut() {
         let t = camera_transform.translation;
-        transform.translation = t
-            + camera_transform.forward() * 1.5
-            + camera_transform.right() * 0.8
-            + camera_transform.up() * -0.3;
+        match gizmo.item_dir {
+            ItemDirection::UP
+            | ItemDirection::LEFT
+            | ItemDirection::DOWN
+            | ItemDirection::RIGHT
+            | ItemDirection::FORWARD
+            | ItemDirection::BACKWARDS => {
+                transform.translation = t
+                    + camera_transform.forward() * 1.5
+                    + camera_transform.right() * 0.8
+                    + camera_transform.up() * -0.3;
+            }
+            ItemDirection::YAW_LEFT
+            | ItemDirection::YAW_RIGHT
+            | ItemDirection::ROLL_LEFT
+            | ItemDirection::ROLL_RIGHT
+            | ItemDirection::PITCH_BACKWARDS
+            | ItemDirection::PITCH_FORWARD => {
+                let gt = gizmo.relative.translation;
+                transform.translation = t
+                    + camera_transform.forward() * (1.5 + gt.x)
+                    + camera_transform.right() * (-0.8 + gt.y)
+                    + camera_transform.up() * (-0.3 + gt.z);
+            }
+        }
         transform.rotation = camera_transform.rotation.mul_quat(gizmo.relative.rotation);
     }
 }
@@ -97,8 +115,23 @@ pub fn highlight_gizmo(
         match optional_intersection {
             Some(g) => {
                 for mut item in query_items.iter_mut() {
-                    if Some(item.0) == selected.selected_entity {
-                        move_item(&mut item.1, g.item_dir, state.view_index)
+                    match g.item_dir {
+                        ItemDirection::UP
+                        | ItemDirection::LEFT
+                        | ItemDirection::DOWN
+                        | ItemDirection::RIGHT
+                        | ItemDirection::FORWARD
+                        | ItemDirection::BACKWARDS => {
+                            if Some(item.0) == selected.selected_entity {
+                                move_item(&mut item.1, g.item_dir, state.view_index)
+                            }
+                        }
+                        ItemDirection::YAW_LEFT
+                        | ItemDirection::YAW_RIGHT
+                        | ItemDirection::ROLL_LEFT
+                        | ItemDirection::ROLL_RIGHT
+                        | ItemDirection::PITCH_BACKWARDS
+                        | ItemDirection::PITCH_FORWARD => {}
                     }
                 }
             }
