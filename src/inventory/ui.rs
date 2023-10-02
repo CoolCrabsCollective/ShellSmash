@@ -61,7 +61,8 @@ fn build_ui(mut commands: Commands, asset_server: Res<AssetServer>, inventory: R
         .insert(InventoryUI)
         .with_children(|parent| {
             parent.spawn(TextBundle::from_section(
-                "You have limited inventory space! What does not fit in the grid, you lose.",
+                // "fit your cock in your ass" - Cedric Martens
+                "Space is limited! Fit your items or lose them.",
                 TextStyle {
                     font: asset_server.load("fonts/FiraSans-Bold.ttf"),
                     font_size: 40.0,

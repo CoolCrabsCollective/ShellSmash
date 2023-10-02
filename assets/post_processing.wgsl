@@ -46,6 +46,7 @@ fn fragment(in: FullscreenVertexOutput) -> @location(0) vec4<f32> {
     let value_1 = 12.5;
     let value_2 = 0.01;
 
+    // https://www.shadertoy.com/view/4tG3WR
     let x = in.uv.x * value_1 + settings.time;
     let y = in.uv.y * value_1 + settings.time;
     let water_uv = vec2(

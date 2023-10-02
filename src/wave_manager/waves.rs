@@ -1,7 +1,7 @@
 use crate::wave_manager::WaveDefinition;
 use rand::Rng;
 
-pub(crate) const DEFINED_WAVES: [WaveDefinition; 2] = [
+pub(crate) const DEFINED_WAVES: [WaveDefinition; 5] = [
     WaveDefinition {
         // name: ("Beginning"),
         start_delay: 2.0,
@@ -9,7 +9,9 @@ pub(crate) const DEFINED_WAVES: [WaveDefinition; 2] = [
 
         jellyfish_count: 5,
         urchin_count: 2,
-        shrimp_count: 1,
+        shrimp_count: 0,
+
+        luck: Some(1),
 
         drop_item_count: 10,
     },
@@ -18,9 +20,50 @@ pub(crate) const DEFINED_WAVES: [WaveDefinition; 2] = [
         start_delay: 3.0,
         spawn_rate: 0.25,
 
-        jellyfish_count: 10,
+        jellyfish_count: 7,
         urchin_count: 5,
-        shrimp_count: 1,
+        shrimp_count: 0,
+
+        luck: None,
+
+        drop_item_count: 10,
+    },
+    WaveDefinition {
+        // name: ("Gamer Mode"),
+        start_delay: 7.0,
+        spawn_rate: 1.5,
+
+        jellyfish_count: 20,
+        urchin_count: 5,
+        shrimp_count: 0,
+
+        luck: Some(2),
+
+        drop_item_count: 10,
+    },
+    WaveDefinition {
+        // name: ("Gamer Mode"),
+        start_delay: 7.0,
+        spawn_rate: 1.25,
+
+        jellyfish_count: 10,
+        urchin_count: 15,
+        shrimp_count: 0,
+
+        luck: None,
+
+        drop_item_count: 10,
+    },
+    WaveDefinition {
+        // name: ("Gamer Mode"),
+        start_delay: 7.0,
+        spawn_rate: 0.75,
+
+        jellyfish_count: 15,
+        urchin_count: 15,
+        shrimp_count: 0,
+
+        luck: Some(3),
 
         drop_item_count: 10,
     },
@@ -53,6 +96,14 @@ pub fn wave_generation(wave_count: i32) -> WaveDefinition {
         total_enemy_count -= 1;
     }
 
+    let mut luck_value: Option<i32> = None;
+    match wave_count {
+        10 => {
+            luck_value = Option::from(2);
+        }
+        _ => {}
+    }
+
     return WaveDefinition {
         // name: ("Gamer Mode"),
         start_delay: 1.5,
@@ -61,6 +112,8 @@ pub fn wave_generation(wave_count: i32) -> WaveDefinition {
         jellyfish_count: jellyfish,
         urchin_count: urchin,
         shrimp_count: shrimp,
+
+        luck: luck_value,
 
         drop_item_count: 10,
     };

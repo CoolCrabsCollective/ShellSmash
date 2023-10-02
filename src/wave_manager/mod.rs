@@ -2,6 +2,7 @@ use std::time::Duration;
 
 use bevy::{log, prelude::*};
 use bevy_rapier3d::prelude::*;
+use queues::{IsQueue, Queue};
 use rand::random;
 use rand::Rng;
 
@@ -37,13 +38,15 @@ pub struct WaveDefinition {
     urchin_count: i32,
     shrimp_count: i32,
 
+    luck: Option<i32>,
+
     drop_item_count: i32,
 }
 
 #[derive(Resource)]
 pub struct Wave {
     pub count: i32,
-    pub luck: i32, // better items should drop as luck increases
+    pub luck: Queue<i32>, // better items should drop as luck increases
 
     pub wave_definition: WaveDefinition,
 }
@@ -52,7 +55,7 @@ impl Wave {
     fn new() -> Self {
         Self {
             count: 0,
-            luck: 0,
+            luck: Default::default(),
             wave_definition: DEFINED_WAVES[0].clone(),
         }
     }
@@ -315,9 +318,12 @@ fn drop_items(
     mut materials: ResMut<Assets<StandardMaterial>>,
     mut current_wave: ResMut<Wave>,
 ) {
-    for i in 0..current_wave.wave_definition.drop_item_count {
-        spawn_random_item(current_wave.luck, commands, &mut meshes, &mut materials);
-    }
+    spawn_random_item(
+        &mut current_wave.luck,
+        commands,
+        &mut meshes,
+        &mut materials,
+    );
 }
 #[derive(Component)]
 struct WaveUI;
@@ -330,6 +336,7 @@ fn prepare_next_wave(
 ) {
     if current_wave.count < (DEFINED_WAVES.len() as i32) {
         // Wave count is within defined waves
+        dbg!("using defined wave");
         current_wave.wave_definition = DEFINED_WAVES[current_wave.count as usize].clone();
     } else {
         current_wave.wave_definition = wave_generation(current_wave.count);
@@ -343,6 +350,11 @@ fn prepare_next_wave(
     spawn_timer.0.set_duration(Duration::from_secs_f32(
         current_wave.wave_definition.spawn_rate,
     ));
+
+    let luck = current_wave.wave_definition.luck;
+    if luck.is_some() {
+        let _ = current_wave.luck.add(luck.unwrap());
+    }
 
     next_state.set(WaveState::WAVE_START);
 }
