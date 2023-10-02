@@ -79,7 +79,7 @@ fn update_ui(
         materials.get_mut(heart.3.as_ref()).unwrap().base_color = if i < healthy_heart_count {
             Color::rgba(1.0, 0.1, 0.1, 1.0)
         } else {
-            Color::rgba(1.0, 0.1, 0.1, 0.5)
+            Color::rgba(0.7, 0.7, 0.7, 0.5)
         };
         i += 1;
     }
@@ -90,7 +90,7 @@ fn update_ui(
         heart2.color = if i < healthy_heart_count {
             Color::rgba(1.0, 0.1, 0.1, 1.0)
         } else {
-            Color::rgba(1.0, 0.1, 0.1, 0.5)
+            Color::rgba(0.7, 0.7, 0.7, 0.5)
         };
         heart2.create_ui_entity(
             ui_entity_transform,

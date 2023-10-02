@@ -5,9 +5,13 @@ use bevy::time::Time;
 use bevy_rapier3d::na::clamp;
 
 use crate::inventory::Inventory;
+use crate::player::PlayerState;
 use crate::world_item::WeaponHolder;
 
 pub const BASE_ATTACK_COOLDOWN: f32 = 0.5;
+
+// how long it takes to regen 1 heart
+pub const PLAYER_HEAL_COOLDOWN: f32 = 5.0;
 
 pub struct PlayerCombatPlugin;
 
@@ -16,8 +20,12 @@ impl Plugin for PlayerCombatPlugin {
         app.add_systems(
             Update,
             process_hit.run_if(
-                in_state(GameState::FightingInArena), //.and_then(in_state(PlayerState::Fighting)),
+                in_state(GameState::FightingInArena).and_then(in_state(PlayerState::Fighting)),
             ),
+        );
+        app.add_systems(
+            Update,
+            player_heal.run_if(in_state(GameState::FightingInArena)),
         );
     }
 }
@@ -30,6 +38,22 @@ pub struct PlayerCombatState {
     pub current_hp: i32,
     pub max_hp: i32,
     pub last_attack: f32,
+    pub last_heal: f32,
+}
+
+fn player_heal(mut player: Query<&mut PlayerCombatState>, time: Res<Time>) {
+    let mut player = player.single_mut();
+
+    if player.current_hp == player.max_hp {
+        return;
+    }
+
+    if player.last_heal + PLAYER_HEAL_COOLDOWN > time.elapsed_seconds() {
+        return;
+    }
+
+    player.current_hp += 1;
+    player.last_heal = time.elapsed_seconds();
 }
 
 impl PlayerCombatState {
@@ -38,9 +62,10 @@ impl PlayerCombatState {
             damage: 1,
             attack_speed: 1.0,
             current_weapon_attack_speed: 1.0,
-            current_hp: 5,
-            max_hp: 5,
+            current_hp: 3,
+            max_hp: 3,
             last_attack: -10000.0,
+            last_heal: -10000.0,
         }
     }
 

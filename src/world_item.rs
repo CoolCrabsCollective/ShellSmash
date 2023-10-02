@@ -144,17 +144,19 @@ fn equip_update(
     mut commands: Commands,
     mut meshes: ResMut<Assets<Mesh>>,
     mut materials: ResMut<Assets<StandardMaterial>>,
-    mut player_query: Query<(&mut WeaponHolder, &Transform, &PlayerCombatState)>,
-    inventory_query: Res<Inventory>,
+    mut player_query: Query<(&mut WeaponHolder, &Transform, &mut PlayerCombatState)>,
+    inventory: Res<Inventory>,
 ) {
-    let (mut player_weapon, player_transform, _) = player_query.single_mut();
+    let (mut player_weapon, player_transform, mut combat_state) = player_query.single_mut();
+
+    combat_state.compute_from_inventory(&inventory);
 
     if !player_weapon.current_weapon.is_none() {
         let player_weapon_id = player_weapon.current_weapon.clone().unwrap().1.item_type_id;
 
         let mut found_item = false;
 
-        for item in &inventory_query.content {
+        for item in &inventory.content {
             if item.item_type_id == player_weapon_id {
                 found_item = true;
                 break;
@@ -167,7 +169,7 @@ fn equip_update(
         }
     }
 
-    let item = inventory_query.first_weapon();
+    let item = inventory.first_weapon();
     if player_weapon.current_weapon.is_none() && item != None {
         let item = item.unwrap();
         let entity = item.create_world_entity(
