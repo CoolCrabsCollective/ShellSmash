@@ -13,10 +13,10 @@ pub(crate) const DEFINED_WAVES: [WaveDefinition; 2] = [
     },
     WaveDefinition {
         // name: ("Gamer Mode"),
-        start_delay: 5.0,
-        spawn_rate: 1.0,
+        start_delay: 3.0,
+        spawn_rate: 0.25,
 
-        enemy_count: 20,
+        enemy_count: 30,
         shrimp_count: 0,
 
         drop_item_count: 0,
