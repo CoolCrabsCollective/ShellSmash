@@ -38,7 +38,7 @@ pub struct WaveDefinition {
     urchin_count: i32,
     shrimp_count: i32,
 
-    luck: Option<i32>,
+    luck: i32,
 
     drop_item_count: i32,
 }
@@ -46,7 +46,6 @@ pub struct WaveDefinition {
 #[derive(Resource)]
 pub struct Wave {
     pub count: i32,
-    pub luck: Queue<i32>, // better items should drop as luck increases
 
     pub wave_definition: WaveDefinition,
 }
@@ -55,7 +54,6 @@ impl Wave {
     fn new() -> Self {
         Self {
             count: 0,
-            luck: Default::default(),
             wave_definition: DEFINED_WAVES[0].clone(),
         }
     }
@@ -233,7 +231,7 @@ fn spawn_enemies(
         let position = Vec3::new(
             ((rand_x) * ARENA_DIMENSIONS_METERS[0]) * 2.0,
             1.0,
-            ((rand_y) * ARENA_DIMENSIONS_METERS[0]) * 2.0,
+            ((rand_y) * ARENA_DIMENSIONS_METERS[1]) * 2.0,
         );
         if (player_transform.translation - position).length() > 3.0 {
             commands.spawn(EnemyBundle::new(position, &game_assets, enemy_type));
@@ -319,7 +317,7 @@ fn drop_items(
     mut current_wave: ResMut<Wave>,
 ) {
     spawn_random_item(
-        &mut current_wave.luck,
+        current_wave.wave_definition.luck,
         commands,
         &mut meshes,
         &mut materials,
@@ -336,7 +334,6 @@ fn prepare_next_wave(
 ) {
     if current_wave.count < (DEFINED_WAVES.len() as i32) {
         // Wave count is within defined waves
-        dbg!("using defined wave");
         current_wave.wave_definition = DEFINED_WAVES[current_wave.count as usize].clone();
     } else {
         current_wave.wave_definition = wave_generation(current_wave.count);
@@ -350,11 +347,6 @@ fn prepare_next_wave(
     spawn_timer.0.set_duration(Duration::from_secs_f32(
         current_wave.wave_definition.spawn_rate,
     ));
-
-    let luck = current_wave.wave_definition.luck;
-    if luck.is_some() {
-        let _ = current_wave.luck.add(luck.unwrap());
-    }
 
     next_state.set(WaveState::WAVE_START);
 }

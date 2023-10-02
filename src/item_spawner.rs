@@ -185,7 +185,7 @@ fn create_heart(
     heart.create_world_entity(location, false, true, commands, meshes, materials);
 }
 pub fn spawn_random_item(
-    mut luck: &mut Queue<i32>,
+    luck: i32,
     mut commands: &mut Commands,
     mut meshes: &mut ResMut<Assets<Mesh>>,
     mut materials: &mut ResMut<Assets<StandardMaterial>>,
@@ -193,31 +193,34 @@ pub fn spawn_random_item(
     let mut rng = rand::thread_rng();
     let spawn_id = rng.gen_range(0..20);
 
-    let position = Vec3::new(
-        (random::<f32>() - 0.2) * ARENA_DIMENSIONS_METERS[0],
+    let mut position = Vec3::new(
+        (random::<f32>() - 0.5) * (ARENA_DIMENSIONS_METERS[0] / 3.0),
         0.5,
-        (random::<f32>() - 0.2) * ARENA_DIMENSIONS_METERS[0],
+        (random::<f32>() - 0.5) * (ARENA_DIMENSIONS_METERS[1] / 3.0),
     );
 
     match spawn_id {
-        0..=4 => {
+        0..=2 => {
             create_heart(commands, meshes, materials, position);
         }
         _ => {}
     }
 
-    match luck.peek() {
-        Ok(1) => {
+    position = Vec3::new(
+        (random::<f32>() - 0.5) * (ARENA_DIMENSIONS_METERS[0] / 3.0),
+        0.5,
+        (random::<f32>() - 0.5) * (ARENA_DIMENSIONS_METERS[1] / 3.0),
+    );
+
+    match luck {
+        1 => {
             create_better_sword(commands, meshes, materials, position);
-            let _ = luck.remove();
         }
-        Ok(2) => {
+        2 => {
             create_handgun(commands, meshes, materials, position);
-            let _ = luck.remove();
         }
-        Ok(3) => {
+        3 => {
             create_supergun(commands, meshes, materials, position);
-            let _ = luck.remove();
         }
         _ => {}
     }
