@@ -28,7 +28,9 @@ pub fn select_next(
     let id = selected.selected_entity.unwrap();
     let mut prev = None;
 
-    for entity in query_items.iter() {
+    let vec = query_items.iter().collect::<Vec<_>>().sort();
+
+    for entity in vec {
         if id < entity && (prev == None || id >= prev.unwrap()) {
             selected.selected_entity = Some(entity);
             return;
