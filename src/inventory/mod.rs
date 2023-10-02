@@ -1,21 +1,24 @@
+use bevy::math::vec3;
 use bevy::pbr::NotShadowReceiver;
 use bevy::prelude::*;
 use bevy::transform::components::Transform;
 
 use crate::asset_loader::GameAssets;
-use crate::config::DEFAULT_BAG_LOCATION;
+use crate::config::{DEFAULT_BAG_LOCATION, INVENTORY_GRID_DIMENSIONS};
 use crate::game_state::GameState;
 use crate::inventory::controller::InventoryControllerPlugin;
 use crate::inventory::controller::ItemDirection;
 use crate::inventory::data_manager::InventoryDataPlugin;
 use crate::inventory::gizmo::Gizmo;
 use crate::inventory::grid::GridDisplayPlugin;
+use crate::inventory::validation::InventoryValidationPlugin;
 use crate::math::deg_to_rad;
 
 mod controller;
 mod data_manager;
 mod gizmo;
 mod grid;
+mod validation;
 
 pub struct InventoryPlugin;
 
@@ -28,10 +31,10 @@ impl Plugin for InventoryPlugin {
             update_packed_items.run_if(in_state(GameState::ManagingInventory)),
         );
         app.add_plugins((
-            //VoxelRendererPlugin,
             InventoryControllerPlugin,
             InventoryDataPlugin,
             GridDisplayPlugin,
+            InventoryValidationPlugin,
         ))
         .insert_resource(Inventory {
             content: Vec::new(),
@@ -200,7 +203,12 @@ fn setup(
                 mesh: meshes.add(item.generate_mesh()),
                 material: materials.add(item.color.clone().into()),
                 transform: Transform::from_translation(
-                    DEFAULT_BAG_LOCATION + item.location.as_vec3(),
+                    DEFAULT_BAG_LOCATION + item.location.as_vec3()
+                        - vec3(
+                            (INVENTORY_GRID_DIMENSIONS[0] / 2) as f32,
+                            (INVENTORY_GRID_DIMENSIONS[1] / 2) as f32,
+                            (INVENTORY_GRID_DIMENSIONS[2] / 2) as f32,
+                        ),
                 ),
                 ..default()
             });
@@ -219,7 +227,12 @@ fn update_packed_items(
     mut meshes: ResMut<Assets<Mesh>>,
 ) {
     for mut item in query.iter_mut() {
-        item.0.translation = DEFAULT_BAG_LOCATION + item.2.data.location.as_vec3();
+        item.0.translation = DEFAULT_BAG_LOCATION + item.2.data.location.as_vec3()
+            - vec3(
+                (INVENTORY_GRID_DIMENSIONS[0] / 2) as f32,
+                (INVENTORY_GRID_DIMENSIONS[1] / 2) as f32,
+                (INVENTORY_GRID_DIMENSIONS[2] / 2) as f32,
+            );
 
         if !item.2.data.changed {
             continue;
