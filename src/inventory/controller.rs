@@ -4,6 +4,7 @@ use bevy::prelude::Projection::Perspective;
 use bevy::prelude::*;
 
 use crate::config::{DEFAULT_BAG_LOCATION, INVENTORY_GRID_DIMENSIONS};
+use crate::game::HolyCam;
 use crate::game_state::GameState;
 use crate::inventory::gizmo::update_gizmo_position;
 use crate::inventory::{InventoryData, InventoryItem, PackedInventoryItem};
@@ -137,7 +138,7 @@ fn update_camera_position(
     key_codes: Res<Input<KeyCode>>,
     mut param_set: ParamSet<(
         Query<&Transform, With<VoxelCoordinateFrame>>,
-        Query<&mut Transform, With<Camera>>,
+        Query<&mut Transform, With<HolyCam>>,
     )>,
 ) {
     let increment = 2.0;

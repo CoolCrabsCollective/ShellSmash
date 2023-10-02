@@ -1,3 +1,4 @@
+use crate::game::HolyCam;
 use crate::inventory::controller::move_item;
 use crate::inventory::controller::ItemDirection;
 use bevy::input::mouse::MouseButtonInput;
@@ -20,7 +21,7 @@ pub struct Gizmo {
 pub fn update_gizmo_position(
     mut param_set: ParamSet<(
         Query<(&mut Transform, &Gizmo)>,
-        Query<&Transform, With<Camera>>,
+        Query<&Transform, With<HolyCam>>,
     )>,
 ) {
     let camera_transform = {
@@ -43,7 +44,7 @@ pub fn update_gizmo_position(
 pub fn highlight_gizmo(
     mut param_set: ParamSet<(
         Query<(&mut Transform, &Gizmo, &Handle<Mesh>)>,
-        Query<(&Camera, &GlobalTransform)>,
+        Query<(&Camera, &GlobalTransform), With<HolyCam>>,
     )>,
     meshes: Res<Assets<Mesh>>,
     mouse_input: Res<Input<MouseButton>>,

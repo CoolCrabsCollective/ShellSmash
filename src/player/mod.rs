@@ -9,6 +9,7 @@ use bevy::{log, prelude::*};
 use bevy_rapier3d::prelude::*;
 
 use crate::enemy::{Enemy, ENEMY_COLLIDER_RADIUS};
+use crate::game::HolyCam;
 use crate::game_camera_controller::GameCameraControllerPlugin;
 use crate::game_state::GameState;
 use crate::inventory::ItemType;
@@ -201,7 +202,7 @@ fn player_movement(
     time: Res<Time>,
     mut state: Query<&mut PlayerControllerState>,
     windows: Query<&Window, With<PrimaryWindow>>,
-    camera_q: Query<(&Camera, &GlobalTransform)>,
+    camera_q: Query<(&Camera, &GlobalTransform), With<HolyCam>>,
     mut transform: Query<&mut Transform, With<PlayerControllerState>>,
 ) {
     let mut state = state.single_mut();
