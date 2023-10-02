@@ -1,5 +1,8 @@
 pub(crate) mod combat;
 
+use bevy::audio::PlaybackMode::Despawn;
+use bevy::audio::Volume::Relative;
+use bevy::audio::VolumeLevel;
 use bevy::input::keyboard::KeyboardInput;
 use bevy::input::mouse::MouseButtonInput;
 use bevy::input::ButtonState;
@@ -259,6 +262,7 @@ fn player_movement(
 
 fn player_shooting(
     mut commands: Commands,
+    mut asset_server: ResMut<AssetServer>,
     mut shooting_state: ResMut<PlayerShootingState>,
     player_transform_query: Query<(
         &Transform,
@@ -298,6 +302,15 @@ fn player_shooting(
                 .tick(time.delta())
                 .just_finished()
         {
+            commands.spawn(AudioBundle {
+                source: asset_server.load("shoot.ogg"),
+                settings: PlaybackSettings {
+                    mode: Despawn,
+                    volume: Relative(VolumeLevel::new(1.0f32)),
+                    ..default()
+                },
+                ..default()
+            });
             commands.spawn(ProjectileBundle {
                 pbr: PbrBundle {
                     mesh: shooting_state

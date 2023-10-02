@@ -66,7 +66,7 @@ fn debug_render_toggle(mut context: ResMut<DebugRenderContext>, keys: Res<Input<
 /// set up a simple 3D scene
 fn setup(
     mut commands: Commands,
-    asset_server: ResMut<AssetServer>,
+    mut asset_server: ResMut<AssetServer>,
     mut meshes: ResMut<Assets<Mesh>>,
     mut materials: ResMut<Assets<StandardMaterial>>,
 ) {

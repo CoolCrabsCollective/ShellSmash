@@ -1,10 +1,14 @@
 use crate::enemy::Enemy;
 use crate::game_state::GameState;
+use bevy::audio::PlaybackMode::{Despawn, Once};
+use bevy::audio::Volume::Relative;
+use bevy::audio::VolumeLevel;
 use bevy::prelude::*;
 use bevy::time::Time;
 use bevy_rapier3d::na::clamp;
 
 use crate::inventory::Inventory;
+use crate::inventory::ItemType::MELEE_WEAPON;
 use crate::player::PlayerState;
 use crate::world_item::WeaponHolder;
 
@@ -103,6 +107,7 @@ impl PlayerCombatState {
 
 fn process_hit(
     mut commands: Commands,
+    mut asset_server: ResMut<AssetServer>,
     mut player: Query<(&Transform, &mut PlayerCombatState, &WeaponHolder)>,
     enemies: Query<(Entity, &Transform), With<Enemy>>,
     buttons: Res<Input<MouseButton>>,
@@ -116,6 +121,10 @@ fn process_hit(
 
     let current_weapon = player.2.current_weapon.clone().unwrap().1;
 
+    if current_weapon.item_type != MELEE_WEAPON {
+        return;
+    }
+
     if player.1.last_attack
         + BASE_ATTACK_COOLDOWN / (player.1.attack_speed * current_weapon.weapon_attack_speed)
         > time.elapsed_seconds()
@@ -128,6 +137,15 @@ fn process_hit(
     if buttons.just_pressed(MouseButton::Left)
         || (buttons.pressed(MouseButton::Left) && current_weapon.weapon_is_auto)
     {
+        commands.spawn(AudioBundle {
+            source: asset_server.load("swing.ogg"),
+            settings: PlaybackSettings {
+                mode: Despawn,
+                volume: Relative(VolumeLevel::new(0.5f32)),
+                ..default()
+            },
+            ..default()
+        });
         for enemy in enemies.iter() {
             if enemy
                 .1
