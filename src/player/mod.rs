@@ -228,26 +228,34 @@ fn player_movement(
     let mut state = state.single_mut();
     let mut transform = transform.single_mut();
 
-    state.velocity.y -= 9.81 * time.delta_seconds();
-    state.velocity.x /= 1.5;
-    state.velocity.z /= 1.5;
+    let mut current_frame_movement = Vec3::ZERO;
+    current_frame_movement.y -= 9.81 * time.delta_seconds();
+    // current_frame_movement += to_player_unit_vector * speed * time.delta_seconds();
+
+    // state.velocity.y -= 9.81 * time.delta_seconds();
+    // state.velocity.x /= 1.5;
+    // state.velocity.z /= 1.5;
     if state.is_forward_pressed {
-        state.velocity.z = -6.0;
+        current_frame_movement.z -= 6.0;
+        // state.velocity.z = -6.0;
     }
 
     if state.is_backward_pressed {
-        state.velocity.z = 6.0;
+        current_frame_movement.z += 6.0;
+        // state.velocity.z = 6.0;
     }
 
     if state.is_left_pressed {
-        state.velocity.x = -6.0;
+        current_frame_movement.x -= 6.0;
+        // state.velocity.x = -6.0;
     }
 
     if state.is_right_pressed {
-        state.velocity.x = 6.0;
+        current_frame_movement.x += 6.0;
+        // state.velocity.x = 6.0;
     }
 
-    controllers.single_mut().translation = Some(state.velocity * time.delta_seconds());
+    controllers.single_mut().translation = Some(current_frame_movement * time.delta_seconds());
 
     let (camera, camera_transform) = camera_q.single();
 
@@ -380,24 +388,30 @@ fn vertical_vel_reset(
 }
 
 fn detect_player_hit(
-    player_controller_output_query: Query<
-        &KinematicCharacterControllerOutput,
-        With<PlayerControllerState>,
-    >,
-    enemy_entity_query: Query<Entity, With<Enemy>>,
+    player_controller_output_query: Query<(&Transform, &Collider), With<PlayerControllerState>>,
+    enemy_entity_query: Query<(Entity, &Transform, &Collider), With<Enemy>>,
     mut player_hit_event_writer: EventWriter<PlayerHitEvent>,
 ) {
-    let player_controller_output = player_controller_output_query.get_single();
-    if let Err(_error_ignored) = player_controller_output {
-        return;
-    }
-    let player_controller_output = player_controller_output.unwrap();
+    let (player_transform, player_collider) = player_controller_output_query.single();
 
-    for collision in &player_controller_output.collisions {
-        if enemy_entity_query.contains(collision.entity) {
-            player_hit_event_writer.send(PlayerHitEvent(collision.entity));
+    for (enemy_entity, enemy_transform, enemy_collider) in &enemy_entity_query {
+        let total_radius = player_collider.as_capsule().unwrap().radius() * 1.2
+            + enemy_collider.as_ball().unwrap().radius() * 1.5;
+
+        // dbg!(
+        //     (player_transform.translation - enemy_transform.translation).length(),
+        //     total_radius
+        // );
+        if (player_transform.translation - enemy_transform.translation).length() < total_radius {
+            player_hit_event_writer.send(PlayerHitEvent(enemy_entity));
         }
     }
+
+    // for collision in &player_controller_output.collisions {
+    //     if enemy_entity_query.contains(collision.entity) {
+    //         player_hit_event_writer.send(PlayerHitEvent(collision.entity));
+    //     }
+    // }
 }
 
 fn handle_player_hit(
