@@ -1,7 +1,7 @@
 use crate::game_state::GameState;
-use crate::inventory::InventoryItem;
 use crate::inventory::ItemType::{MELEE_WEAPON, NON_WEAPON, RANGED_WEAPON};
-use crate::player::{PlayerControllerState, PLAYER_HEIGHT};
+use crate::inventory::{InventoryItem, ItemTypeId};
+use crate::player::PLAYER_HEIGHT;
 use crate::world_item::{WeaponHolder, VOXEL_SIZE_IN_WORLD};
 use bevy::math::vec3;
 use bevy::prelude::*;
@@ -36,6 +36,7 @@ fn spawn_debug_items(
             vec![(0, 0, 0), (0, 0, 1), (0, 0, 2), (-1, 0, 2), (-2, 0, 2)],
             Color::rgba(1.0, 1.0, 1.0, 1.0),
             RANGED_WEAPON,
+            ItemTypeId::Boomerang,
         ));
         item.weapon_attack_speed = 10.0;
         item.projectile_speed = 30.0;
@@ -59,6 +60,7 @@ fn spawn_debug_items(
             ],
             Color::rgba(0.5, 0.5, 0.5, 1.0),
             MELEE_WEAPON,
+            ItemTypeId::AlexSword,
         ))
     } else if keys.just_pressed(KeyCode::Key3) {
         InventoryItem::from((
@@ -73,6 +75,7 @@ fn spawn_debug_items(
             ],
             Color::rgba(1.0, 0.0, 0.0, 1.0),
             NON_WEAPON,
+            ItemTypeId::Heart,
         ))
     } else {
         return;
@@ -164,6 +167,7 @@ fn create_david_gun(
         vec![(0, 0, 0), (0, 0, 1), (0, 0, 2), (-1, 0, 2), (-2, 0, 2)],
         Color::rgba(1.0, 1.0, 1.0, 1.0),
         RANGED_WEAPON,
+        ItemTypeId::DavidGun,
     ));
     gun.weapon_attack_speed = 10.0;
     gun.projectile_speed = 30.0;
@@ -189,6 +193,7 @@ fn create_sword(
         ],
         Color::rgba(0.0, 1.0, 0.0, 1.0),
         MELEE_WEAPON,
+        ItemTypeId::WillSword,
     ));
 
     sword.create_world_entity(location, false, true, commands, meshes, materials);

@@ -1,6 +1,7 @@
 use std::f32::consts::PI;
 
 use crate::collectable::CollectablePlugin;
+use crate::inventory::WeaponSelectorPlugin;
 use crate::projectile::ProjectilePlugin;
 use bevy::math::vec3;
 use bevy::pbr::{CascadeShadowConfigBuilder, DirectionalLightShadowMap};
@@ -19,6 +20,9 @@ use crate::world_item::ItemAttachmentPlugin;
 
 pub struct GamePlugin;
 
+#[derive(Component)]
+pub struct HolyCam;
+
 impl Plugin for GamePlugin {
     fn build(&self, app: &mut App) {
         app.add_systems(Startup, setup);
@@ -34,6 +38,7 @@ impl Plugin for GamePlugin {
             ItemAttachmentPlugin,
             CollectablePlugin,
             ProjectilePlugin,
+            WeaponSelectorPlugin,
         ))
         .add_systems(Update, debug_render_toggle)
         .insert_resource(AmbientLight {
@@ -81,14 +86,20 @@ fn setup(
         ..default()
     });
     // camera
-    commands.spawn(Camera3dBundle {
-        transform: get_camera_position(),
-        projection: Perspective(PerspectiveProjection {
-            fov: 10.0f32.to_radians(),
+    commands
+        .spawn(Camera3dBundle {
+            camera: Camera {
+                order: 70,
+                ..default()
+            },
+            transform: get_camera_position(),
+            projection: Perspective(PerspectiveProjection {
+                fov: 10.0f32.to_radians(),
+                ..default()
+            }),
             ..default()
-        }),
-        ..default()
-    });
+        })
+        .insert(HolyCam);
 
     // commands.spawn(SceneBundle {
     //     scene: asset_server.load("enemy.glb#Scene0"),
