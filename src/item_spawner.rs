@@ -1,7 +1,7 @@
 use crate::game_state::GameState;
 use crate::inventory::InventoryItem;
 use crate::inventory::ItemType::{MELEE_WEAPON, NON_WEAPON, RANGED_WEAPON};
-use crate::player::{PlayerControllerState, PLAYER_HEIGHT};
+use crate::player::PLAYER_HEIGHT;
 use crate::world_item::{WeaponHolder, VOXEL_SIZE_IN_WORLD};
 use bevy::math::vec3;
 use bevy::prelude::*;
