@@ -107,7 +107,6 @@ fn setup(
     mut meshes: ResMut<Assets<Mesh>>,
     mut materials: ResMut<Assets<StandardMaterial>>,
 ) {
-    // create_boomerang(commands, meshes, materials);
     create_better_sword(
         &mut commands,
         &mut meshes,
@@ -129,32 +128,6 @@ fn setup(
         },
     );
 }
-
-// fn create_boomerang(
-//     mut commands: Commands,
-//     mut meshes: ResMut<Assets<Mesh>>,
-//     mut materials: ResMut<Assets<StandardMaterial>>,
-// ) {
-//     let boomerang = InventoryItem::from((
-//         (1, 3, 3),
-//         vec![(0, 0, 0), (0, 0, 1), (0, 0, 2), (-1, 0, 0), (-2, 0, 0)],
-//         Color::rgba(1.0, 1.0, 1.0, 1.0),
-//         RANGED_WEAPON,
-//     ));
-//
-//     boomerang.create_world_entity(
-//         Vec3 {
-//             x: 0.0,
-//             y: 0.5,
-//             z: 0.0,
-//         },
-//         false,
-//         true,
-//         commands,
-//         meshes,
-//         materials,
-//     );
-// }
 
 fn create_david_gun(
     commands: &mut Commands,
