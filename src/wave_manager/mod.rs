@@ -157,7 +157,7 @@ fn spawn_enemies(
             attempts += 1;
 
             let mut rng = rand::thread_rng();
-            let spawnTypeId = rng.gen_range(0..2);
+            let spawnTypeId = rng.gen_range(0..3);
             match spawnTypeId {
                 0 => {
                     enemy_type = EnemyType::Jellyfish;
@@ -166,6 +166,10 @@ fn spawn_enemies(
                 1 => {
                     enemy_type = EnemyType::Urchin;
                     enemy_count = &mut current_wave.wave_definition.urchin_count;
+                }
+                2 => {
+                    enemy_type = EnemyType::Shrimp;
+                    enemy_count = &mut current_wave.wave_definition.shrimp_count;
                 }
                 _ => {}
             }
