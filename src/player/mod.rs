@@ -7,9 +7,12 @@ use bevy::input::keyboard::KeyboardInput;
 use bevy::input::mouse::MouseButtonInput;
 use bevy::input::ButtonState;
 use bevy::math::vec3;
+use bevy::ui::AlignItems::Default;
 use bevy::window::PrimaryWindow;
 use bevy::{log, prelude::*};
 use bevy_rapier3d::prelude::*;
+use queues::queue;
+use queues::{IsQueue, Queue};
 
 use crate::config::{
     COLLISION_GROUP_ENEMIES, COLLISION_GROUP_PLAYER, COLLISION_GROUP_PROJECTILES,
@@ -442,7 +445,7 @@ fn tick_death_timer(
         death_timer.0.reset();
         next_game_state.set(GameState::TitleScreen);
         wave.count = 0;
-        wave.luck = 0;
+        wave.luck = queue![];
         next_wave_state.set(WaveState::WAVE_END);
         inventory.content = Vec::new();
     }
