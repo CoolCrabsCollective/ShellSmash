@@ -62,6 +62,12 @@ pub fn update_gizmo_position(
                     + camera_transform.right() * (-0.8 + gt.y)
                     + camera_transform.up() * (-0.3 + gt.z);
             }
+            _ => {
+                transform.translation = t
+                    + camera_transform.forward() * 1.5
+                    + camera_transform.right() * 0.0
+                    + camera_transform.up() * -0.3;
+            }
         }
         transform.rotation = camera_transform.rotation.mul_quat(gizmo.relative.rotation);
     }
@@ -74,7 +80,8 @@ pub fn highlight_gizmo(
     )>,
     meshes: Res<Assets<Mesh>>,
     mouse_input: Res<Input<MouseButton>>,
-    state: Res<InventoryControllerState>,
+    mut state: ResMut<InventoryControllerState>,
+    mut rotation_anime: ResMut<CubeRotationAnime>,
     mut query_items: Query<(Entity, &mut PackedInventoryItem)>,
     query_window: Query<&Window, With<PrimaryWindow>>,
     selected: Res<SelectedItem>,
@@ -132,10 +139,43 @@ pub fn highlight_gizmo(
                                 item.1.data.rotate_y(false);
                             }
                             ItemDirection::PITCH_BACKWARDS => {
-                                item.1.data.rotate_z(false);
+                                if state.view_index % 2 == 0 {
+                                    item.1.data.rotate_z(false);
+                                } else {
+                                    item.1.data.rotate_x(true);
+                                }
                             }
                             ItemDirection::PITCH_FORWARD => {
-                                item.1.data.rotate_z(true);
+                                if state.view_index % 2 == 0 {
+                                    item.1.data.rotate_z(true);
+                                } else {
+                                    item.1.data.rotate_x(false);
+                                }
+                            }
+                            ItemDirection::ROTATE_VIEW_LEFT => {
+                                if !rotation_anime.enabled {
+                                    rotation_anime.enabled = true;
+                                    rotation_anime.start_rotation = rotation_anime.end_rotation;
+                                    rotation_anime.end_rotation =
+                                        rotation_anime.start_rotation + -90.0;
+                                    rotation_anime.anime_time.reset();
+
+                                    state.view_index = if state.view_index == 0 {
+                                        3
+                                    } else {
+                                        state.view_index - 1
+                                    };
+                                }
+                            }
+                            ItemDirection::ROTATE_VIEW_RIGHT => {
+                                if !rotation_anime.enabled {
+                                    rotation_anime.enabled = true;
+                                    rotation_anime.start_rotation = rotation_anime.end_rotation;
+                                    rotation_anime.end_rotation =
+                                        rotation_anime.start_rotation + 90.0;
+                                    rotation_anime.anime_time.reset();
+                                    state.view_index = (state.view_index + 1) % 4;
+                                }
                             }
                             _ => {}
                         }
