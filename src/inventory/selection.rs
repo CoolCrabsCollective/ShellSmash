@@ -28,7 +28,8 @@ pub fn select_next(
     let id = selected.selected_entity.unwrap();
     let mut prev = None;
 
-    let vec = query_items.iter().collect::<Vec<_>>().sort();
+    let mut vec = query_items.iter().collect::<Vec<_>>();
+    vec.sort();
 
     for entity in vec {
         if id < entity && (prev == None || id >= prev.unwrap()) {
