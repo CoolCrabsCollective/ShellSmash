@@ -52,6 +52,7 @@ pub fn highlight_gizmo(
 
         let mut gizmo_query = param_set.p1();
         for (mut trans, gizmo, mesh) in gizmo_query.iter_mut() {
+            // dbg!(mesh);
             if let Some(intersection) = ray_intersection_over_mesh(
                 meshes.get(mesh).unwrap(),
                 &trans.compute_matrix(),
