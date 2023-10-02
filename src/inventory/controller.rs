@@ -9,6 +9,7 @@ use crate::config::{DEFAULT_BAG_LOCATION, INVENTORY_GRID_DIMENSIONS};
 use crate::game::HolyCam;
 use crate::game_state::GameState;
 use crate::inventory::gizmo::update_gizmo_position;
+use crate::inventory::selection::SelectedItem;
 use crate::inventory::{InventoryData, InventoryItem, PackedInventoryItem};
 
 pub struct InventoryControllerPlugin;
@@ -225,39 +226,56 @@ pub fn move_item(item: &mut PackedInventoryItem, item_dir: ItemDirection, view_i
 fn move_inventory_items(
     state: Res<InventoryControllerState>,
     key_codes: Res<Input<KeyCode>>,
-    mut query_items: Query<&mut PackedInventoryItem>,
+    mut query_items: Query<(Entity, &mut PackedInventoryItem)>,
+    selected: Res<SelectedItem>,
 ) {
     if key_codes.just_pressed(KeyCode::S) {
         for mut item in query_items.iter_mut() {
-            move_item(&mut item, ItemDirection::BACKWARDS, state.view_index);
+            if Some(item.0) == selected.selected_entity {
+                move_item(&mut item.1, ItemDirection::BACKWARDS, state.view_index);
+            }
         }
     } else if key_codes.just_pressed(KeyCode::D) {
         for mut item in query_items.iter_mut() {
-            move_item(&mut item, ItemDirection::RIGHT, state.view_index);
+            if Some(item.0) == selected.selected_entity {
+                move_item(&mut item.1, ItemDirection::RIGHT, state.view_index);
+            }
         }
     } else if key_codes.just_pressed(KeyCode::W) {
         for mut item in query_items.iter_mut() {
-            move_item(&mut item, ItemDirection::FORWARD, state.view_index);
+            if Some(item.0) == selected.selected_entity {
+                move_item(&mut item.1, ItemDirection::FORWARD, state.view_index);
+            }
         }
     } else if key_codes.just_pressed(KeyCode::A) {
         for mut item in query_items.iter_mut() {
-            move_item(&mut item, ItemDirection::LEFT, state.view_index);
+            if Some(item.0) == selected.selected_entity {
+                move_item(&mut item.1, ItemDirection::LEFT, state.view_index);
+            }
         }
     } else if key_codes.just_pressed(KeyCode::Q) {
         for mut item in query_items.iter_mut() {
-            item.data.rotate(true);
+            if Some(item.0) == selected.selected_entity {
+                item.1.data.rotate(true);
+            }
         }
     } else if key_codes.just_pressed(KeyCode::E) {
         for mut item in query_items.iter_mut() {
-            item.data.rotate(false);
+            if Some(item.0) == selected.selected_entity {
+                item.1.data.rotate(false);
+            }
         }
     } else if key_codes.just_pressed(KeyCode::Z) {
         for mut item in query_items.iter_mut() {
-            move_item(&mut item, ItemDirection::UP, state.view_index);
+            if Some(item.0) == selected.selected_entity {
+                move_item(&mut item.1, ItemDirection::UP, state.view_index);
+            }
         }
     } else if key_codes.just_pressed(KeyCode::X) {
         for mut item in query_items.iter_mut() {
-            move_item(&mut item, ItemDirection::DOWN, state.view_index);
+            if Some(item.0) == selected.selected_entity {
+                move_item(&mut item.1, ItemDirection::DOWN, state.view_index);
+            }
         }
     }
 }

@@ -1,3 +1,4 @@
+use crate::inventory::PackedInventoryItem;
 use bevy::prelude::*;
 
 #[derive(Resource)]
@@ -13,4 +14,16 @@ impl Plugin for SelectionPlugin {
             selected_entity: None,
         });
     }
+}
+
+pub fn select_next(
+    query_items: Query<Entity, With<PackedInventoryItem>>,
+    mut selected: ResMut<SelectedItem>,
+) {
+    if selected.selected_entity == None {
+        selected.selected_entity = query_items.iter().next();
+        return;
+    }
+
+    selected.selected_entity;
 }
