@@ -13,7 +13,6 @@ use crate::inventory::data_manager::InventoryDataPlugin;
 use crate::inventory::gizmo::Gizmo;
 use crate::inventory::grid::GridDisplayPlugin;
 use crate::inventory::validation::InventoryValidationPlugin;
-use crate::math::deg_to_rad;
 
 mod controller;
 mod data_manager;
@@ -65,44 +64,52 @@ pub fn setup(
 ) {
     let mut up_transform =
         Transform::from_translation(DEFAULT_BAG_LOCATION + Vec3::from((0.0, 0.0, 0.0)));
-    up_transform.rotation =
-        Quat::from_euler(EulerRot::XYZ, deg_to_rad(-90.0), deg_to_rad(0.0), 0.0);
+    up_transform.rotation = Quat::from_euler(
+        EulerRot::XYZ,
+        (-90.0 as f32).to_radians(),
+        (0.0 as f32).to_radians(),
+        0.0,
+    );
     let mut down_transform =
         Transform::from_translation(DEFAULT_BAG_LOCATION + Vec3::from((0.0, 0.0, 0.0)));
-    down_transform.rotation =
-        Quat::from_euler(EulerRot::XYZ, deg_to_rad(90.0), deg_to_rad(0.0), 0.0);
+    down_transform.rotation = Quat::from_euler(
+        EulerRot::XYZ,
+        (90.0 as f32).to_radians(),
+        (0.0 as f32).to_radians(),
+        0.0,
+    );
     let mut left_transform =
         Transform::from_translation(DEFAULT_BAG_LOCATION + Vec3::from((0.0, 0.0, 0.0)));
     left_transform.rotation = Quat::from_euler(
         EulerRot::XYZ,
-        deg_to_rad(0.0),
-        deg_to_rad(-90.0),
-        deg_to_rad(90.0),
+        (0.0 as f32).to_radians(),
+        (-90.0 as f32).to_radians(),
+        (90.0 as f32).to_radians(),
     );
     let mut right_transform =
         Transform::from_translation(DEFAULT_BAG_LOCATION + Vec3::from((0.0, 0.0, 0.0)));
     right_transform.rotation = Quat::from_euler(
         EulerRot::XYZ,
-        deg_to_rad(0.0),
-        deg_to_rad(90.0),
-        deg_to_rad(90.0),
+        (0.0 as f32).to_radians(),
+        (90.0 as f32).to_radians(),
+        (90.0 as f32).to_radians(),
     );
 
     let mut backwards_transform =
         Transform::from_translation(DEFAULT_BAG_LOCATION + Vec3::from((0.0, 0.0, 0.0)));
     backwards_transform.rotation = Quat::from_euler(
         EulerRot::XYZ,
-        deg_to_rad(0.0),
-        deg_to_rad(0.0),
-        deg_to_rad(0.0),
+        (0.0 as f32).to_radians(),
+        (0.0 as f32).to_radians(),
+        (0.0 as f32).to_radians(),
     );
     let mut forward_transform =
         Transform::from_translation(DEFAULT_BAG_LOCATION + Vec3::from((0.0, 0.0, 0.0)));
     forward_transform.rotation = Quat::from_euler(
         EulerRot::XYZ,
-        deg_to_rad(0.0),
-        deg_to_rad(180.0),
-        deg_to_rad(0.0),
+        (0.0 as f32).to_radians(),
+        (180.0 as f32).to_radians(),
+        (0.0 as f32).to_radians(),
     );
 
     commands

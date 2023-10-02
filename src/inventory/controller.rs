@@ -4,14 +4,12 @@ use bevy::prelude::Projection::Perspective;
 use bevy::prelude::*;
 use bevy::render::camera;
 
+use super::gizmo::highlight_gizmo;
 use crate::config::{DEFAULT_BAG_LOCATION, INVENTORY_GRID_DIMENSIONS};
 use crate::game::HolyCam;
 use crate::game_state::GameState;
 use crate::inventory::gizmo::update_gizmo_position;
 use crate::inventory::{InventoryData, InventoryItem, PackedInventoryItem};
-use crate::math::deg_to_rad;
-
-use super::gizmo::highlight_gizmo;
 
 pub struct InventoryControllerPlugin;
 
@@ -104,7 +102,8 @@ fn update_cube_rotation(
         let vox_query = param_set.p0();
         vox_query.single().translation
     };
-    let mut camera_xz: Vec2 = 8.0 * Vec2::from_angle(deg_to_rad(rotation_anime.end_rotation));
+    let deg = rotation_anime.end_rotation;
+    let mut camera_xz: Vec2 = 8.0 * Vec2::from_angle((deg as f32).to_radians());
     let mut camera_y = camera_trans.y;
     if rotation_anime.enabled {
         rotation_anime.anime_time.tick(time.delta());
@@ -114,7 +113,7 @@ fn update_cube_rotation(
         let rotation_angle = rotation_anime.end_rotation - rotation_anime.start_rotation;
 
         let angle = rotation_anime.start_rotation + parameterized_progress * rotation_angle;
-        camera_xz = 8.0 * Vec2::from_angle(deg_to_rad(angle));
+        camera_xz = 8.0 * Vec2::from_angle((angle as f32).to_radians());
     } else {
         let mut start_anime: bool = false;
         let mut rotation_change = 0.0;

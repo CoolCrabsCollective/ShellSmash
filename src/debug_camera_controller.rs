@@ -4,8 +4,6 @@ use bevy::input::mouse::MouseMotion;
 use bevy::math::Vec3;
 use bevy::{log, prelude::*};
 
-use crate::math::deg_to_rad;
-
 pub struct DebugCameraControllerPlugin;
 
 impl Plugin for DebugCameraControllerPlugin {
@@ -70,7 +68,7 @@ impl CameraControllerState {
 
             view_direction: ControlledViewDirection {
                 horizontal: 0.0,
-                vertical: deg_to_rad(-45.0),
+                vertical: (-45.0 as f32).to_radians(),
             },
             position: Vec3::new(0.0, 3.0, 3.0),
             speed: 10.0,
@@ -130,7 +128,7 @@ fn update_state(mut state: ResMut<CameraControllerState>, time: Res<Time>) {
         state.view_direction.horizontal += -unprocessed_delta.0 * mouse_sensitivity;
         state.view_direction.vertical = (state.view_direction.vertical
             + (-unprocessed_delta.1 * mouse_sensitivity))
-            .clamp(deg_to_rad(-90.0), deg_to_rad(90.0));
+            .clamp((-90.0 as f32).to_radians(), (90.0 as f32).to_radians());
     }
     state.unprocessed_delta = None;
 

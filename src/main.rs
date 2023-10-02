@@ -10,7 +10,6 @@ mod inventory;
 mod item_mesh_generator;
 mod item_spawner;
 mod level_loader;
-mod math;
 mod player;
 mod projectile;
 mod wave_manager;
