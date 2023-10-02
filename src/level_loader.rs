@@ -28,6 +28,7 @@ fn handle_gltf_load_event(
     mut load_events: EventReader<AssetEvent<Gltf>>,
     _mesh_handle_query: Query<&Handle<Mesh>>,
     meshes: Res<Assets<Mesh>>,
+    mut materials: ResMut<Assets<StandardMaterial>>,
     gltf_meshes: Res<Assets<GltfMesh>>,
     nodes: Res<Assets<GltfNode>>,
     assets: Res<Assets<Gltf>>,
@@ -43,15 +44,22 @@ fn handle_gltf_load_event(
                                 || name.to_lowercase().contains("wall")
                             {
                                 log::info!("Generating collider from level object: {name:?}");
-                                if let (Some(mesh), Some(transform)) = (
+                                if let (Some(mesh), Some(material_handle), Some(transform)) = (
                                     get_mesh_from_gltf_node(
                                         node_handle,
                                         &meshes,
                                         &gltf_meshes,
                                         &nodes,
                                     ),
+                                    get_material_from_gltf_node(node_handle, &gltf_meshes, &nodes),
                                     nodes.get(node_handle).map(|node| node.transform),
                                 ) {
+                                    if name.to_lowercase().contains("wall") {
+                                        materials.get_mut(&material_handle).unwrap().base_color =
+                                            Color::rgba(0.0, 0.0, 0.0, 0.0);
+                                        materials.get_mut(&material_handle).unwrap().alpha_mode =
+                                            AlphaMode::Blend;
+                                    }
                                     match get_collider_from_mesh(mesh, &transform) {
                                         Ok(collider) => {
                                             commands.spawn(collider);
@@ -90,6 +98,19 @@ fn get_mesh_from_gltf_node<'a>(
         .and_then(|mesh_handle| gltf_meshes.get(mesh_handle))
         .and_then(|gltf_mesh| gltf_mesh.primitives.get(0))
         .and_then(|first_primitive| meshes.get(&first_primitive.mesh))
+}
+
+fn get_material_from_gltf_node<'a>(
+    node_handle: &Handle<GltfNode>,
+    gltf_meshes: &Res<Assets<GltfMesh>>,
+    nodes: &Res<Assets<GltfNode>>,
+) -> Option<Handle<StandardMaterial>> {
+    nodes
+        .get(node_handle)
+        .and_then(|node| node.mesh.as_ref())
+        .and_then(|mesh_handle| gltf_meshes.get(mesh_handle))
+        .and_then(|gltf_mesh| gltf_mesh.primitives.get(0))
+        .and_then(|first_primitive| first_primitive.material.clone())
 }
 
 // taken from https://github.com/Defernus/bevy_gltf_collider/blob/9f27253e6d2e645c3570bebead34a493e4da1deb/src/mesh_collider.rs

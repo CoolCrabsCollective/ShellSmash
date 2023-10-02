@@ -9,6 +9,7 @@ use crate::game_state::GameState;
 
 const JELLY_ASSET_PATH: &str = "jelly.glb#Scene0";
 const ARROW_STRAIGHT_ASSET_PATH: &str = "arrow_straight.glb#Scene0";
+const ARROW_NOT_STRAIGHT_ASSET_PATH: &str = "arrow_rotated.glb#Scene0";
 
 pub struct AssetLoaderPlugin;
 
@@ -27,11 +28,14 @@ pub struct GameAssets {
 
     arrow_straight_scene_handle: Handle<Gltf>,
     arrow_straight: Option<LoadedSingleModelScene>,
+
+    arrow_rotated_scene_handle: Handle<Gltf>,
+    arrow_rotated: Option<LoadedSingleModelScene>,
 }
 
 impl GameAssets {
     pub fn are_all_assets_loaded(&self) -> bool {
-        self.jelly.is_some()
+        self.jelly.is_some() && self.arrow_straight.is_some()
     }
 
     pub fn jelly(&self) -> LoadedSingleModelScene {
@@ -40,6 +44,9 @@ impl GameAssets {
 
     pub fn arrow_straight(&self) -> LoadedSingleModelScene {
         self.arrow_straight.clone().unwrap()
+    }
+    pub fn arrow_rotated(&self) -> LoadedSingleModelScene {
+        self.arrow_rotated.clone().unwrap()
     }
 }
 
@@ -54,6 +61,7 @@ impl Plugin for AssetLoaderPlugin {
 fn load_all_game_assets(asset_server: Res<AssetServer>, mut game_assets: ResMut<GameAssets>) {
     game_assets.jelly_scene_handle = asset_server.load(JELLY_ASSET_PATH);
     game_assets.arrow_straight_scene_handle = asset_server.load(ARROW_STRAIGHT_ASSET_PATH);
+    game_assets.arrow_rotated_scene_handle = asset_server.load(ARROW_NOT_STRAIGHT_ASSET_PATH);
 }
 
 fn handle_scene_load_event(
@@ -100,6 +108,21 @@ fn handle_scene_load_event(
                             material_handle,
                         });
                     }
+                    if is_same_asset(
+                        scene_handle.clone(),
+                        game_assets.arrow_rotated_scene_handle.clone(),
+                    ) {
+                        let (mesh_handle, material_handle) = get_first_mesh_material_from_scene(
+                            scene_handle.clone(),
+                            &scenes,
+                            &gltf_meshes,
+                        );
+                        game_assets.arrow_rotated = Some(LoadedSingleModelScene {
+                            scene_handle: scene_handle.clone(),
+                            mesh_handle,
+                            material_handle,
+                        });
+                    }
                 }
                 LoadState::Failed => {
                     log::error!(
@@ -110,10 +133,6 @@ fn handle_scene_load_event(
                 _ => {}
             }
         }
-    }
-
-    if game_assets.are_all_assets_loaded() && *game_state.get() == GameState::Loading {
-        game_state_updater.set(GameState::FightingInArena);
     }
 }
 
