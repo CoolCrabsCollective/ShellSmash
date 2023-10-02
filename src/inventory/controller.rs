@@ -3,12 +3,11 @@ use std::time::Duration;
 use bevy::prelude::Projection::Perspective;
 use bevy::prelude::*;
 
-use crate::config::INVENTORY_GRID_DIMENSIONS;
+use crate::config::{DEFAULT_BAG_LOCATION, INVENTORY_GRID_DIMENSIONS};
 use crate::game_state::GameState;
 use crate::inventory::gizmo::update_gizmo_position;
-use crate::inventory::{InventoryData, InventoryItem, VoxelBullcrap};
+use crate::inventory::{InventoryData, InventoryItem, PackedInventoryItem};
 use crate::math::deg_to_rad;
-use crate::voxel_renderer::VoxelCoordinateFrame;
 
 use super::gizmo::highlight_gizmo;
 
@@ -16,6 +15,7 @@ pub struct InventoryControllerPlugin;
 
 impl Plugin for InventoryControllerPlugin {
     fn build(&self, app: &mut App) {
+        app.add_systems(Startup, setup);
         app.add_systems(
             Update,
             update_gizmo_position
@@ -43,6 +43,19 @@ impl Plugin for InventoryControllerPlugin {
         app.insert_resource(InventoryControllerState::new());
         app.insert_resource(CubeRotationAnime::new());
     }
+}
+
+#[derive(Component)]
+pub struct VoxelCoordinateFrame;
+
+fn setup(mut commands: Commands) {
+    commands.spawn((
+        VoxelCoordinateFrame,
+        SpatialBundle::from(Transform {
+            translation: DEFAULT_BAG_LOCATION,
+            ..default()
+        }),
+    ));
 }
 
 #[derive(Resource, Debug)]
@@ -148,7 +161,7 @@ fn update_camera_position(
     camera_translation.rotation = look_at_my_balls.rotation;
 }
 
-pub fn update_inventory_data(query: Query<&VoxelBullcrap>, mut inv: ResMut<InventoryData>) {
+pub fn update_inventory_data(query: Query<&PackedInventoryItem>, mut inv: ResMut<InventoryData>) {
     let mut items: Vec<InventoryItem> = Vec::new();
     for p in query.iter() {
         items.push(p.data.clone())
@@ -159,7 +172,7 @@ pub fn update_inventory_data(query: Query<&VoxelBullcrap>, mut inv: ResMut<Inven
 fn move_inventory_items(
     state: Res<InventoryControllerState>,
     key_codes: Res<Input<KeyCode>>,
-    mut query_items: Query<&mut VoxelBullcrap>,
+    mut query_items: Query<&mut PackedInventoryItem>,
 ) {
     let trans: Vec<IVec3> = vec![
         IVec3::from((0, 0, -1)),
