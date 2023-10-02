@@ -8,6 +8,10 @@ use bevy::window::PrimaryWindow;
 use bevy::{log, prelude::*};
 use bevy_rapier3d::prelude::*;
 
+use crate::config::{
+    COLLISION_GROUP_ENEMIES, COLLISION_GROUP_PLAYER, COLLISION_GROUP_PROJECTILES,
+    COLLISION_GROUP_TERRAIN, COLLISION_GROUP_WALLS,
+};
 use crate::enemy::{Enemy, ENEMY_COLLIDER_RADIUS};
 use crate::game::HolyCam;
 use crate::game_camera_controller::GameCameraControllerPlugin;
@@ -125,6 +129,14 @@ fn setup(
             // Automatically slide down on slopes smaller than 30 degrees.
             min_slope_slide_angle: 30.0f32.to_radians(),
             apply_impulse_to_dynamic_bodies: true,
+            filter_groups: Some(CollisionGroups {
+                // memberships: COLLISION_GROUP_PLAYER,
+                // filters: COLLISION_GROUP_TERRAIN,
+                memberships: COLLISION_GROUP_PLAYER,
+                filters: COLLISION_GROUP_TERRAIN
+                    | COLLISION_GROUP_PROJECTILES
+                    | COLLISION_GROUP_WALLS,
+            }),
             ..default()
         })
         .insert(PlayerControllerState::new())
@@ -317,6 +329,10 @@ fn player_shooting(
                     PLAYER_SHOOTING_PROJECTILE_CUBE_HALF_SIZE,
                     PLAYER_SHOOTING_PROJECTILE_CUBE_HALF_SIZE,
                 ),
+                collision_groups: CollisionGroups {
+                    memberships: COLLISION_GROUP_PROJECTILES,
+                    filters: COLLISION_GROUP_ENEMIES,
+                },
             });
         }
 

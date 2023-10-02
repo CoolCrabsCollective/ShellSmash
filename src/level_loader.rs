@@ -5,7 +5,11 @@ use bevy::{
     prelude::*,
     render::mesh::{Indices, VertexAttributeValues},
 };
-use bevy_rapier3d::prelude::Collider;
+use bevy_rapier3d::prelude::{Collider, CollisionGroups, Group};
+
+use crate::config::{
+    COLLISION_GROUP_ENEMIES, COLLISION_GROUP_PLAYER, COLLISION_GROUP_TERRAIN, COLLISION_GROUP_WALLS,
+};
 
 pub struct LevelLoaderPlugin;
 
@@ -62,7 +66,29 @@ fn handle_gltf_load_event(
                                     }
                                     match get_collider_from_mesh(mesh, &transform) {
                                         Ok(collider) => {
-                                            commands.spawn(collider);
+                                            commands.spawn(collider).insert(
+                                                if name.to_lowercase().contains("wall") {
+                                                    CollisionGroups {
+                                                        memberships: COLLISION_GROUP_WALLS,
+                                                        filters: COLLISION_GROUP_PLAYER,
+                                                        // memberships: Group::ALL,
+                                                        // filters: Group::ALL,
+                                                    }
+                                                } else if name.to_lowercase().contains("terrain") {
+                                                    CollisionGroups {
+                                                        memberships: COLLISION_GROUP_TERRAIN,
+                                                        filters: COLLISION_GROUP_PLAYER
+                                                            | COLLISION_GROUP_ENEMIES,
+                                                        // memberships: Group::ALL,
+                                                        // filters: Group::ALL,
+                                                    }
+                                                } else {
+                                                    CollisionGroups {
+                                                        memberships: Group::ALL,
+                                                        filters: Group::ALL,
+                                                    }
+                                                },
+                                            );
                                         }
                                         Err(err) => {
                                             log::error!("{err:?}");

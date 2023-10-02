@@ -2,6 +2,9 @@ use bevy::prelude::*;
 use bevy_rapier3d::prelude::*;
 
 use crate::asset_loader::GameAssets;
+use crate::config::{
+    COLLISION_GROUP_ENEMIES, COLLISION_GROUP_PROJECTILES, COLLISION_GROUP_TERRAIN,
+};
 use crate::game_state::GameState;
 use crate::player::PlayerControllerState;
 use crate::projectile::Projectile;
@@ -78,6 +81,13 @@ impl EnemyBundle {
                 // Automatically slide down on slopes smaller than 30 degrees.
                 min_slope_slide_angle: 30.0f32.to_radians(),
                 apply_impulse_to_dynamic_bodies: true,
+                filter_groups: Some(CollisionGroups {
+                    // memberships: COLLISION_GROUP_ENEMIES,
+                    // filters: Group::NONE,
+                    // memberships: COLLISION_GROUP_ENEMIES,
+                    memberships: COLLISION_GROUP_ENEMIES,
+                    filters: COLLISION_GROUP_TERRAIN | COLLISION_GROUP_PROJECTILES,
+                }),
                 ..default()
             },
             enemy: Enemy { enemy_type },
