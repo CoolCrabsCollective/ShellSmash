@@ -1,5 +1,6 @@
 pub(crate) mod combat;
 
+use crate::collectable::Collectable;
 use bevy::audio::PlaybackMode::Despawn;
 use bevy::audio::Volume::Relative;
 use bevy::audio::VolumeLevel;
@@ -22,7 +23,8 @@ use crate::enemy::{Enemy, EnemyType, ENEMY_COLLIDER_RADIUS};
 use crate::game::HolyCam;
 use crate::game_camera_controller::GameCameraControllerPlugin;
 use crate::game_state::GameState;
-use crate::inventory::{Inventory, ItemType};
+use crate::inventory::{Inventory, InventoryItem, ItemType};
+use crate::item_spawner::{create_heart, create_sword};
 use crate::player::combat::PlayerCombatState;
 use crate::player::combat::{PlayerCombatPlugin, PLAYER_INVICIBILITY_COOLDOWN};
 use crate::projectile::{Projectile, ProjectileBundle};
@@ -539,6 +541,9 @@ fn tick_death_timer(
     mut next_wave_state: ResMut<NextState<WaveState>>,
     mut inventory: ResMut<Inventory>,
     mut player_state: Query<&mut PlayerCombatState>,
+    collectables: Query<(Entity, &Transform, &Collectable, &InventoryItem)>,
+    mut meshes: ResMut<Assets<Mesh>>,
+    mut materials: ResMut<Assets<StandardMaterial>>,
 ) {
     if death_timer.0.tick(time.delta()).just_finished() {
         for enemy in &enemy_query {
@@ -550,5 +555,32 @@ fn tick_death_timer(
         next_wave_state.set(WaveState::WAVE_END);
         inventory.content = Vec::new();
         *player_state.single_mut() = PlayerCombatState::new();
+
+        for collectable in collectables.iter() {
+            if collectable.2 .0 {
+                commands.entity(collectable.0).despawn();
+            }
+        }
+
+        create_sword(
+            &mut commands,
+            &mut meshes,
+            &mut materials,
+            Vec3 {
+                x: -3.0,
+                y: 0.5,
+                z: 0.0,
+            },
+        );
+        create_heart(
+            &mut commands,
+            &mut meshes,
+            &mut materials,
+            Vec3 {
+                x: 5.0,
+                y: 0.5,
+                z: -8.0,
+            },
+        );
     }
 }
