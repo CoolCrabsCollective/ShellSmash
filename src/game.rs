@@ -103,7 +103,8 @@ fn setup(
             ..default()
         })
         .insert(PostProcessSettings {
-            intensity: 0.02,
+            time: 0.0,
+            enable: 1.0,
             ..default()
         })
         .insert(HolyCam);

@@ -25,27 +25,49 @@
 @group(0) @binding(0) var screen_texture: texture_2d<f32>;
 @group(0) @binding(1) var texture_sampler: sampler;
 struct PostProcessSettings {
-    intensity: f32,
-#ifdef SIXTEEN_BYTE_ALIGNMENT
-    // WebGL2 structs must be 16 byte aligned.
-    _webgl2_padding: vec3<f32>
-#endif
+    time: f32,
+    enable_effect: f32,
+    padding: vec2<f32>,
 }
 @group(0) @binding(2) var<uniform> settings: PostProcessSettings;
 
 @fragment
 fn fragment(in: FullscreenVertexOutput) -> @location(0) vec4<f32> {
+
+    if settings.enable_effect == 0.0 {
+      return vec4<f32>(
+          textureSample(screen_texture, texture_sampler, in.uv).rgb,
+          1.0
+      );
+    }
     // Chromatic aberration strength
-    let offset_strength = settings.intensity;
+    // let offset_strength = settings.intensity;
+
+    let value_1 = 12.5;
+    let value_2 = 0.01;
+
+    let x = in.uv.x * value_1 + settings.time;
+    let y = in.uv.y * value_1 + settings.time;
+    let water_uv = vec2(
+      in.uv.x + cos(x-y) * value_2 * sin(y),
+      in.uv.y + cos(x+y) * value_2 * cos(y)
+    );
+
+    let distance_from_center = clamp(length(2.0 * in.uv - 1.0) - 0.2, 0.0, 1.0);
+
+    let uv = mix(in.uv, water_uv, distance_from_center);
     
+    let screen_texture_color = textureSample(screen_texture, texture_sampler, uv);
+
     
+    // float X = uv.x*25.+iTime;
+    //     float Y = uv.y*25.+iTime;
+    //     uv.y += cos(X+Y)*0.01*cos(Y);
+    //     uv.x += sin(X-Y)*0.01*sin(Y);
 
     // Sample each color channel with an arbitrary shift
     return vec4<f32>(
-
-        textureSample(screen_texture, texture_sampler, in.uv + vec2<f32>(offset_strength, -offset_strength)).r,
-        textureSample(screen_texture, texture_sampler, in.uv + vec2<f32>(-offset_strength, 0.0)).g,
-        textureSample(screen_texture, texture_sampler, in.uv + vec2<f32>(0.0, offset_strength)).b,
+        mix(screen_texture_color.rgb, vec3(0.0, 0.8, 1.0), 0.1),
         1.0
     );
 }
