@@ -37,7 +37,7 @@ pub(crate) const DEFINED_WAVES: [WaveDefinition; 5] = [
         urchin_count: 5,
         shrimp_count: 0,
 
-        luck: 2,
+        luck: 0,
 
         drop_item_count: 10,
     },
@@ -47,10 +47,10 @@ pub(crate) const DEFINED_WAVES: [WaveDefinition; 5] = [
         spawn_rate: 1.25,
 
         jellyfish_count: 15,
-        urchin_count: 20,
-        shrimp_count: 3,
+        urchin_count: 30,
+        shrimp_count: 0,
 
-        luck: 0,
+        luck: 2,
 
         drop_item_count: 10,
     },
@@ -61,7 +61,7 @@ pub(crate) const DEFINED_WAVES: [WaveDefinition; 5] = [
 
         jellyfish_count: 20,
         urchin_count: 30,
-        shrimp_count: 0,
+        shrimp_count: 3,
 
         luck: 0,
 
@@ -98,8 +98,8 @@ pub fn wave_generation(wave_count: i32) -> WaveDefinition {
 
     let mut luck_value: i32 = 0;
     match wave_count {
-        10 => {
-            luck_value = 2;
+        9 => {
+            luck_value = 3;
         }
         _ => {}
     }
