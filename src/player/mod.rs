@@ -415,6 +415,8 @@ fn detect_player_hit(
 }
 
 fn handle_player_hit(
+    mut commands: Commands,
+    asset_server: Res<AssetServer>,
     mut player_state: Query<&mut PlayerCombatState>,
     mut player_hit_event_reader: EventReader<PlayerHitEvent>,
     mut next_player_state: ResMut<NextState<PlayerState>>,
@@ -432,6 +434,16 @@ fn handle_player_hit(
         state.current_hp -= 1;
         state.last_hit = time.elapsed_seconds();
         state.last_heal = time.elapsed_seconds();
+
+        commands.spawn(AudioBundle {
+            source: asset_server.load("ouch.ogg"),
+            settings: PlaybackSettings {
+                mode: Despawn,
+                volume: Relative(VolumeLevel::new(0.5f32)),
+                ..default()
+            },
+            ..default()
+        });
 
         if state.current_hp == 0 {
             next_player_state.set(PlayerState::Dying);
