@@ -2,15 +2,15 @@ use std::time::Duration;
 
 use bevy::prelude::Projection::Perspective;
 use bevy::prelude::*;
-use bevy::render::camera;
 
-use super::gizmo::highlight_gizmo;
 use crate::config::{DEFAULT_BAG_LOCATION, INVENTORY_GRID_DIMENSIONS};
 use crate::game::HolyCam;
 use crate::game_state::GameState;
 use crate::inventory::gizmo::update_gizmo_position;
 use crate::inventory::selection::SelectedItem;
 use crate::inventory::{InventoryData, InventoryItem, PackedInventoryItem};
+
+use super::gizmo::highlight_gizmo;
 
 pub struct InventoryControllerPlugin;
 

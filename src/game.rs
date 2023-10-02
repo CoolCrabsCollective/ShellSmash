@@ -1,7 +1,6 @@
 use std::f32::consts::PI;
 
 use crate::collectable::CollectablePlugin;
-use crate::inventory::WeaponSelectorPlugin;
 use crate::projectile::ProjectilePlugin;
 use bevy::math::vec3;
 use bevy::pbr::{CascadeShadowConfigBuilder, DirectionalLightShadowMap};
@@ -15,6 +14,8 @@ use crate::game_state::GameState;
 use crate::item_spawner::ItemSpawner;
 use crate::level_loader::{load_level, LevelLoaderPlugin};
 use crate::player::PlayerPlugin;
+use crate::ui::health_bar::HealthBarPlugin;
+use crate::ui::weapon_selector::WeaponSelectorPlugin;
 use crate::wave_manager::WaveManagerPlugin;
 use crate::world_item::ItemAttachmentPlugin;
 
@@ -39,6 +40,7 @@ impl Plugin for GamePlugin {
             CollectablePlugin,
             ProjectilePlugin,
             WeaponSelectorPlugin,
+            HealthBarPlugin,
         ))
         .add_systems(Update, debug_render_toggle)
         .insert_resource(AmbientLight {

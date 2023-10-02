@@ -4,7 +4,6 @@ use crate::{
     asset_loader::{AssetLoaderPlugin, GameAssets},
     game::HolyCam,
     game_state::GameState,
-    inventory::ui::{HOVERED_BUTTON, NORMAL_BUTTON, PRESSED_BUTTON},
 };
 
 pub struct TitleScreenPlugin;

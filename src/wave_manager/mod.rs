@@ -1,9 +1,5 @@
-mod waves;
-
 use std::time::Duration;
 
-use bevy::math::vec3;
-use bevy::window::PrimaryWindow;
 use bevy::{log, prelude::*};
 use bevy_rapier3d::prelude::*;
 use rand::random;
@@ -14,6 +10,8 @@ use crate::enemy::{Enemy, EnemyBundle};
 use crate::game_state::GameState;
 use crate::player::PlayerControllerState;
 use crate::wave_manager::waves::DEFINED_WAVES;
+
+mod waves;
 
 pub const ARENA_DIMENSIONS_METERS: [f32; 2] = [24.0, 30.0];
 

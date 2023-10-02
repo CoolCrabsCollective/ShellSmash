@@ -1,6 +1,4 @@
-use bevy::math::vec3;
 use bevy::prelude::*;
-use bevy::window::PrimaryWindow;
 use bevy_rapier3d::prelude::*;
 
 use crate::asset_loader::GameAssets;

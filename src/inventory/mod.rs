@@ -12,7 +12,10 @@ use crate::inventory::controller::ItemDirection;
 use crate::inventory::data_manager::InventoryDataPlugin;
 use crate::inventory::gizmo::Gizmo;
 use crate::inventory::grid::GridDisplayPlugin;
+use crate::inventory::selection::{SelectedItem, SelectionPlugin};
+use crate::inventory::ui::InventoryUIPlugin;
 use crate::inventory::validation::InventoryValidationPlugin;
+use crate::inventory::ItemType::NON_WEAPON;
 
 mod controller;
 mod data_manager;
@@ -21,12 +24,6 @@ mod grid;
 mod selection;
 pub mod ui;
 mod validation;
-mod weapon_selector;
-
-use crate::inventory::selection::{SelectedItem, SelectionPlugin};
-use crate::inventory::ui::InventoryUIPlugin;
-use crate::inventory::ItemType::NON_WEAPON;
-pub use weapon_selector::WeaponSelectorPlugin;
 
 pub struct InventoryPlugin;
 

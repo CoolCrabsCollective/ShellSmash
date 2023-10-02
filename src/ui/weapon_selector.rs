@@ -1,15 +1,14 @@
 use bevy::{log, prelude::*, window::PrimaryWindow};
-use bevy_rapier3d::prelude::Collider;
 
+use crate::inventory::{Inventory, InventoryItem};
 use crate::{
     game::HolyCam,
+    game_camera_controller,
     game_state::GameState,
     inventory::ItemType::NON_WEAPON,
     player::{combat::PlayerCombatState, PlayerControllerState},
     world_item::WeaponHolder,
 };
-
-use super::{Inventory, InventoryItem};
 
 pub struct WeaponSelectorPlugin;
 
@@ -22,7 +21,9 @@ impl Plugin for WeaponSelectorPlugin {
     fn build(&self, app: &mut App) {
         app.add_systems(
             Update,
-            update_next_weapon.run_if(in_state(GameState::FightingInArena)),
+            update_next_weapon
+                .run_if(in_state(GameState::FightingInArena))
+                .after(game_camera_controller::set_camera),
         );
 
         app.add_systems(
@@ -81,7 +82,7 @@ fn update_next_weapon(
     // let aspect_ratio = resolution.width() / resolution.height();
     let aspect_ratio_vec = Vec2::new(resolution.width(), resolution.height()).normalize();
     let distance = 1.5;
-    let ui_entity_scale = 0.075;
+    let ui_entity_scale = 0.075 * 0.5;
     let ui_entity_transform = Transform::default()
         .with_translation(
             ui_entity_position
@@ -115,8 +116,9 @@ fn update_next_weapon(
             (entity, new_next_weapon)
         }
         None => {
-            let entity = new_next_weapon.create_world_entity_but_given_the_freedom_to_pass_your_own_transform_and_collider_like_it_always_should_have_been__god_bless_america_ok_boomer(
+            let entity = new_next_weapon.create_ui_entity(
                 ui_entity_transform,
+                false,
                 false,
                 false,
                 &mut commands,

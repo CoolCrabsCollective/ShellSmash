@@ -1,3 +1,14 @@
+use bevy::prelude::*;
+use bevy::render::render_resource::{AddressMode, FilterMode, SamplerDescriptor};
+use bevy::render::settings::{WgpuFeatures, WgpuSettings};
+use bevy::render::RenderPlugin;
+
+use game_state::GameStatePlugin;
+use title_screen::TitleScreenPlugin;
+
+use crate::game::GamePlugin;
+use crate::inventory::InventoryPlugin;
+
 mod asset_loader;
 mod collectable;
 mod config;
@@ -13,19 +24,9 @@ mod level_loader;
 mod player;
 mod projectile;
 mod title_screen;
+mod ui;
 mod wave_manager;
 mod world_item;
-
-use asset_loader::AssetLoaderPlugin;
-use bevy::prelude::*;
-use bevy::render::render_resource::{AddressMode, FilterMode, SamplerDescriptor};
-use bevy::render::settings::{WgpuFeatures, WgpuSettings};
-use bevy::render::RenderPlugin;
-use game_state::GameStatePlugin;
-use title_screen::TitleScreenPlugin;
-
-use crate::game::GamePlugin;
-use crate::inventory::InventoryPlugin;
 
 fn main() {
     let mut app = App::new();
