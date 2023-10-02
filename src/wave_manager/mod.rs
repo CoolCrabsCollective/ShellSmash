@@ -111,12 +111,48 @@ fn wait_for_wave_start(
     time: Res<Time>,
     mut next_state: ResMut<NextState<WaveState>>,
     current_wave: ResMut<Wave>,
+    mut commands: Commands,
+    asset_server: Res<AssetServer>,
 ) {
     if start_delay_timer.0.tick(time.delta()).finished() {
         log::info!("Starting wave: {}", current_wave.count);
 
         next_state.set(WaveState::ACTIVE_WAVE_SPAWNING);
         start_delay_timer.0.reset();
+
+        commands
+            .spawn(NodeBundle {
+                style: Style {
+                    top: Val::Percent(0.0),
+                    left: Val::Percent(0.0),
+                    width: Val::Percent(100.0),
+                    height: Val::Percent(100.0),
+                    align_items: AlignItems::Center,
+                    justify_content: JustifyContent::Center,
+                    ..default()
+                },
+                ..default()
+            })
+            .insert(WaveUI)
+            .with_children(|parent| {
+                parent.spawn(
+                    (TextBundle::from_section(
+                        format!("Wave {:?}", current_wave.count + 1),
+                        TextStyle {
+                            font: asset_server.load("fonts/FiraSans-Bold.ttf"),
+                            font_size: 48.0,
+                            color: Color::BLACK,
+                        },
+                    )
+                    .with_text_alignment(TextAlignment::Center)
+                    .with_style(Style {
+                        position_type: PositionType::Absolute,
+                        bottom: Val::Px(5.0),
+                        right: Val::Px(15.0),
+                        ..default()
+                    })),
+                );
+            });
     }
 }
 
@@ -204,6 +240,7 @@ fn check_for_wave_end(
     mut commands: Commands,
     mut meshes: ResMut<Assets<Mesh>>,
     mut materials: ResMut<Assets<StandardMaterial>>,
+    wave_ui_query: Query<Entity, With<WaveUI>>,
 ) {
     if enemy_entity_query.iter().len() <= 0 {
         log::info!("Ending wave: {}", current_wave.count);
@@ -211,6 +248,9 @@ fn check_for_wave_end(
         next_state.set(WaveState::WAVE_END);
         current_wave.count += 1;
 
+        for e in wave_ui_query.iter() {
+            commands.entity(e).despawn();
+        }
         drop_items(&mut commands, meshes, materials, current_wave);
     }
 }
@@ -225,6 +265,8 @@ fn drop_items(
         spawn_random_item(current_wave.luck, commands, &mut meshes, &mut materials);
     }
 }
+#[derive(Component)]
+struct WaveUI;
 
 fn prepare_next_wave(
     mut start_delay_timer: ResMut<WaveStartDelayTimer>,

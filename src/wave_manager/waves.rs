@@ -9,7 +9,7 @@ pub(crate) const DEFINED_WAVES: [WaveDefinition; 2] = [
 
         jellyfish_count: 5,
         urchin_count: 2,
-        shrimp_count: 0,
+        shrimp_count: 1,
 
         drop_item_count: 10,
     },
