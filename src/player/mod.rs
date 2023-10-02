@@ -402,8 +402,15 @@ fn detect_player_hit(
     let (player_transform, player_collider) = player_controller_output_query.single();
 
     for (enemy_entity, enemy_transform, enemy_collider, enemy) in &enemy_entity_query {
+        let mut hit_radius_multipler = 1.5;
+        match enemy.enemy_type {
+            EnemyType::Jellyfish => hit_radius_multipler = 1.5,
+            EnemyType::Urchin => hit_radius_multipler = 3.0,
+            EnemyType::Shrimp => hit_radius_multipler = 3.0,
+        }
+
         let total_radius = player_collider.as_capsule().unwrap().radius() * 1.2
-            + enemy_collider.as_ball().unwrap().radius() * 1.5;
+            + enemy_collider.as_ball().unwrap().radius() * hit_radius_multipler;
 
         // dbg!(
         //     (player_transform.translation - enemy_transform.translation).length(),
