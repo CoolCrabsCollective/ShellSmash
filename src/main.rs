@@ -4,6 +4,7 @@ use bevy::render::settings::{WgpuFeatures, WgpuSettings};
 use bevy::render::RenderPlugin;
 
 use game_state::GameStatePlugin;
+use post_processing::PostProcessingPlugin;
 use title_screen::TitleScreenPlugin;
 
 use crate::game::GamePlugin;
@@ -22,6 +23,7 @@ mod item_mesh_generator;
 mod item_spawner;
 mod level_loader;
 mod player;
+mod post_processing;
 mod projectile;
 mod title_screen;
 mod ui;
@@ -66,6 +68,7 @@ fn main() {
     }
 
     app.add_plugins(TitleScreenPlugin);
+    app.add_plugins(PostProcessingPlugin);
     app.add_plugins(GamePlugin);
     app.add_plugins(InventoryPlugin);
     app.add_plugins(GameStatePlugin);
