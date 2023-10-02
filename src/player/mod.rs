@@ -325,9 +325,9 @@ fn player_shooting(
                     source_weapon: current_weapon.clone(),
                 },
                 collider: Collider::cuboid(
-                    PLAYER_SHOOTING_PROJECTILE_CUBE_HALF_SIZE,
-                    PLAYER_SHOOTING_PROJECTILE_CUBE_HALF_SIZE,
-                    PLAYER_SHOOTING_PROJECTILE_CUBE_HALF_SIZE,
+                    PLAYER_SHOOTING_PROJECTILE_CUBE_HALF_SIZE * 2.0,
+                    PLAYER_SHOOTING_PROJECTILE_CUBE_HALF_SIZE * 2.0,
+                    PLAYER_SHOOTING_PROJECTILE_CUBE_HALF_SIZE * 2.0,
                 ),
                 collision_groups: CollisionGroups {
                     memberships: COLLISION_GROUP_PROJECTILES,

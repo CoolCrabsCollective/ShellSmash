@@ -93,6 +93,9 @@ impl Plugin for WaveManagerPlugin {
                 .run_if(in_state(WaveState::WAVE_END)),
         );
 
+        app.add_systems(OnEnter(GameState::FightingInArena), show_ui);
+        app.add_systems(OnExit(GameState::FightingInArena), hide_ui);
+
         app.insert_resource(Wave::new());
 
         app.insert_resource(WaveStartDelayTimer(Timer::from_seconds(
@@ -233,6 +236,50 @@ fn spawn_enemies(
 
         spawn_timer.0.reset();
     }
+}
+
+fn hide_ui(mut commands: Commands, wave_ui_query: Query<Entity, With<WaveUI>>) {
+    // println!("Hiding Wave UI");
+    for e in wave_ui_query.iter() {
+        commands.entity(e).despawn();
+    }
+}
+
+fn show_ui(mut commands: Commands, asset_server: Res<AssetServer>, current_wave: Res<Wave>) {
+    // println!("Showing Wave UI");
+    commands
+        .spawn(NodeBundle {
+            style: Style {
+                top: Val::Percent(0.0),
+                left: Val::Percent(0.0),
+                width: Val::Percent(100.0),
+                height: Val::Percent(100.0),
+                align_items: AlignItems::Center,
+                justify_content: JustifyContent::Center,
+                ..default()
+            },
+            ..default()
+        })
+        .insert(WaveUI)
+        .with_children(|parent| {
+            parent.spawn(
+                (TextBundle::from_section(
+                    format!("Wave {:?}", current_wave.count + 1),
+                    TextStyle {
+                        font: asset_server.load("fonts/FiraSans-Bold.ttf"),
+                        font_size: 48.0,
+                        color: Color::BLACK,
+                    },
+                )
+                .with_text_alignment(TextAlignment::Center)
+                .with_style(Style {
+                    position_type: PositionType::Absolute,
+                    bottom: Val::Px(5.0),
+                    right: Val::Px(15.0),
+                    ..default()
+                })),
+            );
+        });
 }
 
 fn check_for_wave_end(
