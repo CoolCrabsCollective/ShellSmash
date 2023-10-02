@@ -1,5 +1,6 @@
 use bevy::prelude::*;
 use bevy::prelude::*;
+use queues::{IsQueue, Queue};
 use rand::{random, Rng};
 
 use crate::inventory::ItemType::{MELEE_WEAPON, NON_WEAPON, RANGED_WEAPON};
@@ -19,7 +20,7 @@ fn setup(
     mut meshes: ResMut<Assets<Mesh>>,
     mut materials: ResMut<Assets<StandardMaterial>>,
 ) {
-    create_better_sword(
+    create_sword(
         &mut commands,
         &mut meshes,
         &mut materials,
@@ -27,26 +28,6 @@ fn setup(
             x: -3.0,
             y: 0.5,
             z: 0.0,
-        },
-    );
-    create_handgun(
-        &mut commands,
-        &mut meshes,
-        &mut materials,
-        Vec3 {
-            x: 5.0,
-            y: 0.5,
-            z: 8.0,
-        },
-    );
-    create_supergun(
-        &mut commands,
-        &mut meshes,
-        &mut materials,
-        Vec3 {
-            x: -5.0,
-            y: 0.5,
-            z: 8.0,
         },
     );
     create_heart(
@@ -204,7 +185,7 @@ fn create_heart(
     heart.create_world_entity(location, false, true, commands, meshes, materials);
 }
 pub fn spawn_random_item(
-    luck: i32,
+    mut luck: &mut Queue<i32>,
     mut commands: &mut Commands,
     mut meshes: &mut ResMut<Assets<Mesh>>,
     mut materials: &mut ResMut<Assets<StandardMaterial>>,
@@ -213,15 +194,30 @@ pub fn spawn_random_item(
     let spawn_id = rng.gen_range(0..20);
 
     let position = Vec3::new(
-        (random::<f32>() - 0.5) * ARENA_DIMENSIONS_METERS[0],
+        (random::<f32>() - 0.2) * ARENA_DIMENSIONS_METERS[0],
         0.5,
-        (random::<f32>() - 0.5) * ARENA_DIMENSIONS_METERS[0],
+        (random::<f32>() - 0.2) * ARENA_DIMENSIONS_METERS[0],
     );
 
     match spawn_id {
         0 => {
             create_heart(commands, meshes, materials, position);
         }
+        1..=19 => match luck.peek() {
+            Ok(1) => {
+                create_better_sword(commands, meshes, materials, position);
+                let _ = luck.remove();
+            }
+            Ok(2) => {
+                create_handgun(commands, meshes, materials, position);
+                let _ = luck.remove();
+            }
+            Ok(3) => {
+                create_supergun(commands, meshes, materials, position);
+                let _ = luck.remove();
+            }
+            _ => {}
+        },
         _ => {}
     }
 }

@@ -10,6 +10,7 @@ bevy = "0.11.3"
 rand = "0.8.5"
 bevy_rapier3d = "0.22.0"
 bevy_mod_raycast = "0.13.1"
+queues = "1.0.2"
 
 [profile.dev]
 opt-level = 1
