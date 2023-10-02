@@ -5,4 +5,4 @@ pub const DEFAULT_BAG_LOCATION: Vec3 = Vec3 {
     y: 0.0,
     z: 0.0,
 };
-pub const SPAWN_ENEMIES: bool = false;
+pub const SPAWN_ENEMIES: bool = true;
