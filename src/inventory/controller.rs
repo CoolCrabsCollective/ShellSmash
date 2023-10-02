@@ -93,7 +93,7 @@ fn update_cube_rotation(
     mut state: ResMut<InventoryControllerState>,
     mut param_set: ParamSet<(
         Query<&Transform, With<VoxelCoordinateFrame>>,
-        Query<&mut Transform, With<Camera>>,
+        Query<&mut Transform, With<HolyCam>>,
     )>,
 ) {
     let camera_trans = {
