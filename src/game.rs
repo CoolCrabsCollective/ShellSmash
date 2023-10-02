@@ -1,3 +1,6 @@
+use bevy::audio::PlaybackMode::Loop;
+use bevy::audio::Volume::Relative;
+use bevy::audio::VolumeLevel;
 use std::f32::consts::PI;
 
 use crate::collectable::CollectablePlugin;
@@ -68,6 +71,16 @@ fn setup(
     mut materials: ResMut<Assets<StandardMaterial>>,
 ) {
     load_level("map.glb#Scene0", &mut commands, &asset_server);
+
+    commands.spawn(AudioBundle {
+        source: asset_server.load("song.ogg"),
+        settings: PlaybackSettings {
+            mode: Loop,
+            volume: Relative(VolumeLevel::new(0.1f32)),
+            ..default()
+        },
+        ..default()
+    });
 
     commands.spawn(DirectionalLightBundle {
         directional_light: DirectionalLight {
