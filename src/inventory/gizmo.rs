@@ -8,6 +8,8 @@ use bevy::window::PrimaryWindow;
 use bevy_mod_raycast::ray_intersection_over_mesh;
 use bevy_mod_raycast::Ray3d;
 
+use crate::inventory::controller::CubeRotationAnime;
+
 use crate::inventory::controller::InventoryControllerState;
 
 use super::PackedInventoryItem;
@@ -23,6 +25,7 @@ pub fn update_gizmo_position(
         Query<(&mut Transform, &Gizmo)>,
         Query<&Transform, With<HolyCam>>,
     )>,
+    cube_anime: Res<CubeRotationAnime>,
 ) {
     let camera_transform = {
         let camera_query = param_set.p1();
@@ -30,14 +33,18 @@ pub fn update_gizmo_position(
     };
 
     let mut gizmo_pos_query = param_set.p0();
+    if cube_anime.enabled {
+        cube_anime.start_rotation + cube_anime.anime_time.percent() * cube_anime.end_rotation
+    } else {
+        cube_anime.end_rotation
+    };
     for (mut transform, gizmo) in gizmo_pos_query.iter_mut() {
         let t = camera_transform.translation;
         transform.translation = t
             + camera_transform.forward() * 1.5
             + camera_transform.right() * 0.8
             + camera_transform.up() * -0.3;
-        transform.rotation = gizmo.relative.rotation;
-        // transform.rotation = camera_transform.rotation.mul_quat(gizmo.relative.rotation);
+        transform.rotation = camera_transform.rotation.mul_quat(gizmo.relative.rotation);
     }
 }
 

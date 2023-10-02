@@ -57,11 +57,11 @@ fn setup(mut commands: Commands) {
 }
 
 #[derive(Resource, Debug)]
-struct CubeRotationAnime {
-    enabled: bool,
-    anime_time: Timer,
-    start_rotation: f32,
-    end_rotation: f32,
+pub struct CubeRotationAnime {
+    pub enabled: bool,
+    pub anime_time: Timer,
+    pub start_rotation: f32,
+    pub end_rotation: f32,
 }
 
 impl CubeRotationAnime {
