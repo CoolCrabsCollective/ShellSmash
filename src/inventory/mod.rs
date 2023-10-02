@@ -1,23 +1,19 @@
+use bevy::prelude::*;
+
 use crate::asset_loader::GameAssets;
 use crate::config::DEFAULT_BAG_LOCATION;
 use crate::game_state::GameState;
-use crate::math::deg_to_rad;
-use bevy::pbr::wireframe::WireframePlugin;
-use bevy::prelude::*;
-
-use crate::game_state::GameState;
 use crate::inventory::controller::InventoryControllerPlugin;
-use crate::inventory::gizmo::Gizmo;
-
 use crate::inventory::data_manager::InventoryDataPlugin;
+use crate::inventory::gizmo::Gizmo;
 use crate::inventory::grid::GridDisplayPlugin;
-use crate::inventory::ItemType::{MELEE_WEAPON, NON_WEAPON, RANGED_WEAPON};
+use crate::math::deg_to_rad;
 use crate::voxel_renderer::VoxelRendererPlugin;
 
 mod controller;
 mod data_manager;
-mod grid;
 mod gizmo;
+mod grid;
 
 pub struct InventoryPlugin;
 
