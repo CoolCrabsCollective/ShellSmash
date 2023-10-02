@@ -6,7 +6,8 @@ pub(crate) const DEFINED_WAVES: [WaveDefinition; 2] = [
         start_delay: 2.0,
         spawn_rate: 0.0,
 
-        enemy_count: 5,
+        jellyfish_count: 5,
+        urchin_count: 2,
         shrimp_count: 0,
 
         drop_item_count: 10,
@@ -16,7 +17,8 @@ pub(crate) const DEFINED_WAVES: [WaveDefinition; 2] = [
         start_delay: 3.0,
         spawn_rate: 0.25,
 
-        enemy_count: 10,
+        jellyfish_count: 10,
+        urchin_count: 5,
         shrimp_count: 0,
 
         drop_item_count: 10,

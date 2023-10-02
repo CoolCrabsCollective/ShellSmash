@@ -35,7 +35,8 @@ pub struct WaveDefinition {
     start_delay: f32,
     spawn_rate: f32,
 
-    enemy_count: i32,
+    jellyfish_count: i32,
+    urchin_count: i32,
     shrimp_count: i32,
 
     drop_item_count: i32,
@@ -134,7 +135,10 @@ fn spawn_enemies(
         return;
     }
 
-    if current_wave.wave_definition.enemy_count <= 0 {
+    if current_wave.wave_definition.jellyfish_count <= 0
+        && current_wave.wave_definition.urchin_count <= 0
+        && current_wave.wave_definition.shrimp_count <= 0
+    {
         next_state.set(WaveState::ACTIVE_WAVE);
         return;
     }
@@ -145,8 +149,35 @@ fn spawn_enemies(
 
         let player_transform = player_transform_query.single();
 
-        let mut rng = rand::thread_rng();
-        while !spawned && attempts < 10 {
+        let mut enemy_type = EnemyType::Jellyfish;
+        let mut enemy_count = &mut current_wave.wave_definition.jellyfish_count;
+
+        let mut selected = false;
+        while !selected && attempts < 10 {
+            attempts += 1;
+
+            let mut rng = rand::thread_rng();
+            let spawnTypeId = rng.gen_range(0..2);
+            match spawnTypeId {
+                0 => {
+                    enemy_type = EnemyType::Jellyfish;
+                    enemy_count = &mut current_wave.wave_definition.jellyfish_count;
+                }
+                1 => {
+                    enemy_type = EnemyType::Urchin;
+                    enemy_count = &mut current_wave.wave_definition.urchin_count;
+                }
+                _ => {}
+            }
+
+            if *enemy_count > 0 {
+                selected = true;
+            }
+        }
+
+        attempts = 0;
+
+        while !spawned && attempts < 10 && selected {
             attempts += 1;
 
             let position = Vec3::new(
@@ -155,19 +186,10 @@ fn spawn_enemies(
                 (random::<f32>() - 0.5) * ARENA_DIMENSIONS_METERS[0],
             );
             if (player_transform.translation - position).length() > 3.0 {
-                let rand_bool: bool = rng.gen();
-                commands.spawn(EnemyBundle::new(
-                    position,
-                    &game_assets,
-                    if rand_bool {
-                        EnemyType::Jellyfish
-                    } else {
-                        EnemyType::Urchin
-                    },
-                ));
+                commands.spawn(EnemyBundle::new(position, &game_assets, enemy_type));
                 spawned = true;
 
-                current_wave.wave_definition.enemy_count -= 1;
+                *enemy_count -= 1;
             }
         }
 
