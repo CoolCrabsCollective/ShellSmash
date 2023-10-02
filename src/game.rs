@@ -126,7 +126,7 @@ fn setup(
 }
 
 fn get_camera_position() -> Transform {
-    Transform::from_xyz(0.0, 60.0, 30.0).looking_at(vec3(0.0, 0.0, 2.0), Vec3::Y)
+    Transform::from_xyz(0.0, 60.0, 28.0).looking_at(vec3(0.0, 0.0, 0.0), Vec3::Y)
 }
 
 fn reset_camera(
