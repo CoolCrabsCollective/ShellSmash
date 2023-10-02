@@ -22,9 +22,9 @@ impl InventoryItem {
         location: Vec3,
         on_player: bool,
         collectable: bool,
-        mut commands: Commands,
-        mut meshes: ResMut<Assets<Mesh>>,
-        mut materials: ResMut<Assets<StandardMaterial>>,
+        commands: &mut Commands,
+        meshes: &mut ResMut<Assets<Mesh>>,
+        materials: &mut ResMut<Assets<StandardMaterial>>,
     ) -> Entity {
         return commands
             .spawn((AttachedToPlayer(on_player), Collectable(collectable), self.clone()))

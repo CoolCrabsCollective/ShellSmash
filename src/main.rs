@@ -12,6 +12,7 @@ mod item_spawner;
 mod level_loader;
 mod math;
 mod player;
+mod projectile;
 mod voxel_renderer;
 mod wall;
 mod wave_manager;
