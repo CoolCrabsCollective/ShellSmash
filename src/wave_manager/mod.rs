@@ -93,7 +93,14 @@ impl Plugin for WaveManagerPlugin {
                 .run_if(in_state(WaveState::WAVE_END)),
         );
 
-        app.add_systems(OnEnter(GameState::FightingInArena), show_ui);
+        app.add_systems(
+            OnEnter(GameState::FightingInArena),
+            show_ui.run_if(in_state(WaveState::ACTIVE_WAVE)),
+        );
+        app.add_systems(
+            OnEnter(GameState::FightingInArena),
+            show_ui.run_if(in_state(WaveState::ACTIVE_WAVE_SPAWNING)),
+        );
         app.add_systems(OnExit(GameState::FightingInArena), hide_ui);
 
         app.insert_resource(Wave::new());
