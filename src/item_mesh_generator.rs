@@ -9,7 +9,7 @@ struct VoxelFace {
 }
 
 impl InventoryItem {
-    pub fn generate_mesh(&self) -> Mesh {
+    pub fn generate_mesh(&self, original: bool) -> Mesh {
         let mut mesh = Mesh::new(PrimitiveTopology::TriangleList);
 
         let mut faces: Vec<VoxelFace> = Vec::new();
@@ -23,7 +23,11 @@ impl InventoryItem {
             vec3(0.0, 0.0, -1.0),
         ];
 
-        for point in &self.original_points {
+        for point in if original {
+            &self.original_points
+        } else {
+            &self.local_points
+        } {
             'dirs: for dir in &dirs {
                 let new_pos = vec3(
                     point.x as f32 + dir.x * 0.5,

@@ -101,7 +101,7 @@ fn update_next_weapon(
         return;
     }
 
-    let mesh_handle = meshes.add(new_next_weapon.generate_mesh());
+    let mesh_handle = meshes.add(new_next_weapon.generate_mesh(true));
     let material_handle = materials.add(StandardMaterial::from(new_next_weapon.color));
 
     let new_value = match next_weapon.value {

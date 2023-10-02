@@ -1,17 +1,14 @@
-use crate::config::DEFAULT_BAG_LOCATION;
-use crate::game::HolyCam;
-use crate::inventory::controller::move_item;
-use crate::inventory::controller::ItemDirection;
-use bevy::input::mouse::MouseButtonInput;
 use bevy::prelude::*;
-use bevy::render::camera;
 use bevy::window::PrimaryWindow;
 use bevy_mod_raycast::ray_intersection_over_mesh;
 use bevy_mod_raycast::Ray3d;
 
+use crate::game::HolyCam;
+use crate::inventory::controller::move_item;
 use crate::inventory::controller::CubeRotationAnime;
-
 use crate::inventory::controller::InventoryControllerState;
+use crate::inventory::controller::ItemDirection;
+use crate::inventory::selection::SelectedItem;
 
 use super::PackedInventoryItem;
 
@@ -78,8 +75,9 @@ pub fn highlight_gizmo(
     meshes: Res<Assets<Mesh>>,
     mouse_input: Res<Input<MouseButton>>,
     state: Res<InventoryControllerState>,
-    mut query_voxel: Query<&mut PackedInventoryItem>,
+    mut query_items: Query<(Entity, &mut PackedInventoryItem)>,
     query_window: Query<&Window, With<PrimaryWindow>>,
+    selected: Res<SelectedItem>,
 ) {
     let cursor_pos = { query_window.single().cursor_position() };
     if let Some(position) = cursor_pos {
@@ -104,7 +102,7 @@ pub fn highlight_gizmo(
                     if mouse_input.just_pressed(MouseButton::Left) {
                         if !found_intersection {
                             found_intersection = true;
-                            selected_gizmo = Option::Some(gizmo);
+                            selected_gizmo = Some(gizmo);
                         }
                     }
                 } else {
@@ -116,7 +114,7 @@ pub fn highlight_gizmo(
 
         match optional_intersection {
             Some(g) => {
-                for mut item in query_voxel.iter_mut() {
+                for mut item in query_items.iter_mut() {
                     match g.item_dir {
                         ItemDirection::UP
                         | ItemDirection::LEFT
@@ -124,7 +122,9 @@ pub fn highlight_gizmo(
                         | ItemDirection::RIGHT
                         | ItemDirection::FORWARD
                         | ItemDirection::BACKWARDS => {
-                            move_item(&mut item, g.item_dir, state.view_index)
+                            if Some(item.0) == selected.selected_entity {
+                                move_item(&mut item.1, g.item_dir, state.view_index)
+                            }
                         }
                         ItemDirection::YAW_LEFT
                         | ItemDirection::YAW_RIGHT
