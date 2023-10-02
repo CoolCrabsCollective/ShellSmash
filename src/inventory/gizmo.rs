@@ -80,13 +80,19 @@ pub fn highlight_gizmo(
     )>,
     meshes: Res<Assets<Mesh>>,
     mouse_input: Res<Input<MouseButton>>,
+    touches: Res<Touches>,
     mut state: ResMut<InventoryControllerState>,
     mut rotation_anime: ResMut<CubeRotationAnime>,
     mut query_items: Query<(Entity, &mut PackedInventoryItem)>,
     query_window: Query<&Window, With<PrimaryWindow>>,
     selected: Res<SelectedItem>,
 ) {
-    let cursor_pos = { query_window.single().cursor_position() };
+    let mut cursor_pos = query_window.single().cursor_position();
+
+    if cursor_pos.is_none() {
+        cursor_pos = touches.first_pressed_position();
+    }
+
     if let Some(position) = cursor_pos {
         let ray: Ray3d = {
             let camera_param = param_set.p1();
@@ -106,7 +112,7 @@ pub fn highlight_gizmo(
                     bevy_mod_raycast::Backfaces::Cull,
                 ) {
                     trans.scale = Vec3::from((1.1, 1.1, 1.1));
-                    if mouse_input.just_pressed(MouseButton::Left) {
+                    if mouse_input.just_pressed(MouseButton::Left) || touches.any_just_pressed() {
                         if !found_intersection {
                             found_intersection = true;
                             selected_gizmo = Some(gizmo);

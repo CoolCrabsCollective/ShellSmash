@@ -214,12 +214,14 @@ fn process_inputs(
 }
 
 fn player_movement(
+    gamepads: Res<Gamepads>,
     mut controllers: Query<&mut KinematicCharacterController, With<PlayerControllerState>>,
     time: Res<Time>,
     mut state: Query<&mut PlayerControllerState>,
     windows: Query<&Window, With<PrimaryWindow>>,
     touches: Res<Touches>,
     camera_q: Query<(&Camera, &GlobalTransform), With<HolyCam>>,
+    axes: Res<Axis<GamepadAxis>>,
     mut transform: Query<&mut Transform, With<PlayerControllerState>>,
 ) {
     let mut state = state.single_mut();
@@ -232,7 +234,7 @@ fn player_movement(
     // state.velocity.y -= 9.81 * time.delta_seconds();
     // state.velocity.x /= 1.5;
     // state.velocity.z /= 1.5;
-    if state.is_forward_pressed || touches.first_pressed_position() != None {
+    if state.is_forward_pressed {
         current_frame_movement.z -= 6.0;
         // state.velocity.z = -6.0;
     }
@@ -252,9 +254,58 @@ fn player_movement(
         // state.velocity.x = 6.0;
     }
 
+    for gamepad in gamepads.iter() {
+        let axis_lx = GamepadAxis {
+            gamepad,
+            axis_type: GamepadAxisType::LeftStickX,
+        };
+        let axis_ly = GamepadAxis {
+            gamepad,
+            axis_type: GamepadAxisType::LeftStickY,
+        };
+        if let (Some(x), Some(y)) = (axes.get(axis_lx), axes.get(axis_ly)) {
+            // combine X and Y into one vector
+            let left_stick_pos = Vec2::new(x, y);
+
+            // Example: check if the stick is pushed up
+            if left_stick_pos.length() > 0.9 {
+                current_frame_movement.x = left_stick_pos.x * 6.0;
+                current_frame_movement.y = left_stick_pos.y * 6.0;
+            }
+        }
+    }
+
+    if touches.first_pressed_position() != None {
+        let mut vec = transform.forward() * 6.0;
+        vec.y = current_frame_movement.y;
+        current_frame_movement = vec;
+    }
+
     controllers.single_mut().translation = Some(current_frame_movement * time.delta_seconds());
 
     let (camera, camera_transform) = camera_q.single();
+
+    for gamepad in gamepads.iter() {
+        let axis_rx = GamepadAxis {
+            gamepad,
+            axis_type: GamepadAxisType::RightStickX,
+        };
+        let axis_ry = GamepadAxis {
+            gamepad,
+            axis_type: GamepadAxisType::RightStickY,
+        };
+
+        if let (Some(x), Some(y)) = (axes.get(axis_rx), axes.get(axis_ry)) {
+            // combine X and Y into one vector
+            let right_stick_pos = Vec2::new(x, y);
+
+            // Example: check if the stick is pushed up
+            if right_stick_pos.length() > 0.9 {
+                transform.look_to(vec3(right_stick_pos.x, 0.0, right_stick_pos.y), Vec3::Y);
+                return;
+            }
+        }
+    }
 
     if let Some(position) = windows.single().cursor_position() {
         let ray: Ray = camera
@@ -469,7 +520,7 @@ fn handle_player_hit(
             ..default()
         });
 
-        if state.current_hp == 0 {
+        if state.current_hp <= 0 {
             next_player_state.set(PlayerState::Dying);
             break;
         } else {
@@ -487,6 +538,7 @@ fn tick_death_timer(
     mut wave: ResMut<Wave>,
     mut next_wave_state: ResMut<NextState<WaveState>>,
     mut inventory: ResMut<Inventory>,
+    mut player_state: Query<&mut PlayerCombatState>,
 ) {
     if death_timer.0.tick(time.delta()).just_finished() {
         for enemy in &enemy_query {
@@ -497,5 +549,6 @@ fn tick_death_timer(
         wave.count = 0;
         next_wave_state.set(WaveState::WAVE_END);
         inventory.content = Vec::new();
+        *player_state.single_mut() = PlayerCombatState::new();
     }
 }
