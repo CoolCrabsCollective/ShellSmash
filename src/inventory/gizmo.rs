@@ -44,9 +44,7 @@ pub fn update_gizmo_position(
             + camera_transform.forward() * 1.5
             + camera_transform.right() * 0.8
             + camera_transform.up() * -0.3;
-        let euler_rot = camera_transform.rotation.to_euler(EulerRot::XYZ);
-        transform.rotation = Quat::from_euler(EulerRot::XYZ, euler_rot.0, 0.0, euler_rot.2)
-            .mul_quat(gizmo.relative.rotation);
+        transform.rotation = camera_transform.rotation.mul_quat(gizmo.relative.rotation);
     }
 }
 
