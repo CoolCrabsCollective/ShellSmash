@@ -405,8 +405,8 @@ fn detect_player_hit(
         let mut hit_radius_multipler = 1.5;
         match enemy.enemy_type {
             EnemyType::Jellyfish => hit_radius_multipler = 1.5,
-            EnemyType::Urchin => hit_radius_multipler = 3.0,
-            EnemyType::Shrimp => hit_radius_multipler = 3.0,
+            EnemyType::Urchin => hit_radius_multipler = 1.5,
+            EnemyType::Shrimp => hit_radius_multipler = 4.0,
         }
 
         let total_radius = player_collider.as_capsule().unwrap().radius() * 1.2
