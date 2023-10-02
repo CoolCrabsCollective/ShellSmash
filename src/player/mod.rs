@@ -186,6 +186,8 @@ impl PlayerControllerState {
 fn process_inputs(
     mut keyboard_input_events: EventReader<KeyboardInput>,
     mut mouse_input_events: EventReader<MouseButtonInput>,
+    touches: Res<Touches>,
+    mouse: Res<Input<MouseButton>>,
     mut state: Query<&mut PlayerControllerState>,
 ) {
     let mut state = state.single_mut();
@@ -207,14 +209,8 @@ fn process_inputs(
         }
     }
 
-    for event in mouse_input_events.iter() {
-        match event.button {
-            MouseButton::Left => {
-                state.is_shoot_pressed = event.state == ButtonState::Pressed;
-            }
-            _ => {}
-        }
-    }
+    state.is_shoot_pressed =
+        mouse.pressed(MouseButton::Left) || touches.first_pressed_position() != None;
 }
 
 fn player_movement(
@@ -222,6 +218,7 @@ fn player_movement(
     time: Res<Time>,
     mut state: Query<&mut PlayerControllerState>,
     windows: Query<&Window, With<PrimaryWindow>>,
+    touches: Res<Touches>,
     camera_q: Query<(&Camera, &GlobalTransform), With<HolyCam>>,
     mut transform: Query<&mut Transform, With<PlayerControllerState>>,
 ) {
@@ -235,7 +232,7 @@ fn player_movement(
     // state.velocity.y -= 9.81 * time.delta_seconds();
     // state.velocity.x /= 1.5;
     // state.velocity.z /= 1.5;
-    if state.is_forward_pressed {
+    if state.is_forward_pressed || touches.first_pressed_position() != None {
         current_frame_movement.z -= 6.0;
         // state.velocity.z = -6.0;
     }
@@ -260,6 +257,16 @@ fn player_movement(
     let (camera, camera_transform) = camera_q.single();
 
     if let Some(position) = windows.single().cursor_position() {
+        let ray: Ray = camera
+            .viewport_to_world(camera_transform, position)
+            .unwrap();
+        if let Some(distance) =
+            ray.intersect_plane(vec3(0.0, transform.translation.y, 0.0), vec3(0.0, 1.0, 0.0))
+        {
+            let pos = ray.get_point(distance);
+            transform.look_at(pos, Vec3::Y);
+        }
+    } else if let Some(position) = touches.first_pressed_position() {
         let ray: Ray = camera
             .viewport_to_world(camera_transform, position)
             .unwrap();
