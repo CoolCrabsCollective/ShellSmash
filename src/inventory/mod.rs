@@ -25,6 +25,7 @@ mod weapon_selector;
 
 use crate::inventory::selection::{SelectedItem, SelectionPlugin};
 use crate::inventory::ui::InventoryUIPlugin;
+use crate::inventory::ItemType::NON_WEAPON;
 pub use weapon_selector::WeaponSelectorPlugin;
 
 pub struct InventoryPlugin;
@@ -378,6 +379,16 @@ pub struct Inventory {
     pub content: Vec<InventoryItem>,
 }
 
+impl Inventory {
+    pub fn first_weapon(&self) -> Option<&InventoryItem> {
+        return self
+            .content
+            .iter()
+            .filter(|i| i.item_type != NON_WEAPON)
+            .next();
+    }
+}
+
 #[derive(Debug)]
 pub struct InventoryItemInfo {
     pub color: Color,
@@ -398,19 +409,6 @@ impl InventoryItem {
         self.location += translation;
     }
 
-    pub fn rotate_x(&mut self, ccw: bool) {
-        let rot_angle = ((if ccw { 90 } else { -90 }) as f32).to_radians();
-
-        let rot_mat = Mat3::from_rotation_x(rot_angle);
-        for p in self.local_points.iter_mut() {
-            let vec3 = Vec3::new(p.x as f32, p.y as f32, p.z as f32);
-            let new_p: Vec3 = rot_mat.mul_vec3(vec3);
-            p.x = new_p.x as i32;
-            p.y = new_p.y as i32;
-            p.z = new_p.z as i32;
-        }
-        self.changed = true;
-    }
     pub fn rotate_y(&mut self, ccw: bool) {
         let rot_angle = ((if ccw { 90 } else { -90 }) as f32).to_radians();
 
@@ -418,9 +416,9 @@ impl InventoryItem {
         for p in self.local_points.iter_mut() {
             let vec3 = Vec3::new(p.x as f32, p.y as f32, p.z as f32);
             let new_p: Vec3 = rot_mat.mul_vec3(vec3);
-            p.x = new_p.x as i32;
-            p.y = new_p.y as i32;
-            p.z = new_p.z as i32;
+            p.x = new_p.x.round() as i32;
+            p.y = new_p.y.round() as i32;
+            p.z = new_p.z.round() as i32;
         }
         self.changed = true;
     }
@@ -431,9 +429,9 @@ impl InventoryItem {
         for p in self.local_points.iter_mut() {
             let vec3 = Vec3::new(p.x as f32, p.y as f32, p.z as f32);
             let new_p: Vec3 = rot_mat.mul_vec3(vec3);
-            p.x = new_p.x as i32;
-            p.y = new_p.y as i32;
-            p.z = new_p.z as i32;
+            p.x = new_p.x.round() as i32;
+            p.y = new_p.y.round() as i32;
+            p.z = new_p.z.round() as i32;
         }
         self.changed = true;
     }

@@ -8,6 +8,7 @@ use bevy::{
 use crate::game_state::GameState;
 
 const JELLY_ASSET_PATH: &str = "jelly.glb#Scene0";
+const URCHIN_ASSET_PATH: &str = "urchin.glb#Scene0";
 const ARROW_STRAIGHT_ASSET_PATH: &str = "arrow_straight.glb#Scene0";
 const ARROW_NOT_STRAIGHT_ASSET_PATH: &str = "arrow_rotated.glb#Scene0";
 
@@ -26,6 +27,9 @@ pub struct GameAssets {
     jelly_scene_handle: Handle<Gltf>,
     jelly: Option<LoadedSingleModelScene>,
 
+    urchin_scene_handle: Handle<Gltf>,
+    urchin: Option<LoadedSingleModelScene>,
+
     arrow_straight_scene_handle: Handle<Gltf>,
     arrow_straight: Option<LoadedSingleModelScene>,
 
@@ -35,11 +39,17 @@ pub struct GameAssets {
 
 impl GameAssets {
     pub fn are_all_assets_loaded(&self) -> bool {
-        self.jelly.is_some() && self.arrow_straight.is_some()
+        self.jelly.is_some()
+            && self.arrow_straight.is_some()
+            && self.arrow_rotated.is_some()
+            && self.urchin.is_some()
     }
 
     pub fn jelly(&self) -> LoadedSingleModelScene {
         self.jelly.clone().unwrap()
+    }
+    pub fn urchin(&self) -> LoadedSingleModelScene {
+        self.urchin.clone().unwrap()
     }
 
     pub fn arrow_straight(&self) -> LoadedSingleModelScene {
@@ -60,6 +70,7 @@ impl Plugin for AssetLoaderPlugin {
 
 fn load_all_game_assets(asset_server: Res<AssetServer>, mut game_assets: ResMut<GameAssets>) {
     game_assets.jelly_scene_handle = asset_server.load(JELLY_ASSET_PATH);
+    game_assets.urchin_scene_handle = asset_server.load(URCHIN_ASSET_PATH);
     game_assets.arrow_straight_scene_handle = asset_server.load(ARROW_STRAIGHT_ASSET_PATH);
     game_assets.arrow_rotated_scene_handle = asset_server.load(ARROW_NOT_STRAIGHT_ASSET_PATH);
 }
@@ -87,6 +98,21 @@ fn handle_scene_load_event(
                             &gltf_meshes,
                         );
                         game_assets.jelly = Some(LoadedSingleModelScene {
+                            scene_handle: scene_handle.clone(),
+                            mesh_handle,
+                            material_handle,
+                        });
+                    }
+                    if is_same_asset(
+                        scene_handle.clone(),
+                        game_assets.urchin_scene_handle.clone(),
+                    ) {
+                        let (mesh_handle, material_handle) = get_first_mesh_material_from_scene(
+                            scene_handle.clone(),
+                            &scenes,
+                            &gltf_meshes,
+                        );
+                        game_assets.urchin = Some(LoadedSingleModelScene {
                             scene_handle: scene_handle.clone(),
                             mesh_handle,
                             material_handle,

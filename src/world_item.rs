@@ -161,8 +161,9 @@ fn equip_update(
         }
     }
 
-    if player_weapon.current_weapon.is_none() && inventory_query.content.len() > 0 {
-        let item = inventory_query.content[0].clone();
+    let item = inventory_query.first_weapon();
+    if player_weapon.current_weapon.is_none() && item != None {
+        let item = item.unwrap();
         let entity = item.create_world_entity(
             player_transform.translation,
             true,
@@ -173,6 +174,6 @@ fn equip_update(
         );
 
         dbg!("adding current weapon!");
-        player_weapon.current_weapon = Some((entity, item));
+        player_weapon.current_weapon = Some((entity, item.clone()));
     }
 }

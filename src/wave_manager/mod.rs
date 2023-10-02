@@ -1,5 +1,6 @@
 mod waves;
 
+use rand::Rng;
 use std::time::Duration;
 
 use bevy::math::vec3;
@@ -10,7 +11,7 @@ use rand::random;
 
 use crate::asset_loader::GameAssets;
 use crate::config::SPAWN_ENEMIES;
-use crate::enemy::{Enemy, EnemyBundle};
+use crate::enemy::{Enemy, EnemyBundle, EnemyType};
 use crate::game_state::GameState;
 use crate::player::PlayerControllerState;
 use crate::wave_manager::waves::DEFINED_WAVES;
@@ -143,6 +144,7 @@ fn spawn_enemies(
 
         let player_transform = player_transform_query.single();
 
+        let mut rng = rand::thread_rng();
         while !spawned && attempts < 10 {
             attempts += 1;
 
@@ -152,7 +154,16 @@ fn spawn_enemies(
                 (random::<f32>() - 0.5) * ARENA_DIMENSIONS_METERS[0],
             );
             if (player_transform.translation - position).length() > 3.0 {
-                commands.spawn(EnemyBundle::new(position, &game_assets));
+                let rand_bool: bool = rng.gen();
+                commands.spawn(EnemyBundle::new(
+                    position,
+                    &game_assets,
+                    if rand_bool {
+                        EnemyType::Jellyfish
+                    } else {
+                        EnemyType::Urchin
+                    },
+                ));
                 spawned = true;
 
                 current_wave.wave_definition.enemy_count -= 1;
