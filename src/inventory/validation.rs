@@ -66,10 +66,7 @@ fn update_background(mut color: ResMut<ClearColor>, query: Query<&PackedInventor
 
 fn build_ui(mut commands: Commands, asset_server: Res<AssetServer>) {
     commands.spawn(Camera2dBundle {
-        camera: Camera {
-            order: 69,
-            ..default()
-        },
+        camera: Camera { ..default() },
         ..default()
     });
     commands
