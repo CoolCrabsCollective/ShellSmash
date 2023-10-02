@@ -459,7 +459,6 @@ fn tick_death_timer(
         death_timer.0.reset();
         next_game_state.set(GameState::TitleScreen);
         wave.count = 0;
-        wave.luck = queue![];
         next_wave_state.set(WaveState::WAVE_END);
         inventory.content = Vec::new();
     }

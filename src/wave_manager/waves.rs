@@ -11,7 +11,7 @@ pub(crate) const DEFINED_WAVES: [WaveDefinition; 5] = [
         urchin_count: 2,
         shrimp_count: 0,
 
-        luck: Some(1),
+        luck: 1,
 
         drop_item_count: 10,
     },
@@ -24,7 +24,7 @@ pub(crate) const DEFINED_WAVES: [WaveDefinition; 5] = [
         urchin_count: 5,
         shrimp_count: 0,
 
-        luck: None,
+        luck: 0,
 
         drop_item_count: 10,
     },
@@ -37,7 +37,7 @@ pub(crate) const DEFINED_WAVES: [WaveDefinition; 5] = [
         urchin_count: 5,
         shrimp_count: 0,
 
-        luck: Some(2),
+        luck: 2,
 
         drop_item_count: 10,
     },
@@ -46,24 +46,24 @@ pub(crate) const DEFINED_WAVES: [WaveDefinition; 5] = [
         start_delay: 7.0,
         spawn_rate: 1.25,
 
-        jellyfish_count: 10,
-        urchin_count: 15,
-        shrimp_count: 0,
+        jellyfish_count: 15,
+        urchin_count: 20,
+        shrimp_count: 3,
 
-        luck: None,
+        luck: 0,
 
         drop_item_count: 10,
     },
     WaveDefinition {
         // name: ("Gamer Mode"),
         start_delay: 7.0,
-        spawn_rate: 0.75,
+        spawn_rate: 0.25,
 
-        jellyfish_count: 15,
-        urchin_count: 15,
+        jellyfish_count: 20,
+        urchin_count: 30,
         shrimp_count: 0,
 
-        luck: Some(3),
+        luck: 0,
 
         drop_item_count: 10,
     },
@@ -72,7 +72,7 @@ pub(crate) const DEFINED_WAVES: [WaveDefinition; 5] = [
 pub fn wave_generation(wave_count: i32) -> WaveDefinition {
     let mut rng = rand::thread_rng();
 
-    let mut total_enemy_count = wave_count * 2;
+    let mut total_enemy_count = wave_count * 4;
 
     let mut jellyfish = 0;
     let mut urchin = 0;
@@ -96,10 +96,10 @@ pub fn wave_generation(wave_count: i32) -> WaveDefinition {
         total_enemy_count -= 1;
     }
 
-    let mut luck_value: Option<i32> = None;
+    let mut luck_value: i32 = 0;
     match wave_count {
         10 => {
-            luck_value = Option::from(2);
+            luck_value = 2;
         }
         _ => {}
     }
