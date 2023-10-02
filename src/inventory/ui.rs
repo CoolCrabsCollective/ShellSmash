@@ -4,7 +4,7 @@ use bevy::ui::PositionType::Absolute;
 
 use crate::game_state::GameState;
 use crate::inventory::selection::SelectedItem;
-use crate::inventory::{selection, Inventory};
+use crate::inventory::{selection, Inventory, PackedInventoryItem};
 
 pub struct InventoryUIPlugin;
 
@@ -213,12 +213,13 @@ fn select_next_button(
         (Changed<Interaction>, With<ItemSwitch>),
     >,
     mut text_query: Query<&mut Text>,
+    query_items: Query<Entity, With<PackedInventoryItem>>,
     mut selected: ResMut<SelectedItem>,
 ) {
     for (interaction, mut color, mut border_color, children) in &mut interaction_query {
         match *interaction {
             Interaction::Pressed => {
-                //selection::select_next(selected);
+                selection::select_next(query_items, selected);
                 *color = PRESSED_BUTTON.into();
                 return;
             }
