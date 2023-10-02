@@ -269,7 +269,7 @@ pub fn setup(
             commands
                 .spawn(PackedInventoryItem { data: item.clone() })
                 .insert(PbrBundle {
-                    mesh: meshes.add(item.generate_mesh()),
+                    mesh: meshes.add(item.generate_mesh(false)),
                     material: materials.add(item.color.clone().into()),
                     transform: Transform::from_translation(
                         DEFAULT_BAG_LOCATION + item.location.as_vec3()
@@ -314,7 +314,7 @@ fn update_packed_items(
         commands.entity(item.3).remove::<Handle<Mesh>>();
         commands
             .entity(item.3)
-            .insert(meshes.add(item.2.data.generate_mesh()));
+            .insert(meshes.add(item.2.data.generate_mesh(false)));
         item.2.data.changed = false;
     }
 }

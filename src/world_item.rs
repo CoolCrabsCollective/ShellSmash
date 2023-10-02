@@ -34,7 +34,7 @@ impl InventoryItem {
                 self.clone(),
             ))
             .insert(PbrBundle {
-                mesh: meshes.add(self.generate_mesh()),
+                mesh: meshes.add(self.generate_mesh(true)),
                 material: materials.add(self.color.clone().into()),
                 ..default()
             })
@@ -61,7 +61,7 @@ impl InventoryItem {
         ));
 
         e_commands.insert(PbrBundle {
-            mesh: meshes.add(self.generate_mesh()),
+            mesh: meshes.add(self.generate_mesh(true)),
             material: materials.add(self.color.clone().into()),
             transform,
             ..default()
