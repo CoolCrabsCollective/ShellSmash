@@ -4,6 +4,7 @@ use crate::asset_loader::GameAssets;
 use crate::config::DEFAULT_BAG_LOCATION;
 use crate::game_state::GameState;
 use crate::inventory::controller::InventoryControllerPlugin;
+use crate::inventory::controller::ItemDirection;
 use crate::inventory::data_manager::InventoryDataPlugin;
 use crate::inventory::gizmo::Gizmo;
 use crate::inventory::grid::GridDisplayPlugin;
@@ -100,17 +101,17 @@ fn setup(
         deg_to_rad(90.0),
     );
 
-    let mut forward_transform =
+    let mut backwards_transform =
         Transform::from_translation(DEFAULT_BAG_LOCATION + Vec3::from((0.0, 0.0, 0.0)));
-    forward_transform.rotation = Quat::from_euler(
+    backwards_transform.rotation = Quat::from_euler(
         EulerRot::XYZ,
         deg_to_rad(0.0),
         deg_to_rad(0.0),
         deg_to_rad(0.0),
     );
-    let mut backward_transform =
+    let mut forward_transform =
         Transform::from_translation(DEFAULT_BAG_LOCATION + Vec3::from((0.0, 0.0, 0.0)));
-    backward_transform.rotation = Quat::from_euler(
+    forward_transform.rotation = Quat::from_euler(
         EulerRot::XYZ,
         deg_to_rad(0.0),
         deg_to_rad(180.0),
@@ -120,6 +121,7 @@ fn setup(
     commands
         .spawn(Gizmo {
             relative: up_transform,
+            item_dir: ItemDirection::UP,
         })
         .insert(PbrBundle {
             mesh: game_assets.arrow_straight().mesh_handle,
@@ -129,6 +131,7 @@ fn setup(
     commands
         .spawn(Gizmo {
             relative: down_transform,
+            item_dir: ItemDirection::DOWN,
         })
         .insert(PbrBundle {
             mesh: game_assets.arrow_straight().mesh_handle,
@@ -138,6 +141,7 @@ fn setup(
     commands
         .spawn(Gizmo {
             relative: left_transform,
+            item_dir: ItemDirection::LEFT,
         })
         .insert(PbrBundle {
             mesh: game_assets.arrow_straight().mesh_handle,
@@ -147,6 +151,7 @@ fn setup(
     commands
         .spawn(Gizmo {
             relative: right_transform,
+            item_dir: ItemDirection::RIGHT,
         })
         .insert(PbrBundle {
             mesh: game_assets.arrow_straight().mesh_handle,
@@ -156,6 +161,7 @@ fn setup(
     commands
         .spawn(Gizmo {
             relative: forward_transform,
+            item_dir: ItemDirection::FORWARD,
         })
         .insert(PbrBundle {
             mesh: game_assets.arrow_straight().mesh_handle,
@@ -164,7 +170,8 @@ fn setup(
         });
     commands
         .spawn(Gizmo {
-            relative: backward_transform,
+            relative: backwards_transform,
+            item_dir: ItemDirection::BACKWARDS,
         })
         .insert(PbrBundle {
             mesh: game_assets.arrow_straight().mesh_handle,

@@ -156,34 +156,26 @@ pub fn update_inventory_data(query: Query<&VoxelBullcrap>, mut inv: ResMut<Inven
     inv.grid = InventoryData::grid_from_items(items, IVec3::from_array(INVENTORY_GRID_DIMENSIONS))
 }
 
-fn move_inventory_items(
-    state: Res<InventoryControllerState>,
-    key_codes: Res<Input<KeyCode>>,
-    mut query_items: Query<&mut VoxelBullcrap>,
-) {
+#[derive(Debug, Copy, Clone)]
+pub enum ItemDirection {
+    LEFT,
+    RIGHT,
+    UP,
+    DOWN,
+    FORWARD,
+    BACKWARDS,
+}
+
+pub fn move_item(item: &mut VoxelBullcrap, item_dir: ItemDirection, view_index: usize) {
     let trans: Vec<IVec3> = vec![
         IVec3::from((0, 0, -1)),
         IVec3::from((-1, 0, 0)),
         IVec3::from((0, 0, 1)),
         IVec3::from((1, 0, 0)),
     ];
-    let view_index = state.view_index;
-    if key_codes.just_pressed(KeyCode::S) {
-        for mut item in query_items.iter_mut() {
-            item.data.translate(trans[(4 - view_index) % 4]);
-        }
-    } else if key_codes.just_pressed(KeyCode::D) {
-        for mut item in query_items.iter_mut() {
-            item.data.translate(
-                trans[if 1 <= view_index {
-                    (5 - view_index) % 4
-                } else {
-                    1 - view_index
-                }],
-            );
-        }
-    } else if key_codes.just_pressed(KeyCode::W) {
-        for mut item in query_items.iter_mut() {
+
+    match item_dir {
+        ItemDirection::FORWARD => {
             item.data.translate(
                 trans[if 2 <= view_index {
                     (6 - view_index) % 4
@@ -192,8 +184,14 @@ fn move_inventory_items(
                 }],
             );
         }
-    } else if key_codes.just_pressed(KeyCode::A) {
-        for mut item in query_items.iter_mut() {
+        ItemDirection::BACKWARDS => item.data.translate(trans[(4 - view_index) % 4]),
+        ItemDirection::UP => {
+            item.data.translate(IVec3::from((0, 1, 0)));
+        }
+        ItemDirection::DOWN => {
+            item.data.translate(IVec3::from((0, -1, 0)));
+        }
+        ItemDirection::LEFT => {
             item.data.translate(
                 trans[if 3 <= view_index {
                     (7 - view_index) % 4
@@ -201,6 +199,40 @@ fn move_inventory_items(
                     3 - view_index
                 }],
             );
+        }
+        ItemDirection::RIGHT => {
+            item.data.translate(
+                trans[if 1 <= view_index {
+                    (5 - view_index) % 4
+                } else {
+                    1 - view_index
+                }],
+            );
+        }
+        _ => {}
+    }
+}
+
+fn move_inventory_items(
+    state: Res<InventoryControllerState>,
+    key_codes: Res<Input<KeyCode>>,
+    mut query_items: Query<&mut VoxelBullcrap>,
+) {
+    if key_codes.just_pressed(KeyCode::S) {
+        for mut item in query_items.iter_mut() {
+            move_item(&mut item, ItemDirection::BACKWARDS, state.view_index);
+        }
+    } else if key_codes.just_pressed(KeyCode::D) {
+        for mut item in query_items.iter_mut() {
+            move_item(&mut item, ItemDirection::RIGHT, state.view_index);
+        }
+    } else if key_codes.just_pressed(KeyCode::W) {
+        for mut item in query_items.iter_mut() {
+            move_item(&mut item, ItemDirection::FORWARD, state.view_index);
+        }
+    } else if key_codes.just_pressed(KeyCode::A) {
+        for mut item in query_items.iter_mut() {
+            move_item(&mut item, ItemDirection::LEFT, state.view_index);
         }
     } else if key_codes.just_pressed(KeyCode::Q) {
         for mut item in query_items.iter_mut() {
@@ -212,11 +244,11 @@ fn move_inventory_items(
         }
     } else if key_codes.just_pressed(KeyCode::Z) {
         for mut item in query_items.iter_mut() {
-            item.data.translate(IVec3::from((0, 1, 0)));
+            move_item(&mut item, ItemDirection::UP, state.view_index);
         }
     } else if key_codes.just_pressed(KeyCode::X) {
         for mut item in query_items.iter_mut() {
-            item.data.translate(IVec3::from((0, -1, 0)));
+            move_item(&mut item, ItemDirection::DOWN, state.view_index);
         }
     }
 }
