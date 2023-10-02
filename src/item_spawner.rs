@@ -50,6 +50,16 @@ fn setup(
             z: 8.0,
         },
     );
+    create_heart(
+        &mut commands,
+        &mut meshes,
+        &mut materials,
+        Vec3 {
+            x: 5.0,
+            y: 0.5,
+            z: -8.0,
+        },
+    );
 }
 
 fn create_alex_boomerang_copyrighted_you_need_permissions_to_use(
@@ -168,4 +178,29 @@ fn create_supergun(
     gun.projectile_speed = 30.0;
 
     gun.create_world_entity(location, false, true, commands, meshes, materials);
+}
+
+fn create_heart(
+    commands: &mut Commands,
+    meshes: &mut ResMut<Assets<Mesh>>,
+    materials: &mut ResMut<Assets<StandardMaterial>>,
+    location: Vec3,
+) {
+    let mut heart = InventoryItem::from((
+        (0, 0, 0),
+        vec![
+            (0, 0, 0),
+            (0, 0, 1),
+            (-1, 0, 0),
+            (1, 0, 0),
+            (-1, 0, -1),
+            (1, 0, -1),
+        ],
+        Color::rgba(1.0, 0.1, 0.1, 1.0),
+        NON_WEAPON,
+        ItemTypeId::Heart,
+    ));
+    heart.hp_gain = 1;
+
+    heart.create_world_entity(location, false, true, commands, meshes, materials);
 }
