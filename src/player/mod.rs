@@ -323,7 +323,7 @@ fn player_movement(
 
             // Example: check if the stick is pushed up
             if right_stick_pos.length() > 0.1 {
-                transform.look_to(vec3(right_stick_pos.x, 0.0, right_stick_pos.y), Vec3::Y);
+                transform.look_to(vec3(right_stick_pos.x, 0.0, -right_stick_pos.y), Vec3::Y);
                 return;
             }
         }
